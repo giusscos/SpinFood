@@ -1,22 +1,23 @@
 //
-//  CreateFoodView.swift
+//  EditFoodView.swift
 //  SpinFood
 //
 //  Created by Giuseppe Cosenza on 10/12/24.
 //
 
 import SwiftUI
-import SwiftData
 
-struct CreateFoodView: View {
+struct EditFoodView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
+    
+    @Bindable var food: FoodModal
     
     @State private var name: String = ""
     @State private var quantity: Decimal = 0.0
     @State private var currentQuantity: Decimal = 0.0
     @State private var unit: FoodUnit = .gram
-//    @State private var image: Data? = nil
+    //    @State private var image: Data? = nil
     
     var body: some View {
         NavigationStack {
@@ -36,7 +37,7 @@ struct CreateFoodView: View {
                     Text("Food details")
                 }
             }
-            .navigationTitle("Create Food")
+            .navigationTitle("Edit Food")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem (placement: .topBarLeading, content: {
@@ -58,6 +59,12 @@ struct CreateFoodView: View {
                 })
             }
         }
+        .onAppear() {
+            name = food.name
+            quantity = food.quantity
+            currentQuantity = food.currentQuantity
+            unit = food.unit
+        }
     }
     
     func undoAndClose() {
@@ -65,38 +72,15 @@ struct CreateFoodView: View {
     }
     
     func saveFood() {
-        let newFood = FoodModal(
-            name: name,
-            quantity: quantity,
-            currentQuantity: quantity,
-            unit: unit,
-//            image: image,
-            createdAt: .now
-        )
-        
-        newFood.rating = 0
-        
-        modelContext.insert(newFood)
+        food.name = name
+        food.quantity = quantity
+        food.currentQuantity = quantity
+        food.unit = unit
         
         dismiss()
     }
 }
 
-struct DecimalField: View {
-    let title: String
-    @Binding var value: Decimal
-    
-    var body: some View {
-        HStack {
-            Text(title)
-            Spacer()
-            TextField("0", value: $value, format: .number)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-        }
-    }
-}
-
 #Preview {
-    CreateFoodView()
+    EditFoodView(food: FoodModal(name: "Carrot"))
 }

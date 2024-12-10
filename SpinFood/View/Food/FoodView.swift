@@ -11,14 +11,17 @@ import SwiftData
 struct FoodView: View {
     @Query var foods: [FoodModal]
     
+    @State var toggleFoodSheet: Bool = false
+    
     var body: some View {
         List {
-            if foods.isEmpty {
+            if !foods.isEmpty {
                 ForEach(foods) { food in
                     Text("\(food.name)")
                 }
             } else {
-                ContentUnavailableView("No food found", systemImage: "exclamationmark")
+                ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))
+                    .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
@@ -36,12 +39,15 @@ struct FoodView: View {
             
             ToolbarItem (placement: .topBarTrailing) {
                 Button {
-                    print("add food")
+                    toggleFoodSheet.toggle()
                 } label: {
                     Label("Add", systemImage: "plus")
                         .labelStyle(.titleOnly)
                 }
             }
+        }
+        .sheet(isPresented: $toggleFoodSheet) {
+            CreateFoodView()
         }
     }
 }

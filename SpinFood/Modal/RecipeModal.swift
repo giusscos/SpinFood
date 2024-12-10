@@ -17,16 +17,17 @@ class RecipeModal {
     var duration: Decimal = 0.0
     var createdAt: Date = Date.now
     var rating: Int = 0
-    var steps: [String]
+    var steps: [String] = []
     
-    @Relationship var ingredients: [RecipeIngredient]?
+    @Relationship var ingredients: [RecipeFoodModal]? = []
     
-    init(name: String, descriptionRecipe: String = "", image: Data? = nil, createdAt: Date = Date.now, ingredients: [RecipeIngredient]? = nil, steps: [String] = []) {
+    init(name: String, descriptionRecipe: String = "", image: Data? = nil, createdAt: Date = Date.now, ingredients: [RecipeFoodModal]? = nil, steps: [String] = []) {
         self.id = UUID()
         self.name = name
         self.descriptionRecipe = descriptionRecipe
         self.image = image
         self.createdAt = createdAt
         self.ingredients = ingredients
+        self.steps = steps
     }
 }

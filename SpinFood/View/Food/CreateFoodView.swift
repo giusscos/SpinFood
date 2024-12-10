@@ -68,7 +68,7 @@ struct CreateFoodView: View {
         let newFood = FoodModal(
             name: name,
             quantity: quantity,
-            currentQuantity: currentQuantity,
+            currentQuantity: quantity,
             unit: unit,
 //            image: image,
             createdAt: .now

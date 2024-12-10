@@ -17,7 +17,7 @@ struct FoodView: View {
         List {
             if !foods.isEmpty {
                 ForEach(foods) { food in
-                    Text("\(food.name)")
+                    FoodRowView(food: food)
                 }
             } else {
                 ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))

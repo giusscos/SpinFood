@@ -11,6 +11,7 @@ import SwiftData
 enum ActiveRecipeSheet: Identifiable {
     case edit(RecipeModal)
     case buyCredit
+    case view(RecipeModal)
     case create
     
     var id: String {
@@ -19,6 +20,8 @@ enum ActiveRecipeSheet: Identifiable {
             return "editRecipe-\(recipe.id)"
         case .buyCredit:
             return "buyCreditForRecipe"
+        case .view(let recipe):
+            return "viewRecipe-\(recipe.id)"
         case .create:
             return "createRecipe"
         }
@@ -37,6 +40,9 @@ struct RecipeView: View {
             if !recipes.isEmpty {
                 ForEach(recipes) { value in
                     RecipeRowView(recipe: value)
+                        .onTapGesture {
+                            activeRecipeSheet = .view(value)
+                        }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 modelContext.delete(value)
@@ -58,7 +64,7 @@ struct RecipeView: View {
             }
         }
         .listStyle(.plain)
-        .navigationTitle("Food")
+        .navigationTitle("Recipe")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem (placement: .topBarLeading) {
@@ -85,6 +91,9 @@ struct RecipeView: View {
                 EditRecipeView(recipe: value)
             case .create:
                 CreateRecipeView()
+            case .view(let value):
+                RecipeDetailsView(recipe: value)
+                    .presentationDragIndicator(.visible)
             case .buyCredit:
                 CreateRecipeView()
             }

@@ -31,12 +31,25 @@ struct CreateRecipeView: View {
             Form {
                 Section {
                     TextField("Name", text: $name)
-                        .textInputAutocapitalization(.words)
-                    
-                    TextField("Description", text: $descriptionRecipe)
                         .textInputAutocapitalization(.sentences)
-                    
+                                        
                     DecimalField(title: "Duration (minutes)", value: $duration)
+                    
+                    VStack (alignment: .leading) {
+                        Text("Description")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        TextEditor(text: $descriptionRecipe)
+                            .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 150, alignment: .leading)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(5)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(.secondary, lineWidth: 1)
+                            )
+                            .padding(.bottom, 8)
+                    }
                 } header: {
                     Text("Details")
                 }
@@ -104,7 +117,14 @@ struct CreateRecipeView: View {
                     }
                     
                     HStack {
-                        TextField("Add a step", text: $newStep)
+                        TextEditor(text: $newStep)
+                            .frame(maxWidth: .infinity, maxHeight: 150, alignment: .leading)
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(5)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(.secondary, lineWidth: 1)
+                            )
                         
                         Button {
                             guard !newStep.isEmpty else { return }
@@ -120,6 +140,7 @@ struct CreateRecipeView: View {
                                 .disabled(newStep == "")
                         }
                     }
+                    .padding(.vertical, 8)
                 } header: {
                     Text("Steps")
                 }

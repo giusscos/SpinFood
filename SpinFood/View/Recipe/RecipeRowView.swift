@@ -12,15 +12,22 @@ struct RecipeRowView: View {
     
     var body: some View {
         HStack {
-            Text(recipe.name)
+            VStack (alignment: .leading) {
+                Text(recipe.name)
+                    .font(.title)
+                    .fontWeight(.semibold)
+                
+                Text(recipe.descriptionRecipe)
+                    .multilineTextAlignment(.leading)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+                
+            Text(recipe.duration.formatted)
                 .font(.headline)
-                .fontWeight(.semibold)
-            
-            Text("\(recipe.duration)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-        }.padding(8)
+        }
     }
 }
 

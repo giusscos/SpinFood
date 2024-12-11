@@ -16,7 +16,7 @@ struct CreateRecipeView: View {
     
     @State private var name: String = ""
     @State private var descriptionRecipe: String = ""
-    @State private var duration: Decimal = 0.0
+    @State private var duration: TimeInterval = 300.0
     @State private var ingredients: [RecipeFoodModal] = []
     @State private var steps: [String] = []
 //    @State private var image: Data? = nil
@@ -32,8 +32,14 @@ struct CreateRecipeView: View {
                 Section {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.sentences)
-                                        
-                    DecimalField(title: "Duration (minutes)", value: $duration)
+                               
+                    VStack (alignment: .leading) {
+                        Text("Duration")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    
+                        TimePickerView(duration: $duration)
+                    }
                     
                     VStack (alignment: .leading) {
                         Text("Description")
@@ -200,7 +206,7 @@ struct CreateRecipeView: View {
             name: name,
             descriptionRecipe: descriptionRecipe,
 //            image: image,
-//            ingredients: nil,
+            ingredients: ingredients,
             steps: steps,
             duration: duration
         )
@@ -208,6 +214,7 @@ struct CreateRecipeView: View {
         newRecipe.rating = 0
         
         modelContext.insert(newRecipe)
+        
         dismiss()
     }
 }

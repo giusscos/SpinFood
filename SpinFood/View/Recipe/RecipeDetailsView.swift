@@ -15,6 +15,21 @@ struct RecipeDetailsView: View {
     var body: some View {
         NavigationStack{
             List {
+                Section {
+                    HStack {
+                        Text("Created at ")
+                        
+                        Text(recipe.createdAt, format: .dateTime.day().month().year())
+                    }
+
+                    // TODO: Add Rating
+                    
+                    Text(recipe.descriptionRecipe)
+                        .multilineTextAlignment(.leading)
+                } header: {
+                    Text("Info")
+                }
+                
                 if let ingredients = recipe.ingredients {
                     Section {
                         VStack (alignment: .leading) {
@@ -45,10 +60,13 @@ struct RecipeDetailsView: View {
                     }
                     .font(.headline)
                     
-                    Text(recipe.descriptionRecipe)
-                        .multilineTextAlignment(.leading)
+                    VStack (alignment: .leading) {
+                        ForEach(recipe.steps, id: \.self) { step in
+                            Text("~ \(step);")
+                        }
+                    }
                 } header: {
-                    Text("Info")
+                    Text("Steps")
                 }
                 
             }.navigationTitle(recipe.name)

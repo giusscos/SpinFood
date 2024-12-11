@@ -1,5 +1,5 @@
 //
-//  FoodView.swift
+//  RecipeView.swift
 //  SpinFood
 //
 //  Created by Giuseppe Cosenza on 10/12/24.
@@ -8,41 +8,44 @@
 import SwiftUI
 import SwiftData
 
-enum ActiveFoodSheet: Identifiable {
-    case edit(FoodModal)
+enum ActiveRecipeSheet: Identifiable {
+    case edit(RecipeModal)
+    case buyCredit
     case create
     
     var id: String {
         switch self {
-        case .edit(let food):
-            return "editFood-\(food.id)"
+        case .edit(let recipe):
+            return "editRecipe-\(recipe.id)"
+        case .buyCredit:
+            return "buyCreditForRecipe"
         case .create:
-            return "createFood"
+            return "createRecipe"
         }
     }
 }
 
-struct FoodView: View {
+struct RecipeView: View {
     @Environment(\.modelContext) var modelContext
     
-    @Query var foods: [FoodModal]
+    @Query var recipes: [RecipeModal]
     
-    @State private var activeSheet: ActiveFoodSheet?
+    @State private var activeRecipeSheet: ActiveRecipeSheet?
     
     var body: some View {
         List {
-            if !foods.isEmpty {
-                ForEach(foods) { food in
-                    FoodRowView(food: food)
+            if !recipes.isEmpty {
+                ForEach(recipes) { value in
+                    RecipeRowView(recipe: value)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
-                                modelContext.delete(food)
+                                modelContext.delete(value)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
                             
                             Button {
-                                activeSheet = .edit(food)
+                                activeRecipeSheet = .edit(value)
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
@@ -50,7 +53,7 @@ struct FoodView: View {
                         }
                 }
             } else {
-                ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))
+                ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the Add button"))
                     .listRowSeparator(.hidden)
             }
         }
@@ -60,7 +63,7 @@ struct FoodView: View {
         .toolbar {
             ToolbarItem (placement: .topBarLeading) {
                 Button {
-                    print("edit food")
+                    print("edit recipe")
                 } label: {
                     Label("Edit", systemImage: "pencil")
                         .labelStyle(.titleOnly)
@@ -69,24 +72,26 @@ struct FoodView: View {
             
             ToolbarItem (placement: .topBarTrailing) {
                 Button {
-                    activeSheet = .create
+                    activeRecipeSheet = .create
                 } label: {
                     Label("Add", systemImage: "plus")
                         .labelStyle(.titleOnly)
                 }
             }
         }
-        .sheet(item: $activeSheet) { sheet in
+        .sheet(item: $activeRecipeSheet) { sheet in
             switch sheet {
-            case .edit(let food):
-                EditFoodView(food: food)
+            case .edit(let value):
+                EditRecipeView(recipe: value)
             case .create:
-                CreateFoodView()
+                CreateRecipeView()
+            case .buyCredit:
+                CreateRecipeView()
             }
         }
     }
 }
 
 #Preview {
-    FoodView()
+    RecipeView()
 }

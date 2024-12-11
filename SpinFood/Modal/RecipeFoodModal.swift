@@ -16,8 +16,8 @@ class RecipeFoodModal {
     
     @Relationship var recipes: [RecipeModal]? = []
     
-    init(id: UUID, ingredient: FoodModal? = nil, quantityNeeded: Decimal) {
-        self.id = id
+    init(ingredient: FoodModal? = nil, quantityNeeded: Decimal) {
+        self.id = UUID()
         self.ingredient = ingredient
         self.quantityNeeded = quantityNeeded
     }

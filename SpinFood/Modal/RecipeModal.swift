@@ -21,11 +21,12 @@ class RecipeModal {
     
     @Relationship var ingredients: [RecipeFoodModal]? = []
     
-    init(name: String, descriptionRecipe: String = "", image: Data? = nil, createdAt: Date = Date.now, ingredients: [RecipeFoodModal]? = nil, steps: [String] = []) {
+    init(name: String, descriptionRecipe: String = "", image: Data? = nil, createdAt: Date = Date.now, ingredients: [RecipeFoodModal]? = nil, steps: [String] = [], duration: Decimal = 0.0) {
         self.id = UUID()
         self.name = name
         self.descriptionRecipe = descriptionRecipe
         self.image = image
+        self.duration = duration
         self.createdAt = createdAt
         self.ingredients = ingredients
         self.steps = steps

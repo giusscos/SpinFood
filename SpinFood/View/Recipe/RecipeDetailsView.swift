@@ -20,7 +20,9 @@ struct RecipeDetailsView: View {
                         Text("Created at ")
                         
                         Text(recipe.createdAt, format: .dateTime.day().month().year())
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
+                    .font(.headline)
 
                     // TODO: Add Rating
                     

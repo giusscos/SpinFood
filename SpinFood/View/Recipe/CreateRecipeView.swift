@@ -49,6 +49,7 @@ struct CreateRecipeView: View {
                                 }
                             }
                             .frame(maxHeight: 100)
+                            .frame(minHeight: 75)
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .listRowSeparator(.hidden)

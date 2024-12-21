@@ -11,14 +11,23 @@ struct SuggestionRowView: View {
     var recipe: RecipeModal
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 10)
-            .foregroundStyle(Color.red)
+        Rectangle()
             .frame(minHeight: 75)
             .aspectRatio(4/3, contentMode: .fit)
+            .overlay(content: {
+                if let imageData = recipe.image,
+                   let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            })
             .overlay(alignment: .bottom, content: {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(recipe.name)
                         .font(.title)
+                        .foregroundStyle(.white)
                         .fontWeight(.semibold)
                         .shadow(radius: 10, x: 0, y: 4)
                     
@@ -43,6 +52,8 @@ struct SuggestionRowView: View {
                 }
                 .padding(8)
             })
+            .clipped()
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             
     }
 }

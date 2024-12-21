@@ -16,6 +16,19 @@ struct RecipeDetailsView: View {
         NavigationStack{
             List {
                 Section {
+                    if let imageData = recipe.image,
+                       let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowSeparator(.hidden)
+                    }
+                } header: {
+                    Text("Cover")
+                }
+                
+                Section {
                     HStack {
                         Text("Created at ")
                         
@@ -23,8 +36,6 @@ struct RecipeDetailsView: View {
                             .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                     .font(.headline)
-
-                    // TODO: Add Rating
                     
                     Text(recipe.descriptionRecipe)
                         .multilineTextAlignment(.leading)

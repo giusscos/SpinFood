@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SuggestionRowView: View {
+    var recipe: RecipeModal
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
             .foregroundStyle(Color.red)
@@ -15,20 +17,25 @@ struct SuggestionRowView: View {
             .aspectRatio(4/3, contentMode: .fit)
             .overlay(alignment: .bottom, content: {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Carbonara")
+                    Text(recipe.name)
                         .font(.title)
                         .fontWeight(.semibold)
                         .shadow(radius: 10, x: 0, y: 4)
                     
                     ScrollView (.horizontal) {
                         HStack {
-                            ForEach(0..<10) { index in
-                                Text("Ingredient \(index)")
-                                    .padding(8)
-                                    .foregroundStyle(.white)
-                                    .shadow(radius: 6, x: 0, y: 4)
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(Capsule())
+                            if let ingredients = recipe.ingredients {
+                                ForEach(ingredients) { ingredient in
+                                    if let ingredient = ingredient.ingredient {
+                                        Text("\(ingredient.name)")
+                                            .padding(.vertical, 8)
+                                            .padding(.horizontal)
+                                            .foregroundStyle(.white)
+                                            .shadow(radius: 6, x: 0, y: 4)
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(Capsule())
+                                    }
+                                }
                             }
                         }
                     }
@@ -41,5 +48,5 @@ struct SuggestionRowView: View {
 }
 
 #Preview {
-    SuggestionRowView()
+    SuggestionRowView(recipe: RecipeModal(name: "Carbonara", ingredients: []))
 }

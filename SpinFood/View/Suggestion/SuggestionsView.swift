@@ -6,12 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SuggestionsView: View {
+    @Query var recipes: [RecipeModal]
+    
     var body: some View {
         List {
-            ForEach(0..<10) { _ in
-                SuggestionRowView()
+            ForEach(recipes) { recipe in
+                SuggestionRowView(recipe: recipe)
                     .listRowSeparator(.hidden)
             }
         }

@@ -22,9 +22,9 @@ struct SuggestionsView: View {
                             .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
                     } label: {
                         SuggestionRowView(recipe: recipe)
-                            .listRowSeparator(.hidden)
                             .matchedTransitionSource(id: recipe.id, in: namespace)
                     }
+                    .listRowSeparator(.hidden)
                 }
             }
             .listStyle(.plain)

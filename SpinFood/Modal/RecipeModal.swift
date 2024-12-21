@@ -13,7 +13,7 @@ class RecipeModal {
     var id: UUID = UUID()
     var name: String = ""
     var descriptionRecipe: String = ""
-    var image: Data?
+    @Attribute(.externalStorage) var image: Data?
     var duration: TimeInterval = 0.0
     var createdAt: Date = Date.now
     var rating: Int = 0

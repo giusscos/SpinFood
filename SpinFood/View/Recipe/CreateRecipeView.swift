@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct CreateRecipeView: View {
     @Environment(\.dismiss) var dismiss
@@ -19,7 +20,8 @@ struct CreateRecipeView: View {
     @State private var duration: TimeInterval = 300.0
     @State private var ingredients: [RecipeFoodModal] = []
     @State private var steps: [String] = []
-//    @State private var image: Data? = nil
+    @State private var imageItem: PhotosPickerItem? = nil
+    @State private var imageData: Data? = nil
     
     @State private var newStep: String = ""
     
@@ -29,6 +31,51 @@ struct CreateRecipeView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    PhotosPicker(
+                        selection: $imageItem,
+                        matching: .images,
+                        photoLibrary: .shared()) {
+                            Group {
+                                if let imageData,
+                                   let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                } else {
+                                    Label("Select an image", systemImage: "photo")
+                                        .tint(Color.primary)
+                                        .padding(.horizontal)
+                                }
+                            }
+                            .frame(maxHeight: 100)
+                        }
+                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .listRowSeparator(.hidden)
+                        .task(id: imageItem) {
+                            if let data = try? await imageItem?.loadTransferable(type: Data.self) {
+                                withAnimation {
+                                    imageData = data
+                                }
+                            }
+                        }
+                    
+                    if imageData != nil {
+                        Button (role: .destructive) {
+                            withAnimation {
+                                imageItem = nil
+                                imageData = nil
+                            }
+                        } label: {
+                            Label("Remove image", systemImage: "minus.circle.fill")
+                                .labelStyle(.titleOnly)
+                        }
+                        
+                    }
+                } header: {
+                    Text("Cover")
+                }
+                
                 Section {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.sentences)
@@ -150,25 +197,6 @@ struct CreateRecipeView: View {
                 } header: {
                     Text("Steps")
                 }
-                
-//                Section {
-//                    if let imageData = image, let uiImage = UIImage(data: imageData) {
-//                        Image(uiImage: uiImage)
-//                            .resizable()
-//                            .scaledToFit()
-//                            .frame(height: 200)
-//                            .cornerRadius(8)
-//                    } else {
-//                        Text("No Image Selected")
-//                            .foregroundColor(.gray)
-//                    }
-//                    
-//                    Button("Select Image") {
-//                        // Implement image picker logic here
-//                    }
-//                } header: {
-//                    Text("Image")
-//                }
             }
             .onAppear() {
                 selectedFood = foods.first
@@ -205,7 +233,7 @@ struct CreateRecipeView: View {
         let newRecipe = RecipeModal(
             name: name,
             descriptionRecipe: descriptionRecipe,
-//            image: image,
+            image: imageData,
             ingredients: ingredients,
             steps: steps,
             duration: duration

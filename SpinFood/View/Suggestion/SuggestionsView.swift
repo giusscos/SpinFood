@@ -9,7 +9,14 @@ import SwiftUI
 
 struct SuggestionsView: View {
     var body: some View {
-        Text("Discover View")
+        List {
+            ForEach(0..<10) { _ in
+                SuggestionRowView()
+                    .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(.plain)
+        .navigationTitle("Suggestions for you")
     }
 }
 

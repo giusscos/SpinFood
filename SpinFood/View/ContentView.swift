@@ -13,19 +13,19 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            Tab("Discover", systemImage: "safari") {
+            Tab("Suggestions", systemImage: "sparkles.rectangle.stack.fill") {
                 NavigationStack {
-                    DiscoverView()
+                    SuggestionsView()
                 }
             }
             
-            Tab("Recipe", systemImage: "fork.knife") {
+            Tab("Recipes", systemImage: "fork.knife") {
                 NavigationStack {
                     RecipeView()
                 }
             }
             
-            Tab("Food", systemImage: "carrot.fill") {
+            Tab("Foods", systemImage: "carrot.fill") {
                 NavigationStack {
                     FoodView()
                 }

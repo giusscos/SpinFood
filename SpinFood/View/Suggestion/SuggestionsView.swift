@@ -9,17 +9,27 @@ import SwiftUI
 import SwiftData
 
 struct SuggestionsView: View {
+    @Namespace private var namespace
+    
     @Query var recipes: [RecipeModal]
     
     var body: some View {
-        List {
-            ForEach(recipes) { recipe in
-                SuggestionRowView(recipe: recipe)
-                    .listRowSeparator(.hidden)
+        NavigationStack {
+            List {
+                ForEach(recipes) { recipe in
+                    NavigationLink {
+                        RecipeDetailsView(recipe: recipe)
+                            .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                    } label: {
+                        SuggestionRowView(recipe: recipe)
+                            .listRowSeparator(.hidden)
+                            .matchedTransitionSource(id: recipe.id, in: namespace)
+                    }
+                }
             }
+            .listStyle(.plain)
+            .navigationTitle("Suggestions for you")
         }
-        .listStyle(.plain)
-        .navigationTitle("Suggestions for you")
     }
 }
 

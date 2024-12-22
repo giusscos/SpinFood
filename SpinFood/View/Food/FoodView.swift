@@ -10,12 +10,15 @@ import SwiftData
 
 enum ActiveFoodSheet: Identifiable {
     case edit(FoodModal)
+    case refillMulti
     case create
     
     var id: String {
         switch self {
         case .edit(let food):
             return "editFood-\(food.id)"
+        case .refillMulti:
+            return "refillFood"
         case .create:
             return "createFood"
         }
@@ -73,7 +76,7 @@ struct FoodView: View {
             ToolbarItem (placement: .topBarTrailing) {
                 Menu {
                     Button {
-                        refillAllFood()
+                        activeSheet = .refillMulti
                     } label: {
                         Label("Refill food", systemImage: "bag.fill.badge.plus")
                             .labelStyle(.titleOnly)
@@ -94,15 +97,12 @@ struct FoodView: View {
             switch sheet {
             case .edit(let food):
                 EditFoodView(food: food)
+            case .refillMulti:
+                FoodRefillView(food: food)
+                    .presentationDragIndicator(.visible)
             case .create:
                 CreateFoodView()
             }
-        }
-    }
-    
-    func refillAllFood() {
-        for value in food {
-            value.currentQuantity = value.quantity
         }
     }
 }

@@ -6,14 +6,13 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct RecipeDetailsView: View {
     @Environment(\.dismiss) var dismiss
     
-    var recipe: RecipeModal
+    @State private var showConfirmEat: Bool = false
     
-    @Query var food: [FoodModal]
+    var recipe: RecipeModal
     
     var body: some View {
         NavigationStack{
@@ -85,33 +84,19 @@ struct RecipeDetailsView: View {
                 
             }
             .navigationTitle(recipe.name)
+            .sheet(isPresented: $showConfirmEat, content: {
+                if let ingredients = recipe.ingredients {
+                        RecipeConfirmEatView(ingredients: ingredients)
+                            .presentationDragIndicator(.visible)
+                    }
+            })
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        eatFood()
+                        showConfirmEat.toggle()
                     } label: {
                         Label("Eat", systemImage: "fork.knife.circle")
                     }
-                }
-            }
-        }
-    }
-    
-    func eatFood() {
-        guard let recipeIngredients = recipe.ingredients else {
-            print("La ricetta non ha ingredienti.")
-            return
-        }
-        
-        for recipeFood in recipeIngredients {
-            guard let requiredIngredient = recipeFood.ingredient else { continue }
-            
-            // Trova l'ingrediente corrispondente nell'inventario
-            if let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) {
-                // Riduci la quantità di cibo
-                inventoryItem.currentQuantity -= recipeFood.quantityNeeded
-                if inventoryItem.currentQuantity < 0 {
-                    inventoryItem.currentQuantity = 0 // Evita quantità negative
                 }
             }
         }

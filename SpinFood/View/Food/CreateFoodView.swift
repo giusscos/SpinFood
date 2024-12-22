@@ -69,7 +69,6 @@ struct CreateFoodView: View {
             quantity: quantity,
             currentQuantity: quantity,
             unit: unit,
-//            image: image,
             createdAt: .now
         )
         

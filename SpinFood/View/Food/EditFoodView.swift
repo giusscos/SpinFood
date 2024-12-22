@@ -74,8 +74,13 @@ struct EditFoodView: View {
     
     func saveFood() {
         food.name = name
-        food.quantity = quantity
         food.currentQuantity = currentQuantity
+        
+        if quantity <= currentQuantity {
+             quantity = currentQuantity
+        }
+        
+        food.quantity = quantity
         food.unit = unit
         
         dismiss()

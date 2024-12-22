@@ -17,11 +17,11 @@ class Store {
     var purchasedSubscriptions: [Product] = []
     private var subscriptionGroupStatus: RenewalState?
     
-//    private let productIds: [String] = ["bj_4999_1y_v1", "bj_499_1m"]
-//    let groupId: String = "21584181"
+    private let productIds: [String] = ["Wiiyf_999_1y_3d", "Wiiyf_099_1m_3d"]
+    let groupId: String = "21611710"
     
-    private let productIds: [String] = ["sf_999_1y", "sp_099_1m_3d"] // test
-    let groupId: String = "FE73F688" // test
+//    private let productIds: [String] = ["sf_999_1y", "sp_099_1m_3d"] // test
+//    let groupId: String = "FE73F688" // test
     
     var updateListenerTask : Task<Void, Error>? = nil
     

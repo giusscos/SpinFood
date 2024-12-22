@@ -60,7 +60,6 @@ struct RecipeConfirmEatView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         eatFood()
-                        
                     } label: {
                         Label("Confirm", systemImage: "checkmark")
                     }
@@ -81,6 +80,8 @@ struct RecipeConfirmEatView: View {
                 }
             }
         }
+        
+        dismiss()
     }
 }
 

@@ -31,21 +31,25 @@ struct SuggestionsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    ForEach(filteredRecipes) { recipe in
-                        NavigationLink {
-                            RecipeDetailsView(recipe: recipe)
-                                .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
-                        } label: {
-                            SuggestionRowView(recipe: recipe)
-                                .matchedTransitionSource(id: recipe.id, in: namespace)
+                if filteredRecipes.count > 0 {
+                    Section {
+                        ForEach(filteredRecipes) { recipe in
+                            NavigationLink {
+                                RecipeDetailsView(recipe: recipe)
+                                    .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                            } label: {
+                                SuggestionRowView(recipe: recipe)
+                                    .matchedTransitionSource(id: recipe.id, in: namespace)
+                            }
+                            .listRowSeparator(.hidden)
                         }
-                        .listRowSeparator(.hidden)
                     }
+                } else {
+                    ContentUnavailableView("No suggestions found", systemImage: "exclamationmark", description: Text("You can add ingredients by tapping on the Refill button in the Food section"))
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("Suggestions for you")
+            .navigationTitle(filteredRecipes.count > 0 ? "Suggestions for you" : "No suggestions for now")
         }
     }
 }

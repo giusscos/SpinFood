@@ -26,6 +26,9 @@ struct SpinFoodApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    UITextField.appearance().clearButtonMode = .whileEditing
+                }
         }
         .modelContainer(sharedModelContainer)
     }

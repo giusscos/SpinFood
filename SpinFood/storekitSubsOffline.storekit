@@ -1,0 +1,144 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "AFC765E2",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "FE73F688",
+      "localizations" : [
+
+      ],
+      "name" : "Pro Access",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "53DE088D",
+          "introductoryOffer" : {
+            "internalID" : "BA21239E",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlock recipe suggestions and more monthly",
+              "displayName" : "Monthly Pro Access",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "sp_099_1m_3d",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "SpinFood Pro Access, 0.99, 1 month, 3 days free",
+          "subscriptionGroupID" : "FE73F688",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "AAAE5AA3",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock recipe suggestions and more for 1 year",
+              "displayName" : "Annual Pro Access",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "sf_999_1y",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "SpinFood Pro Access, 9.99, 1 year",
+          "subscriptionGroupID" : "FE73F688",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

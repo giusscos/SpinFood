@@ -17,7 +17,6 @@ struct EditFoodView: View {
     @State private var quantity: Decimal = 0.0
     @State private var currentQuantity: Decimal = 0.0
     @State private var unit: FoodUnit = .gram
-    //    @State private var image: Data? = nil
     
     var body: some View {
         NavigationStack {
@@ -27,6 +26,8 @@ struct EditFoodView: View {
                         .textInputAutocapitalization(.words)
                     
                     DecimalField(title: "Quantity", value: $quantity)
+                    
+                    DecimalField(title: "Current quantity", value: $currentQuantity)
                     
                     Picker("Unit", selection: $unit) {
                         ForEach(FoodUnit.allCases, id: \.self) { unit in
@@ -74,7 +75,7 @@ struct EditFoodView: View {
     func saveFood() {
         food.name = name
         food.quantity = quantity
-        food.currentQuantity = quantity
+        food.currentQuantity = currentQuantity
         food.unit = unit
         
         dismiss()

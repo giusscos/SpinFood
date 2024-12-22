@@ -15,19 +15,17 @@ class FoodModal {
     var quantity: Decimal = 0.0
     var currentQuantity: Decimal = 0.0
     var unit: FoodUnit = FoodUnit.gram
-    var image: Data?
     var createdAt: Date = Date.now
     var rating: Int = 0
     
     var recipes: [RecipeFoodModal]? = []
     
-    init(name: String, quantity: Decimal = 0.0, currentQuantity: Decimal = 0.0, unit: FoodUnit = FoodUnit.gram, image: Data? = nil, createdAt: Date = Date.now) {
+    init(name: String, quantity: Decimal = 0.0, currentQuantity: Decimal = 0.0, unit: FoodUnit = FoodUnit.gram, createdAt: Date = Date.now) {
         self.id = UUID()
         self.name = name
         self.quantity = quantity
         self.currentQuantity = currentQuantity
         self.unit = unit
-        self.image = image
         self.createdAt = createdAt
     }
 }

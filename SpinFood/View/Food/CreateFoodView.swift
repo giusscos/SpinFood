@@ -16,7 +16,6 @@ struct CreateFoodView: View {
     @State private var quantity: Decimal = 0.0
     @State private var currentQuantity: Decimal = 0.0
     @State private var unit: FoodUnit = .gram
-//    @State private var image: Data? = nil
     
     var body: some View {
         NavigationStack {

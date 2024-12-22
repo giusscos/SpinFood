@@ -17,7 +17,7 @@ struct FoodRowView: View {
                 .fontWeight(.semibold)
             
             HStack (alignment: .lastTextBaseline, spacing: 2) {
-                VStack {
+                VStack (alignment: .trailing) {
                     if food.quantity != food.currentQuantity {
                         Text("\(food.quantity)")
                             .font(.caption)

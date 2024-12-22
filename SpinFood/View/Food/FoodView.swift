@@ -25,15 +25,18 @@ enum ActiveFoodSheet: Identifiable {
 struct FoodView: View {
     @Environment(\.modelContext) var modelContext
     
-    @Query var foods: [FoodModal]
+    @Query var food: [FoodModal]
     
     @State private var activeSheet: ActiveFoodSheet?
     
     var body: some View {
         List {
-            if !foods.isEmpty {
-                ForEach(foods) { food in
+            if !food.isEmpty {
+                ForEach(food) { food in
                     FoodRowView(food: food)
+                        .onTapGesture {
+                            activeSheet = .edit(food)
+                        }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 modelContext.delete(food)
@@ -66,13 +69,24 @@ struct FoodView: View {
                         .labelStyle(.titleOnly)
                 }
             }
-            
+                
             ToolbarItem (placement: .topBarTrailing) {
-                Button {
-                    activeSheet = .create
+                Menu {
+                    Button {
+                        refillAllFood()
+                    } label: {
+                        Label("Refill food", systemImage: "bag.fill.badge.plus")
+                            .labelStyle(.titleOnly)
+                    }
+                    
+                    Button {
+                        activeSheet = .create
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                            .labelStyle(.titleOnly)
+                    }
                 } label: {
-                    Label("Add", systemImage: "plus")
-                        .labelStyle(.titleOnly)
+                    Label("Menu", systemImage: "ellipsis.circle")
                 }
             }
         }
@@ -83,6 +97,12 @@ struct FoodView: View {
             case .create:
                 CreateFoodView()
             }
+        }
+    }
+    
+    func refillAllFood() {
+        for value in food {
+            value.currentQuantity = value.quantity
         }
     }
 }

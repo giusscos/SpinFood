@@ -26,6 +26,7 @@ enum ActiveFoodSheet: Identifiable {
 }
 
 struct FoodView: View {
+    @Environment(\.editMode) var editMode
     @Environment(\.modelContext) var modelContext
     
     @Query var food: [FoodModal]
@@ -64,15 +65,6 @@ struct FoodView: View {
         .navigationTitle("Food")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem (placement: .topBarLeading) {
-                Button {
-                    print("edit food")
-                } label: {
-                    Label("Edit", systemImage: "pencil")
-                        .labelStyle(.titleOnly)
-                }
-            }
-                
             ToolbarItem (placement: .topBarTrailing) {
                 Menu {
                     Button {

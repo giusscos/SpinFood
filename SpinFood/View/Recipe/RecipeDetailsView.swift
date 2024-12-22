@@ -7,10 +7,26 @@
 
 import SwiftUI
 
+enum ActiveRecipeDetailSheet: Identifiable {
+    case edit(RecipeModal)
+    case confirmEat
+    
+    var id: String {
+        switch self {
+        case .edit(let recipe):
+            return "editRecipe-\(recipe.id)"
+        case .confirmEat:
+            return "confirmEat"
+        }
+    }
+}
+
 struct RecipeDetailsView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var showConfirmEat: Bool = false
+    
+    @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
     
     var recipe: RecipeModal
     
@@ -84,16 +100,29 @@ struct RecipeDetailsView: View {
                 
             }
             .navigationTitle(recipe.name)
-            .sheet(isPresented: $showConfirmEat, content: {
-                if let ingredients = recipe.ingredients {
+            .sheet(item: $activeRecipeDetailSheet) { sheet in
+                switch sheet {
+                case .edit(let value):
+                    EditRecipeView(recipe: value)
+                case .confirmEat:
+                    if let ingredients = recipe.ingredients {
                         RecipeConfirmEatView(ingredients: ingredients)
                             .presentationDragIndicator(.visible)
                     }
-            })
+                }
+            }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        activeRecipeDetailSheet = .edit(recipe)
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                }
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showConfirmEat.toggle()
+                        activeRecipeDetailSheet = .confirmEat
                     } label: {
                         Label("Eat", systemImage: "fork.knife.circle")
                     }

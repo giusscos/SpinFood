@@ -67,15 +67,6 @@ struct RecipeView: View {
         .navigationTitle("Recipes")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem (placement: .topBarLeading) {
-                Button {
-                    print("edit recipe")
-                } label: {
-                    Label("Edit", systemImage: "pencil")
-                        .labelStyle(.titleOnly)
-                }
-            }
-            
             ToolbarItem (placement: .topBarTrailing) {
                 Button {
                     activeRecipeSheet = .create

@@ -15,7 +15,7 @@ struct StoreSubscriptionView: View {
             LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .topLeading, endPoint: .bottom)
                 .overlay {
                     VStack {
-                        Text("SpinFood Pro Access")
+                        Text("Pro Access")
                             .font(.title)
                             .fontWeight(.bold)
                         

@@ -12,7 +12,7 @@ struct SuggestionRowView: View {
     
     var body: some View {
         Rectangle()
-            .frame(minHeight: 75)
+            .frame(minHeight: 75, maxHeight: 500)
             .aspectRatio(4/3, contentMode: .fit)
             .overlay(content: {
                 if let imageData = recipe.image,
@@ -29,7 +29,7 @@ struct SuggestionRowView: View {
                         .font(.title)
                         .foregroundStyle(.white)
                         .fontWeight(.semibold)
-                        .shadow(radius: 10, x: 0, y: 4)
+                        .shadow(radius: 6, x: 0, y: 4)
                     
                     ScrollView (.horizontal) {
                         HStack {
@@ -51,10 +51,10 @@ struct SuggestionRowView: View {
                     .scrollIndicators(.hidden)
                 }
                 .padding(8)
+                .background(LinearGradient(gradient: Gradient(colors: [Color.black, Color.clear]), startPoint: .bottom, endPoint: .top))
             })
             .clipped()
             .clipShape(RoundedRectangle(cornerRadius: 16))
-            
     }
 }
 

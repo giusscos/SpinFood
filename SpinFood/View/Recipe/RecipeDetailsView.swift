@@ -89,10 +89,8 @@ struct RecipeDetailsView: View {
                     }
                     .font(.headline)
                     
-                    VStack (alignment: .leading) {
-                        ForEach(recipe.steps, id: \.self) { step in
-                            Text("~ \(step);")
-                        }
+                    ForEach(recipe.steps, id: \.self) { step in
+                        Text("~ \(step);")
                     }
                 } header: {
                     Text("Steps")

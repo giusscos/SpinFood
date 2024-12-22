@@ -73,6 +73,7 @@ struct FoodView: View {
                         Label("Refill food", systemImage: "bag.fill.badge.plus")
                             .labelStyle(.titleOnly)
                     }
+                    .disabled(food.isEmpty)
                     
                     Button {
                         activeSheet = .create
@@ -90,8 +91,10 @@ struct FoodView: View {
             case .edit(let food):
                 EditFoodView(food: food)
             case .refillMulti:
-                FoodRefillView(food: food)
-                    .presentationDragIndicator(.visible)
+                NavigationStack {
+                    FoodRefillView(food: food)
+                        .presentationDragIndicator(.visible)
+                }
             case .create:
                 CreateFoodView()
             }

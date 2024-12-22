@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct FoodRefillView: View {
+    @Environment(\.dismiss) var dismiss
+    
     var food: [FoodModal]
     
     var body: some View {
@@ -77,6 +79,7 @@ struct FoodRefillView: View {
         for value in food {
             value.currentQuantity = value.quantity
         }
+        dismiss()
     }
 }
 

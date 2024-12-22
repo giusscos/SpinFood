@@ -25,7 +25,7 @@ struct ContentView: View {
                 }
             }
             
-            Tab("Foods", systemImage: "carrot.fill") {
+            Tab("Food", systemImage: "carrot.fill") {
                 NavigationStack {
                     FoodView()
                 }

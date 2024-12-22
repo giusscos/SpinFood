@@ -64,7 +64,7 @@ struct RecipeView: View {
             }
         }
         .listStyle(.plain)
-        .navigationTitle("Recipe")
+        .navigationTitle("Recipes")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem (placement: .topBarLeading) {

@@ -44,14 +44,14 @@ struct EditRecipeView: View {
                                     Image(uiImage: uiImage)
                                         .resizable()
                                         .scaledToFill()
+                                        .aspectRatio(4/3, contentMode: .fit)
                                 } else {
                                     Label("Select an image", systemImage: "photo")
                                         .tint(Color.primary)
                                         .padding(.horizontal)
                                 }
                             }
-                            .frame(minHeight: 75)
-                            .frame(maxHeight: 100)
+                            .frame(maxHeight: 300)
                         }
                         .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                         .listRowSeparator(.hidden)

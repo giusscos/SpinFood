@@ -13,18 +13,35 @@ struct SuggestionsView: View {
     
     @Query var recipes: [RecipeModal]
     
+    @Query var food: [FoodModal]
+    
+    var filteredRecipes: [RecipeModal] {
+        recipes.filter { recipe in
+            guard let recipeIngredients = recipe.ingredients else { return false }
+            
+            return recipeIngredients.allSatisfy { recipeFood in
+                guard let requiredIngredient = recipeFood.ingredient else { return false }
+                guard let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) else { return false }
+                
+                return inventoryItem.currentQuantity >= recipeFood.quantityNeeded
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             List {
-                ForEach(recipes) { recipe in
-                    NavigationLink {
-                        RecipeDetailsView(recipe: recipe)
-                            .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
-                    } label: {
-                        SuggestionRowView(recipe: recipe)
-                            .matchedTransitionSource(id: recipe.id, in: namespace)
+                Section {
+                    ForEach(filteredRecipes) { recipe in
+                        NavigationLink {
+                            RecipeDetailsView(recipe: recipe)
+                                .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                        } label: {
+                            SuggestionRowView(recipe: recipe)
+                                .matchedTransitionSource(id: recipe.id, in: namespace)
+                        }
+                        .listRowSeparator(.hidden)
                     }
-                    .listRowSeparator(.hidden)
                 }
             }
             .listStyle(.plain)

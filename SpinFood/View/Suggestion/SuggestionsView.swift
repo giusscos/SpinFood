@@ -67,12 +67,10 @@ struct SuggestionsView: View {
                             .font(.title)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
-                            .shadow(radius: 10, x: 0, y: 4)
                         
                         Text("Unlock recipe suggestions and more 😋")
                             .font(.subheadline)
                             .foregroundStyle(.white)
-                            .shadow(radius: 10, x: 0, y: 4)
                         
                         Button {
                             showStoreView.toggle()
@@ -93,7 +91,6 @@ struct SuggestionsView: View {
                 .sheet(isPresented: $showStoreView) {
                     StoreSubscriptionView()
                 }
-            
         }
     }
 }

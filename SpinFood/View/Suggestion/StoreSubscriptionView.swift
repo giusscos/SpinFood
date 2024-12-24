@@ -28,7 +28,6 @@ struct StoreSubscriptionView: View {
         }
         .subscriptionStoreButtonLabel(.multiline)
         .storeButton(.visible, for: .restorePurchases)
-        .storeButton(.visible, for: .policies)
         .storeButton(.visible, for: .redeemCode)
     }
 }

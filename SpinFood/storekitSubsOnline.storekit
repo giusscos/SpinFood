@@ -20,7 +20,7 @@
     "_applicationInternalID" : "6739758281",
     "_developerTeamID" : "MA7MBQ947C",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 756593591.27820802,
+    "_lastSynchronizedDate" : 762545776.66930997,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [
@@ -90,12 +90,7 @@
           "familyShareable" : false,
           "groupNumber" : 2,
           "internalID" : "6739758309",
-          "introductoryOffer" : {
-            "internalID" : "1A75530C",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
+          "introductoryOffer" : null,
           "localizations" : [
             {
               "description" : "Recipe suggestions and more for 1 year",
@@ -123,12 +118,7 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6739757776",
-          "introductoryOffer" : {
-            "internalID" : "6A885399",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
+          "introductoryOffer" : null,
           "localizations" : [
             {
               "description" : "Recipe suggestions and more for 1 month",

@@ -10,20 +10,14 @@ import SwiftData
 
 enum ActiveRecipeSheet: Identifiable {
     case edit(RecipeModal)
-    case buyCredit
     case view(RecipeModal)
-    case create
     
     var id: String {
         switch self {
         case .edit(let recipe):
             return "editRecipe-\(recipe.id)"
-        case .buyCredit:
-            return "buyCreditForRecipe"
         case .view(let recipe):
             return "viewRecipe-\(recipe.id)"
-        case .create:
-            return "createRecipe"
         }
     }
 }
@@ -34,6 +28,8 @@ struct RecipeView: View {
     @Query var recipes: [RecipeModal]
     
     @State private var activeRecipeSheet: ActiveRecipeSheet?
+    
+    @State var showCreateRecipe: Bool = false
     
     var body: some View {
         List {
@@ -64,29 +60,36 @@ struct RecipeView: View {
             }
         }
         .listStyle(.plain)
-        .navigationTitle("Recipes")
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem (placement: .topBarLeading) {
+                Text("Recipes")
+                    .fontWeight(.bold)
+                    .font(.title)
+            }
+            
             ToolbarItem (placement: .topBarTrailing) {
                 Button {
-                    activeRecipeSheet = .create
+                    showCreateRecipe.toggle()
                 } label: {
-                    Label("Add", systemImage: "plus")
-                        .labelStyle(.titleOnly)
+                    Image(systemName: "plus.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .font(.title)
+                        .bold()
+                        .foregroundStyle(.white.opacity(0.8))
                 }
             }
         }
+        .fullScreenCover(isPresented: $showCreateRecipe, content: {
+            CreateRecipeView()
+        })
         .sheet(item: $activeRecipeSheet) { sheet in
             switch sheet {
             case .edit(let value):
                 EditRecipeView(recipe: value)
-            case .create:
-                CreateRecipeView()
             case .view(let value):
                 RecipeDetailsView(recipe: value)
                     .presentationDragIndicator(.visible)
-            case .buyCredit:
-                CreateRecipeView()
             }
         }
     }

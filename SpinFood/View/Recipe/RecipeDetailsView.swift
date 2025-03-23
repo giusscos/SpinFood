@@ -115,6 +115,7 @@ struct RecipeDetailsView: View {
                         activeRecipeDetailSheet = .edit(recipe)
                     } label: {
                         Label("Edit", systemImage: "pencil")
+                            .labelStyle(.titleOnly)
                     }
                 }
                 
@@ -123,6 +124,7 @@ struct RecipeDetailsView: View {
                         activeRecipeDetailSheet = .confirmEat
                     } label: {
                         Label("Eat", systemImage: "fork.knife.circle")
+                            .labelStyle(.titleOnly)
                     }
                 }
             }

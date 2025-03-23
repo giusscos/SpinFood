@@ -32,94 +32,121 @@ struct EditRecipeView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
+            List {
                 Section {
-                    PhotosPicker(
-                        selection: $imageItem,
-                        matching: .images,
-                        photoLibrary: .shared()) {
-                            Group {
-                                if let imageData,
-                                   let uiImage = UIImage(data: imageData) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .aspectRatio(4/3, contentMode: .fit)
-                                } else {
-                                    Label("Select an image", systemImage: "photo")
-                                        .tint(Color.primary)
+                    if let imageData, let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .overlay (alignment: .bottomTrailing) {
+                                Menu {
+                                    Button(role: .destructive) {
+                                        withAnimation(.smooth) {
+                                            imageItem = nil
+                                            self.imageData = nil
+                                        }
+                                    } label: {
+                                        Label("Remove", systemImage: "trash")
+                                    }
+                                    
+                                    PhotosPicker(selection: $imageItem,
+                                                 matching: .images,
+                                                 photoLibrary: .shared()) {
+                                        Label("Update", systemImage: "photo")
+                                    }
+                                } label: {
+                                    Label("Edit photo", systemImage: "pencil")
+                                        .labelStyle(.titleOnly)
+                                        .font(.headline)
                                         .padding(.horizontal)
+                                        .padding(.vertical, 8)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(Capsule())
+                                }
+                                .padding()
+                            }
+                            .frame(height: 250)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else {
+                        PhotosPicker(
+                            selection: $imageItem,
+                            matching: .images,
+                            photoLibrary: .shared()) {
+                                Group {
+                                    VStack {
+                                        Image(systemName: "photo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(maxHeight: 50)
+                                            .foregroundStyle(.white)
+                                            .padding()
+                                    }
+                                    .frame(height: 250)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .background(LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .topLeading, endPoint: .bottom))
                                 }
                             }
-                            .frame(maxHeight: 300)
-                        }
-                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .listRowSeparator(.hidden)
-                        .task(id: imageItem) {
-                            if let data = try? await imageItem?.loadTransferable(type: Data.self) {
-                                withAnimation {
-                                    imageData = data
-                                }
-                            }
-                        }
-                    
-                    if imageData != nil {
-                        Button (role: .destructive) {
-                            withAnimation {
-                                imageItem = nil
-                                imageData = nil
-                            }
-                        } label: {
-                            Label("Remove image", systemImage: "minus.circle.fill")
-                                .labelStyle(.titleOnly)
-                        }
-                        
                     }
-                } header: {
-                    Text("Cover")
+                }
+                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                .task(id: imageItem) {
+                    if let data = try? await imageItem?.loadTransferable(type: Data.self) {
+                        withAnimation(.smooth) {
+                            imageData = data
+                        }
+                    }
                 }
                 
                 Section {
                     TextField("Name", text: $name)
-                        .textInputAutocapitalization(.sentences)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .autocorrectionDisabled()
+                        .padding(.top, 8)
                     
-                    VStack (alignment: .leading) {
-                        Text("Duration")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    TextEditor(text: $descriptionRecipe.animation(.spring()))
+                        .fontWeight(.medium)
+                        .overlay(alignment: .topLeading, content: {
+                            VStack {
+                                if descriptionRecipe.isEmpty {
+                                    Text("Add a good recipe description.")
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.leading, 4)
+                        })
+                    
+                    
+                    VStack(alignment: .leading) {
+                        Text("Select duration")
+                            .font(.headline)
+                            .foregroundStyle(.primary.opacity(0.7))
                         
                         TimePickerView(duration: $duration)
                     }
-                    
-                    VStack (alignment: .leading) {
-                        Text("Description")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        TextEditor(text: $descriptionRecipe)
-                            .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 150, alignment: .leading)
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(5)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(.secondary, lineWidth: 1)
-                            )
-                            .padding(.bottom, 8)
-                    }
-                } header: {
-                    Text("Details")
                 }
                 
                 if !foods.isEmpty {
                     Section {
+                        Label("Ingredients", systemImage: "list.bullet")
+                            .labelStyle(.titleOnly)
+                            .font(.headline)
+                            .foregroundColor(.primary.opacity(0.7))
+                        
                         if !ingredients.isEmpty {
                             ForEach(ingredients) { ingredient in
                                 if let ingredientInfo = ingredient.ingredient {
                                     HStack {
                                         Text(ingredientInfo.name)
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
                                         
                                         Text("\(ingredient.quantityNeeded) \(ingredientInfo.unit.abbreviation)")
+                                            .foregroundStyle(.secondary)
                                     }
+                                    .padding(.vertical, 4)
                                 }
                             }
                             .onDelete { indexSet in
@@ -134,7 +161,19 @@ struct EditRecipeView: View {
                                         .tag(value)
                                 }
                             }
+                            .labelsHidden()
                             .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            if let selectedFood = selectedFood {
+                                TextField("Quantity", value: $quantityNeeded, format: .number)
+                                    .keyboardType(.decimalPad)
+                                    .frame(maxWidth: 60)
+                                
+                                Text(selectedFood.unit.abbreviation)
+                                    .font(.headline)
+                                    .foregroundStyle(.secondary)
+                            }
                             
                             Button {
                                 guard let food = selectedFood, quantityNeeded > 0 else { return }
@@ -146,41 +185,49 @@ struct EditRecipeView: View {
                                 }
                                 
                                 selectedFood = foods.first
-                                
                                 quantityNeeded = 0.0
                             } label: {
-                                Label("Add", systemImage: "plus.circle")
-                                    .labelStyle(.iconOnly)
-                                    .disabled(quantityNeeded == 0.0)
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(quantityNeeded == 0.0 ? .secondary : .white)
+                                    .font(.title2)
                             }
-                            
+                            .buttonStyle(.plain)
+                            .disabled(quantityNeeded == 0.0)
                         }
-                        
-                        if let selectedFood = selectedFood {
-                            DecimalField(title: "Quantity (\(selectedFood.unit.abbreviation))", value: $quantityNeeded)
-                        }
-                    } header: {
-                        Text("Ingredients")
+                        .frame(maxWidth: .infinity)
                     }
                 }
                 
                 Section {
-                    ForEach(steps, id: \ .self) { step in
+                    Label("Steps", systemImage: "list.number")
+                        .labelStyle(.titleOnly)
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.8))
+                    
+                    ForEach(steps, id: \.self) { step in
                         Text(step)
+                            .foregroundColor(.white)
+                            .padding(.vertical, 4)
                     }
                     .onDelete { indexSet in
                         steps.remove(atOffsets: indexSet)
                     }
                     
-                    HStack {
-                        TextEditor(text: $newStep)
-                            .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 150, alignment: .leading)
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(5)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(.secondary, lineWidth: 1)
-                            )
+                    HStack (alignment: .top) {
+                        TextEditor(text: $newStep.animation(.spring()))
+                            .frame(height: 80)
+                            .fontWeight(.medium)
+                            .overlay(alignment: .topLeading, content: {
+                                VStack {
+                                    if newStep.isEmpty {
+                                        Text("Add a step...")
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.top, 8)
+                                .padding(.leading, 4)
+                            })
                         
                         Button {
                             guard !newStep.isEmpty else { return }
@@ -191,14 +238,13 @@ struct EditRecipeView: View {
                             
                             newStep = ""
                         } label: {
-                            Label("Add", systemImage: "plus.circle")
-                                .labelStyle(.iconOnly)
-                                .disabled(newStep == "")
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(newStep.isEmpty ? .secondary : .white)
+                                .font(.title2)
                         }
+                        .buttonStyle(.plain)
+                        .disabled(newStep.isEmpty)
                     }
-                    .padding(.vertical, 8)
-                } header: {
-                    Text("Steps")
                 }
             }
             .onAppear() {
@@ -216,14 +262,14 @@ struct EditRecipeView: View {
                 
                 steps = recipe.steps
             }
-            .navigationTitle("Create Recipe")
+            .navigationTitle("Edit Recipe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem (placement: .topBarLeading, content: {
                     Button {
                         undoAndClose()
                     } label: {
-                        Label("Undo", systemImage: "chevron.backward")
+                        Label("Undo", systemImage: "arrow.uturn.backward")
                             .labelStyle(.titleOnly)
                     }
                 })
@@ -232,7 +278,7 @@ struct EditRecipeView: View {
                     Button {
                         saveRecipe()
                     } label: {
-                        Label("Save", systemImage: "checkmark")
+                        Label("Save", systemImage: "square.and.arrow.down")
                             .labelStyle(.titleOnly)
                     }
                 })

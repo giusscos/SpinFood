@@ -19,15 +19,14 @@ struct RecipeConfirmEatView: View {
         NavigationStack {
             List {
                 Section {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .center) {
                         Text("Are you sure?")
-                            .font(.title)
-                            .fontWeight(.bold)
+                            .font(.headline)
                         
-                        Text("This are the ingredients you will eat:")
+                        Text("This are the ingredients you will consume:")
                             .font(.subheadline)
-                            .multilineTextAlignment(.leading)
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
                     .listRowBackground(Color.clear)
                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                     .listRowSpacing(0)
@@ -62,6 +61,7 @@ struct RecipeConfirmEatView: View {
                         eatFood()
                     } label: {
                         Label("Confirm", systemImage: "checkmark")
+                            .labelStyle(.titleOnly)
                     }
                 }
             }

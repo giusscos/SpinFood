@@ -56,7 +56,8 @@ struct CreateRecipeView: View {
                                     Label("Edit photo", systemImage: "pencil")
                                         .labelStyle(.titleOnly)
                                         .font(.headline)
-                                        .padding()
+                                        .padding(.horizontal)
+                                        .padding(.vertical, 8)
                                         .background(.ultraThinMaterial)
                                         .clipShape(Capsule())
                                 }
@@ -103,7 +104,6 @@ struct CreateRecipeView: View {
             
                     TextEditor(text: $descriptionRecipe.animation(.spring()))
                         .fontWeight(.medium)
-                        .frame(height: 150)
                         .overlay(alignment: .topLeading, content: {
                             VStack {
                                 if descriptionRecipe.isEmpty {
@@ -245,7 +245,7 @@ struct CreateRecipeView: View {
                     }
                 }
             }
-            .navigationTitle(Text("Create recipe"))
+            .navigationTitle("Create recipe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -253,6 +253,7 @@ struct CreateRecipeView: View {
                         undoAndClose()
                     } label: {
                         Label("Undd", systemImage: "arrow.uturn.backward")
+                            .labelStyle(.titleOnly)
                     }
                 }
                 
@@ -261,6 +262,7 @@ struct CreateRecipeView: View {
                         saveRecipe()
                     } label: {
                         Label("Save", systemImage: "square.and.arrow.down")
+                            .labelStyle(.titleOnly)
                     }
                 }
             }

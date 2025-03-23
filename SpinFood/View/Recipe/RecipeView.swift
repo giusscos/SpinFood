@@ -9,11 +9,14 @@ import SwiftUI
 import SwiftData
 
 enum ActiveRecipeSheet: Identifiable {
+    case create
     case edit(RecipeModal)
     case view(RecipeModal)
     
     var id: String {
         switch self {
+        case .create:
+            return "createRecipe"
         case .edit(let recipe):
             return "editRecipe-\(recipe.id)"
         case .view(let recipe):
@@ -28,8 +31,6 @@ struct RecipeView: View {
     @Query var recipes: [RecipeModal]
     
     @State private var activeRecipeSheet: ActiveRecipeSheet?
-    
-    @State var showCreateRecipe: Bool = false
     
     var body: some View {
         List {
@@ -64,17 +65,17 @@ struct RecipeView: View {
         .toolbar {
             ToolbarItem (placement: .topBarTrailing) {
                 Button {
-                    showCreateRecipe.toggle()
+                    activeRecipeSheet = .create
                 } label: {
-                    Label("Add recipes", systemImage: "plus")
+                    Label("Add", systemImage: "plus")
+                        .labelStyle(.titleOnly)
                 }
             }
         }
-        .fullScreenCover(isPresented: $showCreateRecipe, content: {
-            CreateRecipeView()
-        })
         .sheet(item: $activeRecipeSheet) { sheet in
             switch sheet {
+            case .create:
+                CreateRecipeView()
             case .edit(let value):
                 EditRecipeView(recipe: value)
             case .view(let value):

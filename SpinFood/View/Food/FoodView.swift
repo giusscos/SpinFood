@@ -61,7 +61,6 @@ struct FoodView: View {
                     .listRowSeparator(.hidden)
             }
         }
-        .listStyle(.plain)
         .navigationTitle("Food")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

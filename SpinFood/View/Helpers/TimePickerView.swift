@@ -38,16 +38,16 @@ struct TimePickerView: View {
             .onChange(of: minutes) { _, _ in
                 updateDuration() }
             
-            Picker(selection: $seconds, label: Text("Seconds")) {
-                ForEach(0..<60, id: \.self) { second in
-                    Text("\(second) s").tag(second)
-                }
-            }
-            .pickerStyle(.wheel)
-            .frame(width: 100)
-            .clipped()
-            .onChange(of: seconds) { _, _ in
-                updateDuration() }
+//            Picker(selection: $seconds, label: Text("Seconds")) {
+//                ForEach(0..<60, id: \.self) { second in
+//                    Text("\(second) s").tag(second)
+//                }
+//            }
+//            .pickerStyle(.wheel)
+//            .frame(width: 100)
+//            .clipped()
+//            .onChange(of: seconds) { _, _ in
+//                updateDuration() }
         }
         .frame(maxWidth: .infinity, maxHeight: 200)
         .onAppear {
@@ -55,12 +55,13 @@ struct TimePickerView: View {
             
             hours = totalSeconds / 3600
             minutes = (totalSeconds % 3600) / 60
-            seconds = totalSeconds % 60
+//            seconds = totalSeconds % 60
         }
     }
     
     private func updateDuration() {
-        duration = TimeInterval(hours * 3600 + minutes * 60 + seconds)
+        duration = TimeInterval(hours * 3600 + minutes * 60)
+//        duration = TimeInterval(hours * 3600 + minutes * 60 + seconds)
     }
 }
 

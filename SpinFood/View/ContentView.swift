@@ -13,9 +13,10 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            Tab("Suggestions", systemImage: "sparkles.rectangle.stack.fill") {
+            Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
                 NavigationStack {
-                    SuggestionsView()
+                    Text("Hello summary")
+//                    SuggestionsView()
                 }
             }
             
@@ -39,21 +40,6 @@ struct ContentView: View {
             
         }
     }
-
-//    private func addItem() {
-//        withAnimation {
-//            let newItem = Item(timestamp: Date())
-//            modelContext.insert(newItem)
-//        }
-//    }
-//
-//    private func deleteItems(offsets: IndexSet) {
-//        withAnimation {
-//            for index in offsets {
-//                modelContext.delete(items[index])
-//            }
-//        }
-//    }
 }
 
 #Preview {

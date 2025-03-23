@@ -55,28 +55,18 @@ struct RecipeView: View {
                         }
                 }
             } else {
-                ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the Add button"))
+                ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
                     .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
+        .navigationTitle(Text("Recipes"))
         .toolbar {
-            ToolbarItem (placement: .topBarLeading) {
-                Text("Recipes")
-                    .fontWeight(.bold)
-                    .font(.title)
-            }
-            
             ToolbarItem (placement: .topBarTrailing) {
                 Button {
                     showCreateRecipe.toggle()
                 } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .font(.title)
-                        .bold()
-                        .foregroundStyle(.white.opacity(0.8))
+                    Label("Add recipes", systemImage: "plus")
                 }
             }
         }

@@ -11,9 +11,10 @@ import SwiftData
 struct RecipeConfirmEatView: View {
     @Environment(\.dismiss) var dismiss
     
-    @Query var food: [FoodModal]
+    @Query var food: [FoodModel]
     
-    var ingredients: [RecipeFoodModal]
+    var ingredients: [RecipeFoodModel]
+    var recipe: RecipeModel
     
     var body: some View {
         NavigationStack {
@@ -55,36 +56,37 @@ struct RecipeConfirmEatView: View {
                     Text("Ingredients")
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        eatFood()
-                    } label: {
-                        Label("Confirm", systemImage: "checkmark")
-                            .labelStyle(.titleOnly)
+                    Button("Confirm") {
+                        confirmRecipe()
                     }
                 }
             }
         }
     }
     
-    func eatFood() {
-        for recipeFood in ingredients {
-            guard let requiredIngredient = recipeFood.ingredient else { continue }
-            
-            if let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) {
-                inventoryItem.currentQuantity -= recipeFood.quantityNeeded
-                
-                if inventoryItem.currentQuantity < 0 {
-                    inventoryItem.currentQuantity = 0
-                }
+    func confirmRecipe() {
+        for ingredient in ingredients {
+            if let food = ingredient.ingredient {
+                food.currentQuantity -= ingredient.quantityNeeded
+                food.eatenAt.append(Date())
             }
         }
+        
+        recipe.cookedAt.append(Date())
         
         dismiss()
     }
 }
 
 #Preview {
-    RecipeConfirmEatView(ingredients: [])
+    RecipeConfirmEatView(ingredients: [], recipe: RecipeModel(name: "Carbonara"))
 }

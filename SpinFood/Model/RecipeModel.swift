@@ -1,5 +1,5 @@
 //
-//  RecipeModal.swift
+//  RecipeModel.swift
 //  SpinFood
 //
 //  Created by Giuseppe Cosenza on 10/12/24.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class RecipeModal {
+class RecipeModel {
     var id: UUID = UUID()
     var name: String = ""
     var descriptionRecipe: String = ""
@@ -19,9 +19,11 @@ class RecipeModal {
     var rating: Int = 0
     var steps: [String] = []
     
-    @Relationship var ingredients: [RecipeFoodModal]? = []
+    var cookedAt: [Date] = []
     
-    init(name: String, descriptionRecipe: String = "", image: Data? = nil, createdAt: Date = Date.now, ingredients: [RecipeFoodModal]? = nil, steps: [String] = [], duration: TimeInterval = 0.0) {
+    @Relationship var ingredients: [RecipeFoodModel]? = []
+    
+    init(name: String, descriptionRecipe: String = "", image: Data? = nil, createdAt: Date = Date.now, ingredients: [RecipeFoodModel]? = nil, steps: [String] = [], duration: TimeInterval = 0.0) {
         self.id = UUID()
         self.name = name
         self.descriptionRecipe = descriptionRecipe

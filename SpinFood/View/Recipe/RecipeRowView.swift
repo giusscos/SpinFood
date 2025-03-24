@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RecipeRowView: View {
-    var recipe: RecipeModal
+    var recipe: RecipeModel
     
     var body: some View {
         if let imageData = recipe.image,
@@ -55,5 +55,5 @@ struct RecipeRowView: View {
 }
 
 #Preview {
-    RecipeRowView(recipe: RecipeModal(name: "Carbonara", duration: 13))
+    RecipeRowView(recipe: RecipeModel(name: "Carbonara", duration: 13))
 }

@@ -1,5 +1,5 @@
 //
-//  FoodModal.swift
+//  FoodModel.swift
 //  SpinFood
 //
 //  Created by Giuseppe Cosenza on 10/12/24.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class FoodModal {
+class FoodModel {
     var id: UUID = UUID()
     var name: String = ""
     var quantity: Decimal = 0.0
@@ -18,7 +18,9 @@ class FoodModal {
     var createdAt: Date = Date.now
     var rating: Int = 0
     
-    var recipes: [RecipeFoodModal]? = []
+    var recipes: [RecipeFoodModel]? = []
+    
+    var eatenAt: [Date] = []
     
     init(name: String, quantity: Decimal = 0.0, currentQuantity: Decimal = 0.0, unit: FoodUnit = FoodUnit.gram, createdAt: Date = Date.now) {
         self.id = UUID()

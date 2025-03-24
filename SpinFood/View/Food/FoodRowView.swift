@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FoodRowView: View {
-    var food: FoodModal
+    var food: FoodModel
     
     var body: some View {
         HStack {
@@ -44,5 +44,5 @@ struct FoodRowView: View {
 }
 
 #Preview {
-    FoodRowView(food: FoodModal(name: "Carrot", quantity: 10))
+    FoodRowView(food: FoodModel(name: "Carrot", quantity: 10))
 }

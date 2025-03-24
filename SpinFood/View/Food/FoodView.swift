@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 enum ActiveFoodSheet: Identifiable {
-    case edit(FoodModal)
+    case edit(FoodModel)
     case refillMulti
     case create
     
@@ -29,7 +29,7 @@ struct FoodView: View {
     @Environment(\.editMode) var editMode
     @Environment(\.modelContext) var modelContext
     
-    @Query var food: [FoodModal]
+    @Query var food: [FoodModel]
     
     @State private var activeSheet: ActiveFoodSheet?
     

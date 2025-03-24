@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum ActiveRecipeDetailSheet: Identifiable {
-    case edit(RecipeModal)
+    case edit(RecipeModel)
     case confirmEat
     
     var id: String {
@@ -28,7 +28,7 @@ struct RecipeDetailsView: View {
     
     @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
     
-    var recipe: RecipeModal
+    var recipe: RecipeModel
     
     var body: some View {
         NavigationStack {
@@ -38,7 +38,6 @@ struct RecipeDetailsView: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(maxWidth: .infinity, alignment: .center)
                         .overlay (alignment: .bottom) {
                             Color.clear
                                 .background(.thinMaterial)
@@ -141,13 +140,14 @@ struct RecipeDetailsView: View {
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
                                 .padding(.vertical, 4)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     } header: {
                         Text("Steps")
                             .font(.title3)
                             .fontWeight(.medium)
                             .padding(.top)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)   
                     }
                     .padding(.horizontal)
                 }
@@ -159,7 +159,7 @@ struct RecipeDetailsView: View {
                 EditRecipeView(recipe: value)
             case .confirmEat:
                 if let ingredients = recipe.ingredients {
-                    RecipeConfirmEatView(ingredients: ingredients)
+                    RecipeConfirmEatView(ingredients: ingredients, recipe: recipe)
                         .presentationDragIndicator(.visible)
                 }
             }
@@ -178,5 +178,5 @@ struct RecipeDetailsView: View {
 }
 
 #Preview {
-    RecipeDetailsView(recipe: RecipeModal(name: "Carbonara"))
+    RecipeDetailsView(recipe: RecipeModel(name: "Carbonara"))
 }

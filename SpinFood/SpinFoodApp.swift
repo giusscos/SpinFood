@@ -12,8 +12,9 @@ import SwiftData
 struct SpinFoodApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            RecipeModal.self,
+            RecipeModel.self,
         ])
+        
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {

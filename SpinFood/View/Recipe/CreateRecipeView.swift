@@ -13,19 +13,19 @@ struct CreateRecipeView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
-    @Query var foods: [FoodModal]
+    @Query var foods: [FoodModel]
     
     @State private var name: String = ""
     @State private var descriptionRecipe: String = ""
     @State private var duration: TimeInterval = 300.0
-    @State private var ingredients: [RecipeFoodModal] = []
+    @State private var ingredients: [RecipeFoodModel] = []
     @State private var steps: [String] = []
     @State private var imageItem: PhotosPickerItem? = nil
     @State private var imageData: Data? = nil
 
     @State private var newStep: String = ""
     
-    @State private var selectedFood: FoodModal? = nil
+    @State private var selectedFood: FoodModel? = nil
     @State private var quantityNeeded: Decimal = 0.0
     
     var body: some View {
@@ -176,7 +176,7 @@ struct CreateRecipeView: View {
                             Button {
                                 guard let food = selectedFood, quantityNeeded > 0 else { return }
                                 
-                                let newIngredient = RecipeFoodModal(ingredient: food, quantityNeeded: quantityNeeded)
+                                let newIngredient = RecipeFoodModel(ingredient: food, quantityNeeded: quantityNeeded)
                                 
                                 withAnimation {
                                     ingredients.append(newIngredient)
@@ -280,7 +280,7 @@ struct CreateRecipeView: View {
     func saveRecipe() {
         guard !name.isEmpty && imageData != nil else { return }
         
-        let newRecipe = RecipeModal(
+        let newRecipe = RecipeModel(
             name: name,
             descriptionRecipe: descriptionRecipe,
             image: imageData,

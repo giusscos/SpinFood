@@ -1,5 +1,5 @@
 //
-//  RecipeFood.swift
+//  RecipeFoodModel.swift
 //  SpinFood
 //
 //  Created by Giuseppe Cosenza on 10/12/24.
@@ -9,14 +9,14 @@ import Foundation
 import SwiftData
 
 @Model
-class RecipeFoodModal {
+class RecipeFoodModel {
     var id: UUID = UUID()
-    var ingredient: FoodModal?
+    var ingredient: FoodModel?
     var quantityNeeded: Decimal = 0.0
     
-    @Relationship var recipes: [RecipeModal]? = []
+    @Relationship var recipes: [RecipeModel]? = []
     
-    init(ingredient: FoodModal? = nil, quantityNeeded: Decimal) {
+    init(ingredient: FoodModel? = nil, quantityNeeded: Decimal) {
         self.id = UUID()
         self.ingredient = ingredient
         self.quantityNeeded = quantityNeeded

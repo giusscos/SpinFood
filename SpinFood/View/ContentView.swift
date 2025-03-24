@@ -15,7 +15,7 @@ struct ContentView: View {
         TabView {
             Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
                 NavigationStack {
-                    Text("Hello summary")
+                    SummaryView()
 //                    SuggestionsView()
                 }
             }
@@ -44,5 +44,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: RecipeModal.self, inMemory: true)
+        .modelContainer(for: RecipeModel.self, inMemory: true)
 }

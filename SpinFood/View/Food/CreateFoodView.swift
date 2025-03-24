@@ -64,7 +64,7 @@ struct CreateFoodView: View {
     }
     
     func saveFood() {
-        let newFood = FoodModal(
+        let newFood = FoodModel(
             name: name,
             quantity: quantity,
             currentQuantity: quantity,

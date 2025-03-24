@@ -10,7 +10,7 @@ import SwiftData
 
 enum ActiveRecipeSheet: Identifiable {
     case create
-    case edit(RecipeModal)
+    case edit(RecipeModel)
     
     var id: String {
         switch self {
@@ -27,7 +27,7 @@ struct RecipeView: View {
     
     @Namespace var namespace
     
-    @Query var recipes: [RecipeModal]
+    @Query var recipes: [RecipeModel]
     
     @State private var activeRecipeSheet: ActiveRecipeSheet?
     

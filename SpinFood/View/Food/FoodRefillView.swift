@@ -10,7 +10,7 @@ import SwiftUI
 struct FoodRefillView: View {
     @Environment(\.dismiss) var dismiss
     
-    var food: [FoodModal]
+    var food: [FoodModel]
     
     var body: some View {
             List {

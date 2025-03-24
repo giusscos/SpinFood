@@ -11,7 +11,7 @@ struct EditFoodView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
-    @Bindable var food: FoodModal
+    @Bindable var food: FoodModel
     
     @State private var name: String = ""
     @State private var quantity: Decimal = 0.0
@@ -88,5 +88,5 @@ struct EditFoodView: View {
 }
 
 #Preview {
-    EditFoodView(food: FoodModal(name: "Carrot"))
+    EditFoodView(food: FoodModel(name: "Carrot"))
 }

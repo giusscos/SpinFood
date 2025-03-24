@@ -252,7 +252,7 @@ struct CreateRecipeView: View {
                     Button {
                         undoAndClose()
                     } label: {
-                        Label("Undd", systemImage: "arrow.uturn.backward")
+                        Label("Undo", systemImage: "arrow.uturn.backward")
                             .labelStyle(.titleOnly)
                     }
                 }
@@ -264,6 +264,7 @@ struct CreateRecipeView: View {
                         Label("Save", systemImage: "square.and.arrow.down")
                             .labelStyle(.titleOnly)
                     }
+                    .disabled(name.isEmpty || imageData == nil)
                 }
             }
         }
@@ -277,6 +278,8 @@ struct CreateRecipeView: View {
     }
     
     func saveRecipe() {
+        guard !name.isEmpty && imageData != nil else { return }
+        
         let newRecipe = RecipeModal(
             name: name,
             descriptionRecipe: descriptionRecipe,

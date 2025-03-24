@@ -23,28 +23,29 @@ struct RecipeRowView: View {
                     .frame(maxWidth: .infinity)
                     .mask(
                         LinearGradient(
-                            gradient: Gradient(colors: [Color.black, Color.black,  Color.clear, Color.clear, Color.clear]),
+                            gradient: Gradient(colors: [.black, .black, .clear, .clear, .clear]),
                             startPoint: .bottom,
                             endPoint: .top
                         )
                     )
                     .overlay(alignment: .bottom) {
                         VStack (alignment: .leading) {
-                            HStack {
-                                Text(recipe.name)
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                Text(recipe.duration.formatted)
-                                    .font(.headline)
-                                    .foregroundStyle(.secondary)
-                            }
+                            Text(recipe.duration.formatted)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            Text(recipe.name)
+                                .font(.title)
+                                .fontWeight(.bold)
                             
                             Text(recipe.descriptionRecipe)
-                                .lineLimit(2)
+                                .lineLimit(1)
                                 .font(.subheadline)
+                                .foregroundStyle(.secondary)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .tint(.primary)
+                        .multilineTextAlignment(.leading)
                         .padding(8)
                     }
                 }

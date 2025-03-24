@@ -31,35 +31,80 @@ struct RecipeDetailsView: View {
     var recipe: RecipeModal
     
     var body: some View {
-        NavigationStack{
-            List {
-                Section {
-                    if let imageData = recipe.image,
-                       let uiImage = UIImage(data: imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                            .listRowSeparator(.hidden)
-                    }
+        NavigationStack {
+            ScrollView {
+                if let imageData = recipe.image,
+                   let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .overlay (alignment: .bottom) {
+                            Color.clear
+                                .background(.thinMaterial)
+                                .frame(maxWidth: .infinity)
+                                .mask(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.black, .black, .clear]),
+                                        startPoint: .bottom,
+                                        endPoint: .center
+                                    )
+                                )
+                                .overlay(alignment: .bottom) {
+                                    VStack (alignment: .leading, spacing: 8) {
+                                        VStack (alignment: .leading, spacing: 0) {
+                                            Text(recipe.duration.formatted)
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundStyle(.secondary)
+                                            
+                                            Text(recipe.name)
+                                                .font(.title)
+                                                .fontWeight(.bold)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .tint(.primary)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
+                                }
+                        }
                 }
                 
-                Section {
-                    HStack {
-                        Text("Created at ")
-                        
-                        Text(recipe.createdAt, format: .dateTime.day().month().year())
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+                if let ingredients = recipe.ingredients, !ingredients.isEmpty {
+                    Button {
+                        activeRecipeDetailSheet = .confirmEat
+                    } label: {
+                        Label("Cook now", systemImage: "frying.pan.fill")
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .background(Color.accentColor)
+                            .foregroundStyle(.white)
+                            .clipShape(Capsule())
                     }
-                    .font(.headline)
-                    
-                    Text(recipe.descriptionRecipe)
-                        .multilineTextAlignment(.leading)
-                } header: {
-                    Text("Info")
+                    .padding()
                 }
                 
-                if let ingredients = recipe.ingredients {
+                if recipe.descriptionRecipe != "" {
+                    Section {
+                        Text(recipe.descriptionRecipe)
+                            .multilineTextAlignment(.leading)
+                            .foregroundStyle(.secondary)
+                            .font(.headline)
+                            .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } header: {
+                        Text("Description")
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal)
+                }
+                
+                if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     Section {
                         VStack (alignment: .leading) {
                             ForEach(ingredients) { value in
@@ -67,65 +112,65 @@ struct RecipeDetailsView: View {
                                     HStack{
                                         Text("\(ingredient.name):")
                                             .frame(maxWidth: .infinity, alignment: .leading)
-
-                                        Text("\(value.quantityNeeded) \(ingredient.unit.abbreviation)")
+                                            .font(.title3)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(.secondary)
+                                        
+                                        Text("\(value.quantityNeeded)\(ingredient.unit.abbreviation)")
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
                                     }
                                     .lineLimit(1)
-                                    .font(.headline)
                                 }
                             }
                         }
                     } header: {
                         Text("Ingredients")
-                    }
-                }
-                
-                Section {
-                    HStack {
-                        Text("Duration: ")
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .padding(.top, 8)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        Text(recipe.duration.formatted)
                     }
-                    .font(.headline)
-                    
-                    ForEach(recipe.steps, id: \.self) { step in
-                        Text("~ \(step);")
-                    }
-                } header: {
-                    Text("Steps")
+                    .padding(.horizontal)
                 }
                 
-            }
-            .navigationTitle(recipe.name)
-            .sheet(item: $activeRecipeDetailSheet) { sheet in
-                switch sheet {
-                case .edit(let value):
-                    EditRecipeView(recipe: value)
-                case .confirmEat:
-                    if let ingredients = recipe.ingredients {
-                        RecipeConfirmEatView(ingredients: ingredients)
-                            .presentationDragIndicator(.visible)
+                if !recipe.steps.isEmpty {
+                    Section {
+                        ForEach(recipe.steps, id: \.self) { step in
+                            Text("~ \(step);")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                                .padding(.vertical, 4)
+                        }
+                    } header: {
+                        Text("Steps")
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .padding(.top)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .padding(.horizontal)
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        activeRecipeDetailSheet = .edit(recipe)
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
-                            .labelStyle(.titleOnly)
-                    }
+        }
+        .sheet(item: $activeRecipeDetailSheet) { sheet in
+            switch sheet {
+            case .edit(let value):
+                EditRecipeView(recipe: value)
+            case .confirmEat:
+                if let ingredients = recipe.ingredients {
+                    RecipeConfirmEatView(ingredients: ingredients)
+                        .presentationDragIndicator(.visible)
                 }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        activeRecipeDetailSheet = .confirmEat
-                    } label: {
-                        Label("Eat", systemImage: "fork.knife.circle")
-                            .labelStyle(.titleOnly)
-                    }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    activeRecipeDetailSheet = .edit(recipe)
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                        .labelStyle(.titleOnly)
                 }
             }
         }

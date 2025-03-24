@@ -281,6 +281,7 @@ struct EditRecipeView: View {
                         Label("Save", systemImage: "square.and.arrow.down")
                             .labelStyle(.titleOnly)
                     }
+                    .disabled(name.isEmpty || imageData == nil)
                 })
             }
         }
@@ -291,6 +292,8 @@ struct EditRecipeView: View {
     }
     
     func saveRecipe() {
+        guard !name.isEmpty && imageData != nil else { return }
+        
         recipe.name = name
         recipe.descriptionRecipe = descriptionRecipe
         recipe.ingredients = ingredients

@@ -16,7 +16,8 @@ struct RecipeRowView: View {
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: 500, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(height: 200)
                 .overlay (alignment: .bottom) {
                     Color.clear
                     .background(.thinMaterial)

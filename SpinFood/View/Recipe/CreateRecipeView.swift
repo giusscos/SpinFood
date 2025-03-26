@@ -27,65 +27,45 @@ struct CreateRecipeView: View {
     
     @State private var selectedFood: FoodModel? = nil
     @State private var quantityNeeded: Decimal = 0.0
-    
+
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                if let imageData, let uiImage = UIImage(data: imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .overlay (alignment: .bottomTrailing) {
-                                Menu {
-                                    Button(role: .destructive) {
-                                        withAnimation(.smooth) {
-                                            imageItem = nil
-                                            self.imageData = nil
-                                        }
-                                    } label: {
-                                        Label("Remove", systemImage: "trash")
-                                    }
-                                    
-                                    PhotosPicker(selection: $imageItem,
-                                                 matching: .images,
-                                                 photoLibrary: .shared()) {
-                                        Label("Update", systemImage: "photo")
-                                    }
-                                } label: {
-                                    Label("Edit photo", systemImage: "pencil")
-                                        .labelStyle(.titleOnly)
-                                        .font(.headline)
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 8)
-                                        .background(.ultraThinMaterial)
-                                        .clipShape(Capsule())
-                                }
-                                .padding()
-                            }
-                        .frame(height: 250)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                } else {
-                    PhotosPicker(
-                        selection: $imageItem,
-                        matching: .images,
-                        photoLibrary: .shared()) {
-                            Group {
-                                VStack {
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(maxHeight: 50)
-                                        .foregroundStyle(.white)
-                                        .padding()
-                                }
+                    Group {
+                        if let imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
                                 .frame(height: 250)
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .topLeading, endPoint: .bottom))
-                            }
+                        } else {
+                            PhotosPicker(
+                                selection: $imageItem,
+                                matching: .images,
+                                photoLibrary: .shared()) {
+                                    Group {
+                                        VStack {
+                                            Image(systemName: "photo")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(maxHeight: 50)
+                                                .foregroundStyle(.white)
+                                                .padding()
+                                            
+                                            Text("Tap to Add Photo")
+                                                .font(.headline)
+                                                .foregroundColor(.white)
+                                        }
+                                        .frame(height: 250)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .background(LinearGradient(colors: [Color.purple, Color.indigo], startPoint: .topLeading, endPoint: .bottom))
+                                    }
+                                }
                         }
                     }
                 }
+                .listRowBackground(Color.clear)
                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                 .task(id: imageItem) {
                     if let data = try? await imageItem?.loadTransferable(type: Data.self) {
@@ -93,6 +73,25 @@ struct CreateRecipeView: View {
                             imageData = data
                         }
                     }
+                }
+                
+                if imageData != nil {
+                    Section {
+                        PhotosPicker(selection: $imageItem,
+                                     matching: .images,
+                                     photoLibrary: .shared()) {
+                            Label("Update Image", systemImage: "photo")
+                                .labelStyle(.titleOnly)
+                                .font(.headline)
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Capsule())
+                        }
+                         .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
                 
                 Section {

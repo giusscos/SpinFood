@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FoodRefillView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
     
     var food: [FoodModel]
     
@@ -77,7 +78,22 @@ struct FoodRefillView: View {
     
     func refillAllFood() {
         for value in food {
-            value.currentQuantity = value.quantity
+            if value.currentQuantity < value.quantity {
+                let refillAmount = value.quantity - value.currentQuantity
+                
+                // Create a new refill record
+                let refill = FoodRefillModel(
+                    refilledAt: Date.now,
+                    quantity: refillAmount,
+                    unit: value.unit,
+                    food: value
+                )
+                
+                modelContext.insert(refill)
+                
+                // Update the current quantity
+                value.currentQuantity = value.quantity
+            }
         }
         dismiss()
     }

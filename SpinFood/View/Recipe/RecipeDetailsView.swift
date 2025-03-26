@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 enum ActiveRecipeDetailSheet: Identifiable {
     case edit(RecipeModel)
@@ -23,12 +24,31 @@ enum ActiveRecipeDetailSheet: Identifiable {
 
 struct RecipeDetailsView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
+    
+    @Query var food: [FoodModel]
     
     @State private var showConfirmEat: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
     
     @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
     
     var recipe: RecipeModel
+    
+    var missingIngredients: [RecipeFoodModel] {
+        guard let ingredients = recipe.ingredients else { return [] }
+        
+        return ingredients.filter { ingredient in
+            guard let requiredIngredient = ingredient.ingredient else { return false }
+            guard let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) else { return true }
+            
+            return inventoryItem.currentQuantity < ingredient.quantityNeeded
+        }
+    }
+    
+    var hasAllIngredients: Bool {
+        return missingIngredients.isEmpty
+    }
     
     var body: some View {
         NavigationStack {
@@ -72,18 +92,53 @@ struct RecipeDetailsView: View {
                 }
                 
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-                    Button {
-                        activeRecipeDetailSheet = .confirmEat
-                    } label: {
-                        Label("Cook now", systemImage: "frying.pan.fill")
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .background(Color.accentColor)
-                            .foregroundStyle(.white)
-                            .clipShape(Capsule())
+                    VStack(spacing: 8) {
+                        Button {
+                            activeRecipeDetailSheet = .confirmEat
+                        } label: {
+                            Label("Cook now", systemImage: "frying.pan.fill")
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .background(hasAllIngredients ? Color.accentColor : Color.gray)
+                                .foregroundStyle(.white)
+                                .clipShape(Capsule())
+                        }
+                        .disabled(!hasAllIngredients)
+                        
+                        if !hasAllIngredients {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Missing ingredients:")
+                                    .font(.headline)
+                                    .foregroundStyle(.red)
+                                
+                                ForEach(missingIngredients) { missing in
+                                    if let ingredient = missing.ingredient {
+                                        HStack {
+                                            Text("• \(ingredient.name)")
+                                                .font(.subheadline)
+                                            
+                                            Spacer()
+                                            
+                                            if let inventoryItem = food.first(where: { $0.id == ingredient.id }) {
+                                                Text("Have: \(inventoryItem.currentQuantity), Need: \(missing.quantityNeeded) \(ingredient.unit.abbreviation)")
+                                                    .font(.subheadline)
+                                                    .fontWeight(.medium)
+                                            } else {
+                                                Text("Need: \(missing.quantityNeeded) \(ingredient.unit.abbreviation)")
+                                                    .font(.subheadline)
+                                                    .fontWeight(.medium)
+                                            }
+                                        }
+                                        .foregroundStyle(.red)
+                                        .padding(.horizontal)
+                                    }
+                                }
+                            }
+                            .padding(.bottom, 8)
+                        }
                     }
-                    .padding()
+                    .padding(.horizontal)
                 }
                 
                 if recipe.descriptionRecipe != "" {
@@ -120,6 +175,7 @@ struct RecipeDetailsView: View {
                                             .foregroundStyle(.primary)
                                     }
                                     .lineLimit(1)
+                                    .foregroundStyle(missingIngredients.contains(where: { $0.id == value.id }) ? .red : .primary)
                                 }
                             }
                         }
@@ -166,14 +222,36 @@ struct RecipeDetailsView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    activeRecipeDetailSheet = .edit(recipe)
+                Menu {
+                    Button {
+                        activeRecipeDetailSheet = .edit(recipe)
+                    } label: {
+                        Label("Edit Recipe", systemImage: "pencil")
+                    }
+                    
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Label("Delete Recipe", systemImage: "trash")
+                    }
                 } label: {
-                    Label("Edit", systemImage: "pencil")
-                        .labelStyle(.titleOnly)
+                    Label("More", systemImage: "ellipsis.circle")
                 }
             }
         }
+        .alert("Delete Recipe", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                deleteRecipe()
+            }
+        } message: {
+            Text("Are you sure you want to delete \"\(recipe.name)\"? This action cannot be undone.")
+        }
+    }
+    
+    private func deleteRecipe() {
+        modelContext.delete(recipe)
+        dismiss()
     }
 }
 

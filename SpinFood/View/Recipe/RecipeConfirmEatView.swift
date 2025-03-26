@@ -5,6 +5,7 @@
 //  Created by Giuseppe Cosenza on 22/12/24.
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 
@@ -74,14 +75,35 @@ struct RecipeConfirmEatView: View {
     }
     
     func confirmRecipe() {
+        let now = Date.now
+        
         for ingredient in ingredients {
             if let food = ingredient.ingredient {
                 food.currentQuantity -= ingredient.quantityNeeded
-                food.eatenAt.append(Date())
+                
+                // Create a consumption record with the exact quantity
+                let consumption = FoodConsumptionModel(
+                    consumedAt: now,
+                    quantity: ingredient.quantityNeeded,
+                    unit: food.unit,
+                    food: food
+                )
+                
+                if food.consumptions == nil {
+                    food.consumptions = [consumption]
+                } else {
+                    food.consumptions?.append(consumption)
+                }
+                
+                // Also keep the old method for backward compatibility
+                let quantity = Int(NSDecimalNumber(decimal: ingredient.quantityNeeded).intValue)
+                for _ in 0..<quantity {
+                    food.eatenAt.append(now)
+                }
             }
         }
         
-        recipe.cookedAt.append(Date())
+        recipe.cookedAt.append(now)
         
         dismiss()
     }

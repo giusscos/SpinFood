@@ -11,7 +11,7 @@ import SwiftData
 @Model
 class RecipeFoodModel {
     var id: UUID = UUID()
-    var ingredient: FoodModel?
+    @Relationship var ingredient: FoodModel?
     var quantityNeeded: Decimal = 0.0
     
     @Relationship var recipes: [RecipeModel]? = []

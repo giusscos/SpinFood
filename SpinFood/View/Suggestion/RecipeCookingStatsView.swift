@@ -135,6 +135,61 @@ struct RecipeCookingStatsView: View {
         }
     }
     
+    func moveDateByPercentage(forward: Bool, percentage: Double) {
+        let calendar = Calendar.current
+        
+        // Calculate units to move based on percentage and range
+        // For small movements (< 0.2), move 1 unit
+        // For large movements (> 0.75), move full range
+        // Otherwise scale proportionally
+        
+        let factor: Int
+        
+        if percentage < 0.2 {
+            factor = 1 // Minimal movement
+        } else if percentage > 0.75 {
+            // Full range movement
+            switch selectedRange {
+            case .day:
+                factor = 24 // Move by a full day in hours
+            case .week:
+                factor = 7
+            case .month:
+                factor = 30
+            case .year:
+                factor = 12
+            }
+        } else {
+            // Proportional movement
+            switch selectedRange {
+            case .day:
+                factor = max(1, Int(24 * percentage)) // Hours in a day, more responsive
+            case .week:
+                factor = max(1, Int(7 * percentage))  // Days in a week
+            case .month:
+                factor = max(1, Int(30 * percentage)) // Approx days in a month
+            case .year:
+                factor = max(1, Int(12 * percentage)) // Months in a year
+            }
+        }
+        
+        // Apply movement without animation
+        switch selectedRange {
+        case .day:
+            referenceDate = calendar.date(byAdding: .hour, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+        case .week:
+            referenceDate = calendar.date(byAdding: .day, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+        case .month:
+            if factor >= 30 {
+                referenceDate = calendar.date(byAdding: .month, value: forward ? 1 : -1, to: referenceDate) ?? referenceDate
+            } else {
+                referenceDate = calendar.date(byAdding: .day, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+            }
+        case .year:
+            referenceDate = calendar.date(byAdding: .month, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+        }
+    }
+    
     var body: some View {
         List {
             Section {
@@ -200,7 +255,7 @@ struct RecipeCookingStatsView: View {
                         }
                     }
                     .overlay {
-                        if let selectedPoint = selectedDataPoint {
+                        if let selectedPoint = selectedDataPoint, selectedPoint.count > 0 {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(formatChartDate(selectedPoint.date))
                                     .font(.headline)
@@ -225,22 +280,42 @@ struct RecipeCookingStatsView: View {
                                 .gesture(
                                     DragGesture(minimumDistance: 0)
                                         .onChanged { value in
-                                            let location = value.location
-                                            
-                                            // Find the X value at the tap position
-                                            guard let date: Date = proxy.value(atX: location.x) else { return }
-                                            
-                                            // Find the closest data point
-                                            let closestPoint = chartDataPoints.min(by: {
-                                                abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
-                                            })
-                                            
-                                            if let point = closestPoint {
-                                                selectedDataPoint = point
+                                            // Only handle taps and small movements as selections
+                                            if abs(value.translation.width) < 20 {
+                                                let location = value.location
+                                                
+                                                // Find the X value at the tap position
+                                                guard let date: Date = proxy.value(atX: location.x) else { return }
+                                                
+                                                // Find the closest data point
+                                                let closestPoint = chartDataPoints.min(by: {
+                                                    abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+                                                })
+                                                
+                                                if let point = closestPoint {
+                                                    selectedDataPoint = point
+                                                }
                                             }
                                         }
-                                        .onEnded { _ in
-                                            // Keep the selection visible
+                                )
+                                .simultaneousGesture(
+                                    DragGesture(minimumDistance: 20)
+                                        .onEnded { value in
+                                            // Clear any selection first
+                                            selectedDataPoint = nil
+                                            
+                                            // Calculate movement based on drag distance relative to chart width
+                                            let chartWidth = geometry.size.width
+                                            let dragPercentage = abs(value.translation.width) / chartWidth
+                                            
+                                            // Determine direction and amount of movement
+                                            if value.translation.width > 0 {
+                                                // Swiped right - go to previous period
+                                                moveDateByPercentage(forward: false, percentage: dragPercentage)
+                                            } else if value.translation.width < 0 {
+                                                // Swiped left - go to next period
+                                                moveDateByPercentage(forward: true, percentage: dragPercentage)
+                                            }
                                         }
                                 )
                                 .onTapGesture {
@@ -249,26 +324,6 @@ struct RecipeCookingStatsView: View {
                                 }
                         }
                     }
-                    .gesture(
-                        DragGesture(minimumDistance: 20)
-                            .onEnded { value in
-                                // Clear any selection first
-                                selectedDataPoint = nil
-                                
-                                // Determine direction based on final velocity rather than distance
-                                if value.translation.width > 0 {
-                                    // Swiped right - go to previous period
-                                    withAnimation(.spring()) {
-                                        moveDate(forward: false)
-                                    }
-                                } else if value.translation.width < 0 {
-                                    // Swiped left - go to next period
-                                    withAnimation(.spring()) {
-                                        moveDate(forward: true)
-                                    }
-                                }
-                            }
-                    )
                 }
                 .padding(.vertical)
             }

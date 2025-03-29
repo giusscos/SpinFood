@@ -201,6 +201,61 @@ struct FoodRefillStatsView: View {
         }
     }
     
+    func moveDateByPercentage(forward: Bool, percentage: Double) {
+        let calendar = Calendar.current
+        
+        // Calculate units to move based on percentage and range
+        // For small movements (< 0.2), move 1 unit
+        // For large movements (> 0.75), move full range
+        // Otherwise scale proportionally
+        
+        let factor: Int
+        
+        if percentage < 0.2 {
+            factor = 1 // Minimal movement
+        } else if percentage > 0.75 {
+            // Full range movement
+            switch selectedRange {
+            case .day:
+                factor = 24 // Move by a full day in hours
+            case .week:
+                factor = 7
+            case .month:
+                factor = 30
+            case .year:
+                factor = 12
+            }
+        } else {
+            // Proportional movement
+            switch selectedRange {
+            case .day:
+                factor = max(1, Int(24 * percentage)) // Hours in a day, more responsive
+            case .week:
+                factor = max(1, Int(7 * percentage))  // Days in a week
+            case .month:
+                factor = max(1, Int(30 * percentage)) // Approx days in a month
+            case .year:
+                factor = max(1, Int(12 * percentage)) // Months in a year
+            }
+        }
+        
+        // Apply movement without animation
+        switch selectedRange {
+        case .day:
+            referenceDate = calendar.date(byAdding: .hour, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+        case .week:
+            referenceDate = calendar.date(byAdding: .day, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+        case .month:
+            if factor >= 30 {
+                referenceDate = calendar.date(byAdding: .month, value: forward ? 1 : -1, to: referenceDate) ?? referenceDate
+            } else {
+                referenceDate = calendar.date(byAdding: .day, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+            }
+        case .year:
+            referenceDate = calendar.date(byAdding: .month, value: forward ? factor : -factor, to: referenceDate) ?? referenceDate
+        }
+    }
+    
     var body: some View {
         List {
             Section {
@@ -242,14 +297,16 @@ struct FoodRefillStatsView: View {
                         .chartYAxisLabel("Amount (grams)")
                         .chartLegend(position: .bottom, alignment: .center)
                         .overlay {
-                            if let selectedPoint = selectedDataPoint, !selectedPoint.items.isEmpty {
+                            if let selectedPoint = selectedDataPoint, 
+                               !selectedPoint.items.isEmpty,
+                               selectedPoint.items.contains(where: { $0.name != "No Data" && $0.quantity > 0 }) {
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text(formatChartDate(selectedPoint.date))
                                         .font(.headline)
                                         .foregroundColor(.primary)
                                     
                                     ForEach(selectedPoint.items) { item in
-                                        if item.name != "No Data" {
+                                        if item.name != "No Data" && item.quantity > 0 {
                                             HStack {
                                                 Circle()
                                                     .fill(Color.accentColor)
@@ -279,40 +336,60 @@ struct FoodRefillStatsView: View {
                                     .gesture(
                                         DragGesture(minimumDistance: 0)
                                             .onChanged { value in
-                                                let location = value.location
-                                                
-                                                // Find the X value at the tap position
-                                                guard let date: Date = proxy.value(atX: location.x) else { return }
-                                                
-                                                // Group all data points for this date
-                                                let pointsForDate = processedChartData.filter { 
-                                                    let sameDate: Bool
+                                                // Only handle taps and small movements as selections
+                                                if abs(value.translation.width) < 20 {
+                                                    let location = value.location
                                                     
-                                                    switch selectedRange {
-                                                    case .day:
-                                                        // Match by hour
-                                                        let calendar = Calendar.current
-                                                        sameDate = calendar.isDate($0.date, equalTo: date, toGranularity: .hour)
-                                                    case .week, .month:
-                                                        // Match by day
-                                                        let calendar = Calendar.current
-                                                        sameDate = calendar.isDate($0.date, equalTo: date, toGranularity: .day)
-                                                    case .year:
-                                                        // Match by month
-                                                        let calendar = Calendar.current
-                                                        sameDate = calendar.isDate($0.date, equalTo: date, toGranularity: .month)
+                                                    // Find the X value at the tap position
+                                                    guard let date: Date = proxy.value(atX: location.x) else { return }
+                                                    
+                                                    // Group all data points for this date
+                                                    let pointsForDate = processedChartData.filter { 
+                                                        let sameDate: Bool
+                                                        
+                                                        switch selectedRange {
+                                                        case .day:
+                                                            // Match by hour
+                                                            let calendar = Calendar.current
+                                                            sameDate = calendar.isDate($0.date, equalTo: date, toGranularity: .hour)
+                                                        case .week, .month:
+                                                            // Match by day
+                                                            let calendar = Calendar.current
+                                                            sameDate = calendar.isDate($0.date, equalTo: date, toGranularity: .day)
+                                                        case .year:
+                                                            // Match by month
+                                                            let calendar = Calendar.current
+                                                            sameDate = calendar.isDate($0.date, equalTo: date, toGranularity: .month)
+                                                        }
+                                                        
+                                                        return sameDate
                                                     }
                                                     
-                                                    return sameDate
-                                                }
-                                                
-                                                if !pointsForDate.isEmpty {
-                                                    // Use the first point's date as reference
-                                                    selectedDataPoint = (date: pointsForDate[0].date, items: pointsForDate)
+                                                    if !pointsForDate.isEmpty {
+                                                        // Use the first point's date as reference
+                                                        selectedDataPoint = (date: pointsForDate[0].date, items: pointsForDate)
+                                                    }
                                                 }
                                             }
-                                            .onEnded { _ in
-                                                // Keep the selection visible
+                                    )
+                                    .simultaneousGesture(
+                                        DragGesture(minimumDistance: 20)
+                                            .onEnded { value in
+                                                // Clear any selection first
+                                                selectedDataPoint = nil
+                                                
+                                                // Calculate movement based on drag distance relative to chart width
+                                                let chartWidth = geometry.size.width
+                                                let dragPercentage = abs(value.translation.width) / chartWidth
+                                                
+                                                // Determine direction and amount of movement
+                                                if value.translation.width > 0 {
+                                                    // Swiped right - go to previous period
+                                                    moveDateByPercentage(forward: false, percentage: dragPercentage)
+                                                } else if value.translation.width < 0 {
+                                                    // Swiped left - go to next period
+                                                    moveDateByPercentage(forward: true, percentage: dragPercentage)
+                                                }
                                             }
                                     )
                                     .onTapGesture {
@@ -321,26 +398,6 @@ struct FoodRefillStatsView: View {
                                     }
                             }
                         }
-                        .gesture(
-                            DragGesture(minimumDistance: 20)
-                                .onEnded { value in
-                                    // Clear any selection first
-                                    selectedDataPoint = nil
-                                    
-                                    // Determine direction based on final velocity rather than distance
-                                    if value.translation.width > 0 {
-                                        // Swiped right - go to previous period
-                                        withAnimation(.spring()) {
-                                            moveDate(forward: false)
-                                        }
-                                    } else if value.translation.width < 0 {
-                                        // Swiped left - go to next period
-                                        withAnimation(.spring()) {
-                                            moveDate(forward: true)
-                                        }
-                                    }
-                                }
-                        )
                 }
                 .padding(.vertical)
                 .onAppear {
@@ -434,22 +491,6 @@ struct FoodRefillStatsView: View {
                     AxisValueLabel(formatMonthOnly(date))
                 }
                 AxisTick()
-            }
-        }
-    }
-    
-    // Function to handle drag gestures with snap behavior
-    private func handleDragGesture(_ value: DragGesture.Value) {
-        // Only trigger on drag end for snapping behavior
-        if value.translation.width > 50 {
-            // Swiped right - go to previous period
-            withAnimation(.easeInOut) {
-                moveDate(forward: false)
-            }
-        } else if value.translation.width < -50 {
-            // Swiped left - go to next period
-            withAnimation(.easeInOut) {
-                moveDate(forward: true)
             }
         }
     }

@@ -15,6 +15,7 @@ struct SummaryView: View {
     @State var store = Store()
     
     @State private var showStoreView: Bool = false
+    @State private var showPaywall: Bool = false
     
     @Query var recipes: [RecipeModel]
     
@@ -23,6 +24,10 @@ struct SummaryView: View {
     @Query var consumptions: [FoodConsumptionModel]
     
     @Query var refills: [FoodRefillModel]
+    
+    var hasActiveSubscription: Bool {
+        !store.purchasedSubscriptions.isEmpty
+    }
     
     var filteredRecipes: [RecipeModel] {
         recipes.filter { recipe in
@@ -70,7 +75,95 @@ struct SummaryView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            if filteredRecipes.count == 0 && totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 {
+            if !hasActiveSubscription {
+                VStack(spacing: 20) {
+                    // Preview content (blurred with overlay)
+                    ZStack {
+                        // Sample content preview (blurred)
+                        ScrollView {
+                            if filteredRecipes.count > 0 {
+                                Text("Based on your ingredients")
+                                    .font(.headline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 16)
+                                
+                                Rectangle()
+                                    .fill(.ultraThinMaterial)
+                                    .frame(height: 200)
+                                    .cornerRadius(12)
+                                    .padding(.horizontal)
+                            }
+                            
+                            if totalRecipeCooked > 0 || totalFoodEaten > 0 || totalFoodRefilled > 0 {
+                                VStack(spacing: 20) {
+                                    Rectangle()
+                                        .fill(.ultraThinMaterial)
+                                        .frame(height: 120)
+                                        .cornerRadius(12)
+                                    
+                                    Rectangle()
+                                        .fill(.ultraThinMaterial)
+                                        .frame(height: 120)
+                                        .cornerRadius(12)
+                                    
+                                    Rectangle()
+                                        .fill(.ultraThinMaterial)
+                                        .frame(height: 120)
+                                        .cornerRadius(12)
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                        .blur(radius: 6)
+                        
+                        // Lock overlay
+                        VStack(spacing: 15) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 50))
+                                .foregroundStyle(.quaternary)
+                            
+                            Text("Unlock Premium Features")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Text("Subscribe to access statistics and personalized recipe suggestions")
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal)
+                            
+                            Button(action: {
+                                showPaywall = true
+                            }) {
+                                Text("View Subscription Options")
+                                    .font(.headline)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [.purple, .indigo],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .foregroundStyle(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                            .padding(.top, 10)
+                            .padding(.horizontal, 40)
+                        }
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(radius: 5)
+                        .padding()
+                    }
+                }
+                .navigationTitle("Summary")
+                .sheet(isPresented: $showPaywall) {
+                    PaywallView(store: store)
+                }
+            } else if filteredRecipes.count == 0 && totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 {
                 ContentUnavailableView("No data to show", systemImage: "chart.pie", description: Text("Start cooking recipes or adding food to see your statistics and suggestions"))
             } else {
                 ScrollView {
@@ -107,7 +200,7 @@ struct SummaryView: View {
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 2)
                         }
                     }
                     
@@ -269,6 +362,7 @@ struct SummaryView: View {
                         .padding(.vertical, 4)
                     }
                 }
+                .padding(.horizontal)
                 .navigationTitle("Summary")
             }
         }

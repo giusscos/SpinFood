@@ -53,43 +53,8 @@ struct RecipeDetailsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                if let imageData = recipe.image,
-                   let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .overlay (alignment: .bottom) {
-                            Color.clear
-                                .background(.thinMaterial)
-                                .frame(maxWidth: .infinity)
-                                .mask(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.black, .black, .clear]),
-                                        startPoint: .bottom,
-                                        endPoint: .center
-                                    )
-                                )
-                                .overlay(alignment: .bottom) {
-                                    VStack (alignment: .leading, spacing: 8) {
-                                        VStack (alignment: .leading, spacing: 0) {
-                                            Text(recipe.duration.formatted)
-                                                .font(.subheadline)
-                                                .fontWeight(.medium)
-                                                .foregroundStyle(.secondary)
-                                            
-                                            Text(recipe.name)
-                                                .font(.title)
-                                                .fontWeight(.bold)
-                                        }
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .tint(.primary)
-                                    .multilineTextAlignment(.leading)
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 8)
-                                }
-                        }
-                }
+                RecipeImageView(recipe: recipe)
+                    .padding()
                 
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     VStack(spacing: 8) {

@@ -22,8 +22,7 @@ struct EditFoodView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Nome", text: $name)
-                        .textInputAutocapitalization(.words)
+                    TextField("Name", text: $name)
                     
                     DecimalField(title: "Quantity", value: $quantity)
                     

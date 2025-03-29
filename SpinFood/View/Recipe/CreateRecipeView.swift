@@ -24,6 +24,11 @@ struct CreateRecipeView: View {
     @State private var imageData: Data? = nil
 
     @State private var newStep: String = ""
+    @State private var editingStepIndex: Int? = nil
+    @State private var editedStepText: String = ""
+    
+    @State private var editingIngredientIndex: Int? = nil
+    @State private var editedQuantity: Decimal = 0.0
     
     @State private var selectedFood: FoodModel? = nil
     @State private var quantityNeeded: Decimal = 0.0
@@ -119,7 +124,7 @@ struct CreateRecipeView: View {
                     VStack(alignment: .leading) {
                         Text("Select duration")
                             .font(.headline)
-                            .foregroundStyle(.primary.opacity(0.7))
+                            .foregroundStyle(.secondary)
                         
                         TimePickerView(duration: $duration)
                     }
@@ -130,24 +135,66 @@ struct CreateRecipeView: View {
                         Label("Ingredients", systemImage: "list.bullet")
                             .labelStyle(.titleOnly)
                             .font(.headline)
-                            .foregroundColor(.primary.opacity(0.7))
+                            .foregroundColor(.secondary)
                         
                         if !ingredients.isEmpty {
-                            ForEach(ingredients) { ingredient in
+                            ForEach(Array(ingredients.enumerated()), id: \.element.id) { index, ingredient in
                                 if let ingredientInfo = ingredient.ingredient {
-                                    HStack {
-                                        Text(ingredientInfo.name)
-                                            .foregroundColor(.white)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                        
-                                        Text("\(ingredient.quantityNeeded) \(ingredientInfo.unit.abbreviation)")
-                                            .foregroundStyle(.secondary)
+                                    if editingIngredientIndex == index {
+                                        HStack {
+                                            Text(ingredientInfo.name)
+                                                .foregroundColor(.primary)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            
+                                            TextField("Quantity", value: $editedQuantity, format: .number)
+                                                .keyboardType(.decimalPad)
+                                                .frame(maxWidth: 60)
+                                                .onSubmit {
+                                                    ingredients[index].quantityNeeded = editedQuantity
+                                                    editingIngredientIndex = nil
+                                                }
+                                            
+                                            Text(ingredientInfo.unit.abbreviation)
+                                                .font(.headline)
+                                                .foregroundStyle(.secondary)
+                                                
+                                            Button {
+                                                ingredients[index].quantityNeeded = editedQuantity
+                                                editingIngredientIndex = nil
+                                            } label: {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(.primary)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                        .padding(.vertical, 4)
+                                    } else {
+                                        HStack {
+                                            Text(ingredientInfo.name)
+                                                .foregroundColor(.primary)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            
+                                            Text("\(ingredient.quantityNeeded) \(ingredientInfo.unit.abbreviation)")
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .padding(.vertical, 4)
+                                        .swipeActions(edge: .trailing) {
+                                            Button(role: .destructive) {
+                                                ingredients.remove(at: index)
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
+                                            
+                                            Button {
+                                                editingIngredientIndex = index
+                                                editedQuantity = ingredient.quantityNeeded
+                                            } label: {
+                                                Label("Edit", systemImage: "pencil")
+                                            }
+                                            .tint(.blue)
+                                        }
                                     }
-                                    .padding(.vertical, 4)
                                 }
-                            }
-                            .onDelete { indexSet in
-                                ingredients.remove(atOffsets: indexSet)
                             }
                         }
                         
@@ -185,7 +232,7 @@ struct CreateRecipeView: View {
                                 quantityNeeded = 0.0
                             } label: {
                                 Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(quantityNeeded == 0.0 ? .secondary : .white)
+                                    .foregroundColor(quantityNeeded == 0.0 ? .secondary : .primary)
                                     .font(.title2)
                             }
                             .buttonStyle(.plain)
@@ -199,21 +246,57 @@ struct CreateRecipeView: View {
                     Label("Steps", systemImage: "list.number")
                         .labelStyle(.titleOnly)
                         .font(.headline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                     
-                    ForEach(steps, id: \.self) { step in
-                        Text(step)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 4)
+                    ForEach(Array(steps.enumerated()), id: \.element) { index, step in
+                        if editingStepIndex == index {
+                            HStack (alignment: .top) {
+                                TextField("Edit step", text: $editedStepText, axis: .vertical)
+                                    .padding(.vertical, 4)
+                                    .autocorrectionDisabled()
+                                    .onSubmit {
+                                        steps[index] = editedStepText
+                                        editingStepIndex = nil
+                                    }
+                                
+                                Button {
+                                    steps[index] = editedStepText
+                                    editingStepIndex = nil
+                                } label: {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(editedStepText.isEmpty ? .secondary : .primary)
+                                        .font(.title2)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(editedStepText.isEmpty)
+                            }
+                        } else {
+                            Text(step)
+                                .foregroundColor(.primary)
+                                .padding(.vertical, 4)
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        steps.remove(at: index)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                    
+                                    Button {
+                                        editingStepIndex = index
+                                        editedStepText = step
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
+                        }
                     }
-                    .onDelete { indexSet in
-                        steps.remove(atOffsets: indexSet)
-                    }
-                                        
+                    
                     HStack (alignment: .top) {
                         TextEditor(text: $newStep.animation(.spring()))
                             .frame(height: 80)
                             .fontWeight(.medium)
+                            .autocorrectionDisabled()
                             .overlay(alignment: .topLeading, content: {
                                 VStack {
                                     if newStep.isEmpty {
@@ -236,7 +319,7 @@ struct CreateRecipeView: View {
                             newStep = ""
                         } label: {
                             Image(systemName: "plus.circle.fill")
-                                .foregroundColor(newStep.isEmpty ? .secondary : .white)
+                                .foregroundColor(newStep.isEmpty ? .secondary : .primary)
                                 .font(.title2)
                         }
                         .buttonStyle(.plain)

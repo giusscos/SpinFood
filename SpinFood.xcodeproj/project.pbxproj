@@ -6,7 +6,36 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		6836F2BF2D99B63B003F7615 /* SpinFoodWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 6836F2B22D99B63A003F7615 /* SpinFoodWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6836F2BD2D99B63B003F7615 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6871FEF02D0877F600AF213D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6836F2B12D99B63A003F7615;
+			remoteInfo = "SpinFoodWatch Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		6836F2C32D99B63B003F7615 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				6836F2BF2D99B63B003F7615 /* SpinFoodWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		6836F2B22D99B63A003F7615 /* SpinFoodWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SpinFoodWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6871FEF82D0877F600AF213D /* SpinFood.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpinFood.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -21,6 +50,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		6836F2B32D99B63A003F7615 /* SpinFoodWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "SpinFoodWatch Watch App";
+			sourceTree = "<group>";
+		};
 		6871FEFA2D0877F600AF213D /* SpinFood */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,6 +66,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6836F2AF2D99B63A003F7615 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6871FEF52D0877F600AF213D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				6871FEFA2D0877F600AF213D /* SpinFood */,
+				6836F2B32D99B63A003F7615 /* SpinFoodWatch Watch App */,
 				6871FEF92D0877F600AF213D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				6871FEF82D0877F600AF213D /* SpinFood.app */,
+				6836F2B22D99B63A003F7615 /* SpinFoodWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +104,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		6836F2B12D99B63A003F7615 /* SpinFoodWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6836F2C02D99B63B003F7615 /* Build configuration list for PBXNativeTarget "SpinFoodWatch Watch App" */;
+			buildPhases = (
+				6836F2AE2D99B63A003F7615 /* Sources */,
+				6836F2AF2D99B63A003F7615 /* Frameworks */,
+				6836F2B02D99B63A003F7615 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				6836F2B32D99B63A003F7615 /* SpinFoodWatch Watch App */,
+			);
+			name = "SpinFoodWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "SpinFoodWatch Watch App";
+			productReference = 6836F2B22D99B63A003F7615 /* SpinFoodWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		6871FEF72D0877F600AF213D /* SpinFood */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6871FF092D0877F700AF213D /* Build configuration list for PBXNativeTarget "SpinFood" */;
@@ -68,10 +133,12 @@
 				6871FEF42D0877F600AF213D /* Sources */,
 				6871FEF52D0877F600AF213D /* Frameworks */,
 				6871FEF62D0877F600AF213D /* Resources */,
+				6836F2C32D99B63B003F7615 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				6836F2BE2D99B63B003F7615 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				6871FEFA2D0877F600AF213D /* SpinFood */,
@@ -90,9 +157,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1610;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
+					6836F2B12D99B63A003F7615 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 					6871FEF72D0877F600AF213D = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -113,11 +183,19 @@
 			projectRoot = "";
 			targets = (
 				6871FEF72D0877F600AF213D /* SpinFood */,
+				6836F2B12D99B63A003F7615 /* SpinFoodWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		6836F2B02D99B63A003F7615 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6871FEF62D0877F600AF213D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -128,6 +206,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		6836F2AE2D99B63A003F7615 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6871FEF42D0877F600AF213D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,7 +222,79 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		6836F2BE2D99B63B003F7615 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6836F2B12D99B63A003F7615 /* SpinFoodWatch Watch App */;
+			targetProxy = 6836F2BD2D99B63B003F7615 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		6836F2C12D99B63B003F7615 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "SpinFoodWatch Watch App/SpinFoodWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SpinFoodWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = MA7MBQ947C;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SpinFoodWatch-Watch-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = SpinFoodWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = giusscos.SpinFood;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = giusscos.SpinFood.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Debug;
+		};
+		6836F2C22D99B63B003F7615 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "SpinFoodWatch Watch App/SpinFoodWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SpinFoodWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = MA7MBQ947C;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SpinFoodWatch-Watch-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = SpinFoodWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = giusscos.SpinFood;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = giusscos.SpinFood.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Release;
+		};
 		6871FF0A2D0877F700AF213D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -326,6 +483,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		6836F2C02D99B63B003F7615 /* Build configuration list for PBXNativeTarget "SpinFoodWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6836F2C12D99B63B003F7615 /* Debug */,
+				6836F2C22D99B63B003F7615 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		6871FEF32D0877F600AF213D /* Build configuration list for PBXProject "SpinFood" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

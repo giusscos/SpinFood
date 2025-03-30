@@ -305,8 +305,8 @@ struct EditRecipeView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .frame(height: 100)
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                                 
                                 PhotosPicker(selection: $stepImageItem,
@@ -339,8 +339,8 @@ struct EditRecipeView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .frame(height: 100)
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                             }
                             .swipeActions(edge: .trailing) {
@@ -411,8 +411,8 @@ struct EditRecipeView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 100)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.vertical, 4)
                         }
                         

@@ -75,7 +75,18 @@ struct SummaryView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            if !hasActiveSubscription {
+            if store.isLoading {
+                VStack {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    
+                    Text("Checking subscription status...")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 10)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if !hasActiveSubscription {
                 VStack(spacing: 20) {
                     // Preview content (blurred with overlay)
                     ZStack {

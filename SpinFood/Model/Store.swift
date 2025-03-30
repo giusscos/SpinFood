@@ -16,6 +16,7 @@ class Store {
     private var subscriptions: [Product] = []
     var purchasedSubscriptions: [Product] = []
     private var subscriptionGroupStatus: RenewalState?
+    var isLoading: Bool = true
     
     private let productIds: [String] = ["Wiiyf_999_1y_3d", "Wiiyf_099_1m_3d"]
     let groupId: String = "21611710"
@@ -107,9 +108,12 @@ class Store {
     
     @MainActor
     func updateCustomerProductStatus() async {
+        isLoading = true
+        purchasedSubscriptions = []
+        
         for await result in Transaction.currentEntitlements {
             do {
-                //Check whether the transaction is verified. If it isn’t, catch `failedVerification` error.
+                //Check whether the transaction is verified. If it isn't, catch `failedVerification` error.
                 let transaction = try checkVerified(result)
                 
                 switch transaction.productType {
@@ -126,6 +130,8 @@ class Store {
                 print("failed updating products")
             }
         }
+        
+        isLoading = false
     }
 }
 

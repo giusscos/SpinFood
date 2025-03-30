@@ -11,6 +11,7 @@ import SwiftData
 enum ActiveRecipeDetailSheet: Identifiable {
     case edit(RecipeModel)
     case confirmEat
+    case cookNow(RecipeModel)
     
     var id: String {
         switch self {
@@ -18,6 +19,8 @@ enum ActiveRecipeDetailSheet: Identifiable {
             return "editRecipe-\(recipe.id)"
         case .confirmEat:
             return "confirmEat"
+        case .cookNow(let recipe):
+            return "cookNow-\(recipe.id)"
         }
     }
 }
@@ -59,7 +62,11 @@ struct RecipeDetailsView: View {
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     VStack(spacing: 8) {
                         Button {
-                            activeRecipeDetailSheet = .confirmEat
+                            if hasAllIngredients {
+                                activeRecipeDetailSheet = .cookNow(recipe)
+                            } else {
+                                activeRecipeDetailSheet = .confirmEat
+                            }
                         } label: {
                             Label("Cook now", systemImage: "frying.pan.fill")
                                 .padding(.horizontal)
@@ -154,14 +161,26 @@ struct RecipeDetailsView: View {
                     .padding(.horizontal)
                 }
                 
-                if !recipe.steps.isEmpty {
+                if !recipe.stepInstructions.isEmpty {
                     Section {
-                        ForEach(recipe.steps, id: \.self) { step in
-                            Text("~ \(step);")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
-                                .padding(.vertical, 4)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                        ForEach(Array(zip(recipe.stepInstructions.indices, recipe.stepInstructions)), id: \.0) { index, instructions in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("\(index + 1)- \(instructions);")
+                                    .font(.headline)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.vertical, 4)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                if index < recipe.stepImages.count, let imageData = recipe.stepImages[index], let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 150)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                            .padding(.bottom, 8)
                         }
                     } header: {
                         Text("Steps")
@@ -183,6 +202,16 @@ struct RecipeDetailsView: View {
                     RecipeConfirmEatView(ingredients: ingredients, recipe: recipe)
                         .presentationDragIndicator(.visible)
                 }
+            case .cookNow(let value):
+                CookRecipeStepByStepView(recipe: value, onComplete: {
+                    // When cooking is complete, show the confirm eat sheet and reset lastStepIndex
+                    value.lastStepIndex = 0 // Reset step index
+                    
+                    if recipe.ingredients != nil {
+                        self.activeRecipeDetailSheet = .confirmEat
+                    }
+                })
+                .presentationDragIndicator(.visible)
             }
         }
         .toolbar {

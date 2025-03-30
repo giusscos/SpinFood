@@ -2,110 +2,145 @@
 //  RecipeConfirmEatView.swift
 //  SpinFood
 //
-//  Created by Giuseppe Cosenza on 22/12/24.
+//  Created by Giuseppe Cosenza on 11/12/24.
 //
 
-import Foundation
 import SwiftUI
 import SwiftData
 
 struct RecipeConfirmEatView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
     
-    @Query var food: [FoodModel]
+    @Query var foods: [FoodModel]
     
     var ingredients: [RecipeFoodModel]
     var recipe: RecipeModel
+    var isFromCookingFlow: Bool
+    
+    init(ingredients: [RecipeFoodModel], recipe: RecipeModel, isFromCookingFlow: Bool = false) {
+        self.ingredients = ingredients
+        self.recipe = recipe
+        self.isFromCookingFlow = isFromCookingFlow
+    }
     
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    VStack(alignment: .center) {
-                        Text("Are you sure?")
-                            .font(.headline)
-                        
-                        Text("This are the ingredients you will consume:")
-                            .font(.subheadline)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    .listRowSpacing(0)
+                    let title = "You have all the ingredients. Do you want to cook \(recipe.name)?"
+                    Text(title)
+                        .font(.headline)
+                        .fontWeight(.medium)
                 }
                 
-                Section {
-                    ForEach(ingredients) { value in
-                        if let food = value.ingredient {
-                            HStack {
-                                Text(food.name)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                HStack(spacing: 2) {
-                                    Text("\(value.quantityNeeded)")
-                                        .font(.headline)
-                                        .fontWeight(.semibold)
-                                    
-                                    Text(food.unit.abbreviation)
-                                        .font(.headline)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
+                if !ingredients.isEmpty {
+                    Section {
+                        ForEach(ingredients) { ingredient in
+                            IngredientRowView(ingredient: ingredient)
                         }
+                    } header: {
+                        Text("Ingredients")
                     }
-                } header: {
-                    Text("Ingredients")
                 }
             }
+            .navigationTitle(isFromCookingFlow ? "Complete Recipe" : "Cook Recipe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text("Cancel")
                     }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Confirm") {
-                        confirmRecipe()
+                    Button {
+                        consumeFood()
+                        dismiss()
+                    } label: {
+                        Text("Confirm")
+                            .fontWeight(.bold)
                     }
                 }
             }
         }
     }
     
-    func confirmRecipe() {
-        let now = Date.now
+    private func consumeFood() {
+        // Mark the recipe as cooked
+        recipe.cookedAt.append(Date.now)
         
+        // Reset the step index after completing
+        recipe.lastStepIndex = 0
+        
+        // Find and update ingredient stocks
         for ingredient in ingredients {
-            if let food = ingredient.ingredient {
-                food.currentQuantity -= ingredient.quantityNeeded
-                
-                // Create a consumption record with the exact quantity
-                let consumption = FoodConsumptionModel(
-                    consumedAt: now,
-                    quantity: ingredient.quantityNeeded,
-                    unit: food.unit,
-                    food: food
-                )
-                
-                if food.consumptions == nil {
-                    food.consumptions = [consumption]
-                } else {
-                    food.consumptions?.append(consumption)
-                }
-                
-                // Also keep the old method for backward compatibility
-                let quantity = Int(NSDecimalNumber(decimal: ingredient.quantityNeeded).intValue)
-                for _ in 0..<quantity {
-                    food.eatenAt.append(now)
-                }
-            }
+            updateIngredientQuantity(ingredient)
         }
+    }
+    
+    private func updateIngredientQuantity(_ ingredient: RecipeFoodModel) {
+        guard let requiredIngredient = ingredient.ingredient else { return }
         
-        recipe.cookedAt.append(now)
-        
-        dismiss()
+        // Find the food item in the database
+        if let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) {
+            // Reduce the quantity in inventory
+            inventoryItem.currentQuantity -= ingredient.quantityNeeded
+            
+            // Ensure we don't go below zero
+            if inventoryItem.currentQuantity < 0 {
+                inventoryItem.currentQuantity = 0
+            }
+            
+            // Create a consumption record
+            let consumption = FoodConsumptionModel(
+                consumedAt: Date.now,
+                quantity: ingredient.quantityNeeded,
+                unit: inventoryItem.unit,
+                food: inventoryItem
+            )
+            
+            // Add it to the food's consumption history
+            if inventoryItem.consumptions == nil {
+                inventoryItem.consumptions = [consumption]
+            } else {
+                inventoryItem.consumptions?.append(consumption)
+            }
+            
+            // Also keep track in the legacy property for backward compatibility
+            inventoryItem.eatenAt.append(Date.now)
+        }
+    }
+}
+
+// Extract the ingredient row to a separate view
+struct IngredientRowView: View {
+    let ingredient: RecipeFoodModel
+    
+    var body: some View {
+        if let item = ingredient.ingredient {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(item.name)
+                        .font(.headline)
+                    
+                    Text(item.unit.rawValue)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                let quantityText = "\(ingredient.quantityNeeded) \(item.unit.abbreviation)"
+                Text("- \(quantityText)")
+                    .font(.headline)
+                    .foregroundStyle(.red)
+            }
+        } else {
+            EmptyView()
+        }
     }
 }
 

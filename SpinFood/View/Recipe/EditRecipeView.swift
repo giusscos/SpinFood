@@ -21,13 +21,17 @@ struct EditRecipeView: View {
     @State private var descriptionRecipe: String = ""
     @State private var duration: TimeInterval = 300.0
     @State private var ingredients: [RecipeFoodModel] = []
-    @State private var steps: [String] = []
+    @State private var stepInstructions: [String] = []
+    @State private var stepImages: [Data?] = []
     @State private var imageItem: PhotosPickerItem? = nil
     @State private var imageData: Data? = nil
     
     @State private var newStep: String = ""
+    @State private var stepImageItem: PhotosPickerItem? = nil
+    @State private var stepImageData: Data? = nil
     @State private var editingStepIndex: Int? = nil
     @State private var editedStepText: String = ""
+    @State private var editedStepImageData: Data? = nil
     
     @State private var editingIngredientIndex: Int? = nil
     @State private var editedQuantity: Decimal = 0.0
@@ -250,81 +254,186 @@ struct EditRecipeView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                     
-                    ForEach(Array(steps.enumerated()), id: \.element) { index, step in
+                    ForEach(Array(stepInstructions.indices), id: \.self) { index in
                         if editingStepIndex == index {
-                            HStack (alignment: .top) {
-                                TextField("Edit step", text: $editedStepText, axis: .vertical)
-                                    .padding(.vertical, 4)
-                                    .autocorrectionDisabled()
-                                    .onSubmit {
-                                        steps[index] = editedStepText
-                                        editingStepIndex = nil
-                                    }
-                                
-                                Button {
-                                    steps[index] = editedStepText
-                                    editingStepIndex = nil
-                                } label: {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(editedStepText.isEmpty ? .secondary : .primary)
-                                        .font(.title2)
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(editedStepText.isEmpty)
-                            }
-                        } else {
-                            Text(step)
-                                .foregroundColor(.primary)
-                                .padding(.vertical, 4)
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        steps.remove(at: index)
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
+                            VStack(alignment: .leading) {
+                                HStack(alignment: .top) {
+                                    TextField("Edit step", text: $editedStepText, axis: .vertical)
+                                        .padding(.vertical, 4)
+                                        .autocorrectionDisabled()
+                                        .onSubmit {
+                                            stepInstructions[index] = editedStepText
+                                            if let editedImage = editedStepImageData {
+                                                if index < stepImages.count {
+                                                    stepImages[index] = editedImage
+                                                } else {
+                                                    // Ensure stepImages array is large enough
+                                                    while stepImages.count <= index {
+                                                        stepImages.append(nil)
+                                                    }
+                                                    stepImages[index] = editedImage
+                                                }
+                                            }
+                                            editingStepIndex = nil
+                                        }
                                     
                                     Button {
-                                        editingStepIndex = index
-                                        editedStepText = step
+                                        stepInstructions[index] = editedStepText
+                                        if let editedImage = editedStepImageData {
+                                            if index < stepImages.count {
+                                                stepImages[index] = editedImage
+                                            } else {
+                                                // Ensure stepImages array is large enough
+                                                while stepImages.count <= index {
+                                                    stepImages.append(nil)
+                                                }
+                                                stepImages[index] = editedImage
+                                            }
+                                        }
+                                        editingStepIndex = nil
                                     } label: {
-                                        Label("Edit", systemImage: "pencil")
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(editedStepText.isEmpty ? .secondary : .primary)
+                                            .font(.title2)
                                     }
-                                    .tint(.blue)
+                                    .buttonStyle(.plain)
+                                    .disabled(editedStepText.isEmpty)
                                 }
+                                
+                                if let imageData = editedStepImageData, let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 100)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                }
+                                
+                                PhotosPicker(selection: $stepImageItem,
+                                         matching: .images,
+                                         photoLibrary: .shared()) {
+                                    Label(editedStepImageData == nil ? "Add Image" : "Change Image", systemImage: "photo")
+                                        .font(.subheadline)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(Capsule())
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .task(id: stepImageItem) {
+                                    if let data = try? await stepImageItem?.loadTransferable(type: Data.self) {
+                                        withAnimation(.smooth) {
+                                            editedStepImageData = data
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(stepInstructions[index])
+                                    .foregroundColor(.primary)
+                                    .padding(.vertical, 4)
+                                
+                                if index < stepImages.count, let imageData = stepImages[index], let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 100)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                }
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    stepInstructions.remove(at: index)
+                                    if index < stepImages.count {
+                                        stepImages.remove(at: index)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                
+                                Button {
+                                    editingStepIndex = index
+                                    editedStepText = stepInstructions[index]
+                                    if index < stepImages.count {
+                                        editedStepImageData = stepImages[index]
+                                    } else {
+                                        editedStepImageData = nil
+                                    }
+                                    stepImageItem = nil
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                            }
                         }
                     }
                     
-                    HStack (alignment: .top) {
-                        TextEditor(text: $newStep.animation(.spring()))
-                            .frame(height: 80)
-                            .fontWeight(.medium)
-                            .overlay(alignment: .topLeading, content: {
-                                VStack {
-                                    if newStep.isEmpty {
-                                        Text("Add a step...")
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.secondary)
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .top) {
+                            TextEditor(text: $newStep.animation(.spring()))
+                                .frame(height: 80)
+                                .fontWeight(.medium)
+                                .autocorrectionDisabled()
+                                .overlay(alignment: .topLeading, content: {
+                                    VStack {
+                                        if newStep.isEmpty {
+                                            Text("Add a step...")
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.secondary)
+                                        }
                                     }
-                                }
-                                .padding(.top, 8)
-                                .padding(.leading, 4)
-                            })
-                        
-                        Button {
-                            guard !newStep.isEmpty else { return }
+                                    .padding(.top, 8)
+                                    .padding(.leading, 4)
+                                })
                             
-                            withAnimation {
-                                steps.append(newStep)
+                            Button {
+                                guard !newStep.isEmpty else { return }
+                                
+                                stepInstructions.append(newStep)
+                                stepImages.append(stepImageData)
+                                
+                                newStep = ""
+                                stepImageData = nil
+                                stepImageItem = nil
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(newStep.isEmpty ? .secondary : .primary)
+                                    .font(.title2)
                             }
-                            
-                            newStep = ""
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(newStep.isEmpty ? .secondary : .primary)
-                                .font(.title2)
+                            .buttonStyle(.plain)
+                            .disabled(newStep.isEmpty)
                         }
-                        .buttonStyle(.plain)
-                        .disabled(newStep.isEmpty)
+                        
+                        if let imageData = stepImageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 100)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .padding(.vertical, 4)
+                        }
+                        
+                        PhotosPicker(selection: $stepImageItem,
+                                 matching: .images,
+                                 photoLibrary: .shared()) {
+                            Label(stepImageData == nil ? "Add Image to Step" : "Change Image", systemImage: "photo")
+                                .font(.subheadline)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Capsule())
+                        }
+                        .padding(.bottom, 4)
+                        .task(id: stepImageItem) {
+                            if let data = try? await stepImageItem?.loadTransferable(type: Data.self) {
+                                withAnimation(.smooth) {
+                                    stepImageData = data
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -341,7 +450,8 @@ struct EditRecipeView: View {
                 
                 duration = recipe.duration
                 
-                steps = recipe.steps
+                stepInstructions = recipe.stepInstructions
+                stepImages = recipe.stepImages
             }
             .navigationTitle("Edit Recipe")
             .navigationBarTitleDisplayMode(.inline)
@@ -379,7 +489,8 @@ struct EditRecipeView: View {
         recipe.descriptionRecipe = descriptionRecipe
         recipe.ingredients = ingredients
         recipe.image = imageData
-        recipe.steps = steps
+        recipe.stepInstructions = stepInstructions
+        recipe.stepImages = stepImages
         recipe.duration = duration
         
         dismiss()

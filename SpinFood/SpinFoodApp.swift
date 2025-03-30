@@ -13,6 +13,10 @@ struct SpinFoodApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             RecipeModel.self,
+            FoodModel.self,
+            RecipeFoodModel.self,
+            FoodConsumptionModel.self,
+            FoodRefillModel.self
         ])
         
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

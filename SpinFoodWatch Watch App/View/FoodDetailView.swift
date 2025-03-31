@@ -77,7 +77,7 @@ struct FoodDetailView: View {
                 if let refills = food.refills, !refills.isEmpty {
                     Section {
                         // Simplify the complex expression
-                        let sortedRefills = refills.sorted(by: { $0.date > $1.date })
+                        let sortedRefills = refills.sorted(by: { $0.refilledAt > $1.refilledAt })
                         let recentRefills = sortedRefills.prefix(3)
                         
                         ForEach(Array(recentRefills)) { refill in
@@ -86,7 +86,7 @@ struct FoodDetailView: View {
                                     Text("\(formatDecimal(refill.quantity)) \(refill.unit.abbreviation)")
                                         .font(.callout)
                                     
-                                    Text(refill.date.formatted(date: .abbreviated, time: .shortened))
+                                    Text(refill.refilledAt.formatted(date: .abbreviated, time: .shortened))
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -146,10 +146,10 @@ struct FoodDetailView: View {
         
         // Create a refill record
         let refill = FoodRefillModel(
-            food: food,
+            refilledAt: Date(),
             quantity: decimal,
             unit: selectedUnit,
-            date: Date()
+            food: food
         )
         
         // Add refill to the model context

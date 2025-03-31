@@ -50,6 +50,11 @@
 		68CB4D382D9A90BB00C54104 /* Exceptions for "SpinFood" folder in "SpinFoodWatch Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Model/FoodConsumptionModel.swift,
+				Model/FoodModel.swift,
+				Model/FoodRefillModel.swift,
+				Model/RecipeFoodModel.swift,
+				Model/RecipeModel.swift,
 				Model/Store.swift,
 				storekitSubsOffline.storekit,
 				storekitSubsOnline.storekit,

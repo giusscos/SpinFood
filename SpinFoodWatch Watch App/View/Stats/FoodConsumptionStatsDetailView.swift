@@ -47,7 +47,7 @@ struct FoodConsumptionStatsDetailView: View {
         
         // Filter consumptions within date range
         let filteredConsumptions = consumptions.filter { consumption in
-            let consumptionDate = consumption.date
+            let consumptionDate = consumption.consumedAt
             return consumptionDate >= interval.start && consumptionDate <= Calendar.current.date(byAdding: .day, value: 1, to: interval.end)!
         }
         
@@ -58,7 +58,7 @@ struct FoodConsumptionStatsDetailView: View {
             
             // Sum consumption quantities for this day
             let totalQuantity = filteredConsumptions
-                .filter { $0.date >= dayStart && $0.date < dayEnd }
+                .filter { $0.consumedAt >= dayStart && $0.consumedAt < dayEnd }
                 .reduce(Decimal(0)) { total, consumption in
                     // Convert all measurements to grams for consistent comparison
                     return total + consumption.unit.convertToGrams(consumption.quantity)
@@ -76,7 +76,7 @@ struct FoodConsumptionStatsDetailView: View {
         
         // Group consumptions by food within the selected period
         let filteredConsumptions = consumptions.filter { consumption in
-            let consumptionDate = consumption.date
+            let consumptionDate = consumption.consumedAt
             return consumptionDate >= interval.start && consumptionDate <= Calendar.current.date(byAdding: .day, value: 1, to: interval.end)!
         }
         
@@ -89,14 +89,14 @@ struct FoodConsumptionStatsDetailView: View {
             if var existing = foodConsumptions[foodItem.id] {
                 // Add to existing entry
                 existing.quantity += consumption.unit.convertToGrams(consumption.quantity)
-                existing.dates.append(consumption.date)
+                existing.dates.append(consumption.consumedAt)
                 foodConsumptions[foodItem.id] = existing
             } else {
                 // Create new entry
                 foodConsumptions[foodItem.id] = (
                     food: foodItem,
                     quantity: consumption.unit.convertToGrams(consumption.quantity),
-                    dates: [consumption.date]
+                    dates: [consumption.consumedAt]
                 )
             }
         }
@@ -252,8 +252,8 @@ struct FoodConsumptionStatsDetailView: View {
                                     .font(.headline)
                                     .lineLimit(1)
                                 
-                                if let consumptions = foodItem.consumptions, let lastConsumption = consumptions.max(by: { $0.date < $1.date }) {
-                                    Text("Last: \(formatDateShort(lastConsumption.date))")
+                                if let consumptions = foodItem.consumptions, let lastConsumption = consumptions.max(by: { $0.consumedAt < $1.consumedAt }) {
+                                    Text("Last: \(formatDateShort(lastConsumption.consumedAt))")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

@@ -47,7 +47,7 @@ struct FoodRefillStatsDetailView: View {
         
         // Filter refills within date range
         let filteredRefills = refills.filter { refill in
-            let refillDate = refill.date
+            let refillDate = refill.refilledAt
             return refillDate >= interval.start && refillDate <= Calendar.current.date(byAdding: .day, value: 1, to: interval.end)!
         }
         
@@ -58,7 +58,7 @@ struct FoodRefillStatsDetailView: View {
             
             // Sum refill quantities for this day
             let totalQuantity = filteredRefills
-                .filter { $0.date >= dayStart && $0.date < dayEnd }
+                .filter { $0.refilledAt >= dayStart && $0.refilledAt < dayEnd }
                 .reduce(Decimal(0)) { total, refill in
                     // Convert all measurements to grams for consistent comparison
                     return total + refill.unit.convertToGrams(refill.quantity)
@@ -76,7 +76,7 @@ struct FoodRefillStatsDetailView: View {
         
         // Group refills by food within the selected period
         let filteredRefills = refills.filter { refill in
-            let refillDate = refill.date
+            let refillDate = refill.refilledAt
             return refillDate >= interval.start && refillDate <= Calendar.current.date(byAdding: .day, value: 1, to: interval.end)!
         }
         
@@ -89,14 +89,14 @@ struct FoodRefillStatsDetailView: View {
             if var existing = foodRefills[foodItem.id] {
                 // Add to existing entry
                 existing.quantity += refill.unit.convertToGrams(refill.quantity)
-                existing.dates.append(refill.date)
+                existing.dates.append(refill.refilledAt)
                 foodRefills[foodItem.id] = existing
             } else {
                 // Create new entry
                 foodRefills[foodItem.id] = (
                     food: foodItem,
                     quantity: refill.unit.convertToGrams(refill.quantity),
-                    dates: [refill.date]
+                    dates: [refill.refilledAt]
                 )
             }
         }
@@ -251,8 +251,8 @@ struct FoodRefillStatsDetailView: View {
                                     .font(.headline)
                                     .lineLimit(1)
                                 
-                                if let refills = foodItem.refills, let lastRefill = refills.max(by: { $0.date < $1.date }) {
-                                    Text("Last: \(formatDateShort(lastRefill.date))")
+                                if let refills = foodItem.refills, let lastRefill = refills.max(by: { $0.refilledAt < $1.refilledAt }) {
+                                    Text("Last: \(formatDateShort(lastRefill.refilledAt))")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

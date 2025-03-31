@@ -34,10 +34,10 @@ class RecipeUtils {
                         
                         // Create a consumption record
                         let consumption = FoodConsumptionModel(
-                            food: inventoryItem,
+                            consumedAt: Date(),
                             quantity: consumptionQuantity,
                             unit: inventoryItem.unit,
-                            date: Date()
+                            food: inventoryItem
                         )
                         
                         // Update current quantity

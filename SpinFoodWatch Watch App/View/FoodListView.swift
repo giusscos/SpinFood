@@ -102,10 +102,10 @@ struct FoodListView: View {
             
             // Create a refill record
             let refill = FoodRefillModel(
-                food: item,
+                refilledAt: date,
                 quantity: refillAmount,
                 unit: item.unit,
-                date: date
+                food: item
             )
             
             // Add refill to the model context

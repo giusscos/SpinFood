@@ -12,6 +12,8 @@ struct RecipeStepByStepView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    @Query var food: [FoodModel]
+    
     var recipe: RecipeModel
     
     @State private var currentStepIndex: Int = 0
@@ -23,22 +25,9 @@ struct RecipeStepByStepView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 15) {
-                // Progress indicator
-                HStack {
-                    Text("Step \(currentStepIndex + 1) of \(totalSteps)")
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Button {
-                        showConfirmFinish = true
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
+            VStack(alignment: .leading, spacing: 15) {
+                Text("Step \(currentStepIndex + 1) of \(totalSteps)")
+                    .font(.headline)
                 
                 if !recipe.stepInstructions.isEmpty && currentStepIndex < recipe.stepInstructions.count {
                     // Step image (if available)
@@ -56,55 +45,60 @@ struct RecipeStepByStepView: View {
                     Text(recipe.stepInstructions[currentStepIndex])
                         .multilineTextAlignment(.leading)
                         .font(.body)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical)
-                    
-                    Spacer()
-                    
-                    // Navigation buttons
-                    HStack {
-                        if currentStepIndex > 0 {
-                            Button {
-                                currentStepIndex -= 1
-                            } label: {
-                                Image(systemName: "arrow.left")
-                                    .padding()
-                            }
-                            .buttonStyle(.bordered)
-                            .clipShape(Circle())
-                        }
-                        
-                        Spacer()
-                        
-                        if currentStepIndex < totalSteps - 1 {
-                            Button {
-                                currentStepIndex += 1
-                                recipe.lastStepIndex = currentStepIndex
-                            } label: {
-                                Image(systemName: "arrow.right")
-                                    .padding()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .clipShape(Circle())
-                        } else {
-                            Button {
-                                finishCooking()
-                            } label: {
-                                Text("Finish")
-                                    .padding(.horizontal)
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
-                    }
+                        .frame(maxHeight: .infinity, alignment: .topLeading)
                 } else {
                     Text("No steps available for this recipe")
                         .foregroundStyle(.secondary)
                 }
             }
-            .padding(.horizontal)
+            .padding()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showConfirmFinish = true
+                } label: {
+                    Label("Skip", systemImage: "forward.end.fill")
+                }
+            }
+            
+            ToolbarItem(placement: .bottomBar) {
+                // Navigation buttons
+                HStack {
+                    if currentStepIndex > 0 {
+                        Button {
+                            currentStepIndex -= 1
+                        } label: {
+                            Label("Back", systemImage: "arrow.left")
+                                .padding()
+                        }
+                        .clipShape(Circle())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
+                    if currentStepIndex < totalSteps - 1 {
+                        Button {
+                            currentStepIndex += 1
+                            recipe.lastStepIndex = currentStepIndex
+                        } label: {
+                            Label("Next", systemImage: "arrow.right")
+                                .padding()
+                        }
+                        .clipShape(Circle())
+                    } else {
+                        Button {
+                            finishCooking()
+                        } label: {
+                            Text("Finish")
+                        }
+                        .padding(.horizontal)
+                        .tint(Color.purple)
+                    }
+                }
+            }
         }
         .navigationTitle("Cooking")
-        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Start from the last viewed step or from the beginning
             currentStepIndex = min(recipe.lastStepIndex, max(0, totalSteps - 1))
@@ -120,42 +114,22 @@ struct RecipeStepByStepView: View {
     }
     
     private func finishCooking() {
-        // Mark recipe as cooked
-        if !recipe.cookedAt.contains(where: { Calendar.current.isDate($0, inSameDayAs: Date()) }) {
-            recipe.cookedAt.append(Date())
-        }
+        // Record cooking timestamp
+        recipe.cookedAt.append(Date())
         
-        // Update ingredient inventory by decreasing quantities
-        if let ingredients = recipe.ingredients {
-            for ingredient in ingredients {
-                if let foodItem = ingredient.ingredient {
-                    // Find the item in inventory
-                    if let inventoryItem = foodItem.consumptions?.first?.food {
-                        let consumptionQuantity = ingredient.quantityNeeded
-                        
-                        // Create a consumption record
-                        let consumption = FoodConsumptionModel(
-                            food: inventoryItem,
-                            quantity: consumptionQuantity,
-                            unit: inventoryItem.unit,
-                            date: Date()
-                        )
-                        
-                        // Update current quantity
-                        inventoryItem.currentQuantity = max(0, inventoryItem.currentQuantity - consumptionQuantity)
-                        
-                        // Add consumption to model context
-                        modelContext.insert(consumption)
-                    }
-                }
-            }
-        }
+        // Consume ingredients
+        consumeIngredients()
         
         // Reset step index
         recipe.lastStepIndex = 0
         
         // Dismiss view
         dismiss()
+    }
+    
+    // Method to consume ingredients when starting to cook
+    private func consumeIngredients() {
+        RecipeUtils.consumeRecipeIngredients(recipe: recipe, modelContext: modelContext, foodInventory: food)
     }
 }
 

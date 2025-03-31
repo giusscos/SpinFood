@@ -15,18 +15,11 @@ struct RecipeDetailView: View {
     var recipe: RecipeModel
     
     var missingIngredients: [RecipeFoodModel] {
-        guard let ingredients = recipe.ingredients else { return [] }
-        
-        return ingredients.filter { ingredient in
-            guard let requiredIngredient = ingredient.ingredient else { return false }
-            guard let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) else { return true }
-            
-            return inventoryItem.currentQuantity < ingredient.quantityNeeded
-        }
+        return RecipeUtils.findMissingIngredients(recipe: recipe, foodInventory: food)
     }
     
     var hasAllIngredients: Bool {
-        return missingIngredients.isEmpty
+        return RecipeUtils.hasAllIngredientsAvailable(recipe: recipe, foodInventory: food)
     }
     
     var body: some View {
@@ -69,39 +62,38 @@ struct RecipeDetailView: View {
                     }
                 }
                 
-                // Cook Button
-                Button {
-                    // Start cooking
-                    if hasAllIngredients {
-                        // Record cooking timestamp
-                        recipe.cookedAt.append(Date())
-                        
-                        // Navigate to step by step view
+                if !recipe.stepInstructions.isEmpty {
+                    Section {
+                        ForEach(recipe.stepInstructions.indices, id: \.self) { index in
+                            VStack(alignment: .leading) {
+                                Text("\(index + 1). \(recipe.stepInstructions[index])")
+                                    .font(.footnote)
+                                    .lineLimit(2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    } header: {
+                        Text("Steps")
+                            .font(.headline)
                     }
-                } label: {
-                    Label("Start Cooking", systemImage: "play.fill")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(!hasAllIngredients)
-                
-                if !hasAllIngredients {
-                    Text("Missing ingredients")
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-                
-                NavigationLink(destination: RecipeStepByStepView(recipe: recipe)) {
-                    Label("View Steps", systemImage: "list.bullet")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.bordered)
             }
             .padding(.horizontal)
         }
         .navigationTitle(recipe.name)
+        .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+                // Cook Button
+                NavigationLink {
+                    RecipeStepByStepView(recipe: recipe)
+                } label: {
+                    Label("Start Cooking", systemImage: "play.fill")
+                }
+                .tint(hasAllIngredients ? .purple : .secondary)
+                .disabled(!hasAllIngredients)
+            }
+        }
     }
 }
 

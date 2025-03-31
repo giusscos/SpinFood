@@ -47,6 +47,16 @@
 			);
 			target = 6871FEF72D0877F600AF213D /* SpinFood */;
 		};
+		68CB4D382D9A90BB00C54104 /* Exceptions for "SpinFood" folder in "SpinFoodWatch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Model/Store.swift,
+				storekitSubsOffline.storekit,
+				storekitSubsOnline.storekit,
+				View/Helpers/TimePickerView.swift,
+			);
+			target = 6836F2B12D99B63A003F7615 /* SpinFoodWatch Watch App */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -59,6 +69,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				6871FF082D0877F700AF213D /* Exceptions for "SpinFood" folder in "SpinFood" target */,
+				68CB4D382D9A90BB00C54104 /* Exceptions for "SpinFood" folder in "SpinFoodWatch Watch App" target */,
 			);
 			path = SpinFood;
 			sourceTree = "<group>";

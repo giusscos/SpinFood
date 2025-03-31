@@ -30,10 +30,44 @@ struct RecipeListView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(filteredRecipes) { recipe in
-                        NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-                            Text(recipe.name)
-                                .lineLimit(1)
-                        }
+                            NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+                                if let imageData = recipe.image,
+                                   let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .overlay (alignment: .bottom) {
+                                            Color.clear
+                                                .background(.ultraThinMaterial)
+                                                .frame(maxWidth: .infinity)
+                                                .mask(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [.black, .black, .clear, .clear, .clear]),
+                                                        startPoint: .bottom,
+                                                        endPoint: .top
+                                                    )
+                                                )
+                                                .overlay(alignment: .bottom) {
+                                                    VStack (alignment: .leading) {
+                                                        Text("\(recipe.duration.formatted)")
+                                                            .font(.subheadline)
+                                                            .foregroundStyle(.secondary)
+                                                        
+                                                        Text(recipe.name)
+                                                            .font(.headline)
+                                                    }
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                                    .tint(.primary)
+                                                    .multilineTextAlignment(.leading)
+                                                    .padding(8)
+                                                }
+                                        }
+                                        .clipped()
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                     }
                 }
             }
@@ -44,6 +78,16 @@ struct RecipeListView: View {
 }
 
 #Preview {
-    RecipeListView()
-        .modelContainer(for: [RecipeModel.self], inMemory: true)
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: RecipeModel.self, configurations: config)
+    
+    // Add sample recipe with image
+    let sampleRecipe = RecipeModel(name: "Pasta Carbonara")
+    if let imageData = UIImage(systemName: "fork.knife")?.pngData() {
+        sampleRecipe.image = imageData
+    }
+    container.mainContext.insert(sampleRecipe)
+    
+    return RecipeListView()
+        .modelContainer(container)
 } 

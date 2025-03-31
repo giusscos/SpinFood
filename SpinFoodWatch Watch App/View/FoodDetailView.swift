@@ -136,7 +136,6 @@ struct FoodDetailView: View {
                     }
                 }
             }
-            .presentationDetents([.fraction(0.4)])
         }
     }
     

@@ -113,7 +113,7 @@ struct CreateRecipeView: View {
                         .autocorrectionDisabled()
                         .padding(.top, 8)
             
-                    TextEditor(text: $descriptionRecipe.animation(.spring()))
+                    TextEditor(text: $descriptionRecipe)
                         .fontWeight(.medium)
                         .overlay(alignment: .topLeading, content: {
                             VStack {
@@ -367,7 +367,7 @@ struct CreateRecipeView: View {
                     
                     VStack(alignment: .leading) {
                         HStack(alignment: .top) {
-                            TextEditor(text: $newStep.animation(.spring()))
+                            TextEditor(text: $newStep)
                                 .frame(height: 80)
                                 .fontWeight(.medium)
                                 .autocorrectionDisabled()

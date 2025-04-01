@@ -151,8 +151,10 @@ struct FoodView: View {
         .searchable(text: $searchText, prompt: "Search food...")
         .navigationTitle("Food")
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                EditButton()
+            if !food.isEmpty {
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
             }
             
             ToolbarItem(placement: .topBarTrailing) {

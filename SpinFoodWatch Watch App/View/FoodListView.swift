@@ -46,9 +46,9 @@ struct FoodListView: View {
     var body: some View {
         NavigationStack {
                 List {
-                    Toggle("Low Stock Only", isOn: $showingLowStockOnly)
-                    
                     if !food.isEmpty {
+                        Toggle("Low Stock Only", isOn: $showingLowStockOnly)
+                    
                         Button {
                             showingAutoRefillConfirmation = true
                         } label: {

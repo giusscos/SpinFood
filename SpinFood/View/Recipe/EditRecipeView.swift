@@ -75,6 +75,8 @@ struct EditRecipeView: View {
                                 }
                         }
                     }
+                } header: {
+                    Text("Cover")
                 }
                 .listRowBackground(Color.clear)
                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
@@ -134,15 +136,12 @@ struct EditRecipeView: View {
                         
                         TimePickerView(duration: $duration)
                     }
+                } header: {
+                    Text("Basic info")
                 }
                 
                 if !foods.isEmpty {
                     Section {
-                        Label("Ingredients", systemImage: "list.bullet")
-                            .labelStyle(.titleOnly)
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                        
                         if !ingredients.isEmpty {
                             ForEach(Array(ingredients.enumerated()), id: \.element.id) { index, ingredient in
                                 if let ingredientInfo = ingredient.ingredient {
@@ -245,15 +244,12 @@ struct EditRecipeView: View {
                             .disabled(quantityNeeded == 0.0)
                         }
                         .frame(maxWidth: .infinity)
+                    } header: {
+                        Text("Ingredients")
                     }
                 }
                 
                 Section {
-                    Label("Steps", systemImage: "list.number")
-                        .labelStyle(.titleOnly)
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                    
                     ForEach(Array(stepInstructions.indices), id: \.self) { index in
                         if editingStepIndex == index {
                             VStack(alignment: .leading) {
@@ -426,6 +422,7 @@ struct EditRecipeView: View {
                                 .background(.ultraThinMaterial)
                                 .clipShape(Capsule())
                         }
+                        .buttonStyle(.plain)
                         .padding(.bottom, 4)
                         .task(id: stepImageItem) {
                             if let data = try? await stepImageItem?.loadTransferable(type: Data.self) {
@@ -435,6 +432,8 @@ struct EditRecipeView: View {
                             }
                         }
                     }
+                } header: {
+                    Text("Steps")
                 }
             }
             .onAppear() {

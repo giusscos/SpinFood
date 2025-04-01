@@ -4,10 +4,12 @@ struct RecipeImageView: View {
     var recipe: RecipeModel
     var width: CGFloat?
     var cornerRadius: CGFloat
+    var height: CGFloat?
     
-    init(recipe: RecipeModel, width: CGFloat? = nil, cornerRadius: CGFloat = 12) {
+    init(recipe: RecipeModel, width: CGFloat? = nil, height: CGFloat? = nil, cornerRadius: CGFloat = 12) {
         self.recipe = recipe
         self.width = width
+        self.height = height
         self.cornerRadius = cornerRadius
     }
     
@@ -18,7 +20,7 @@ struct RecipeImageView: View {
                 .resizable()
                 .scaledToFill()
                 .frame(maxWidth: width)
-                .frame(height: 200)
+                .frame(maxHeight: height)
                 .overlay (alignment: .bottom) {
                     Color.clear
                         .background(.ultraThinMaterial)

@@ -75,6 +75,8 @@ struct SummaryView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let heightView = geometry.size.height
+            
             if store.isLoading {
                 VStack {
                     ProgressView()
@@ -88,87 +90,42 @@ struct SummaryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if !hasActiveSubscription {
                 VStack(spacing: 20) {
-                    // Preview content (blurred with overlay)
-                    ZStack {
-                        // Sample content preview (blurred)
-                        ScrollView {
-                            if filteredRecipes.count > 0 {
-                                Text("Based on your ingredients")
-                                    .font(.headline)
-                                    .foregroundStyle(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 16)
-                                
-                                Rectangle()
-                                    .fill(.ultraThinMaterial)
-                                    .frame(height: 200)
-                                    .cornerRadius(12)
-                                    .padding(.horizontal)
-                            }
-                            
-                            if totalRecipeCooked > 0 || totalFoodEaten > 0 || totalFoodRefilled > 0 {
-                                VStack(spacing: 20) {
-                                    Rectangle()
-                                        .fill(.ultraThinMaterial)
-                                        .frame(height: 120)
-                                        .cornerRadius(12)
-                                    
-                                    Rectangle()
-                                        .fill(.ultraThinMaterial)
-                                        .frame(height: 120)
-                                        .cornerRadius(12)
-                                    
-                                    Rectangle()
-                                        .fill(.ultraThinMaterial)
-                                        .frame(height: 120)
-                                        .cornerRadius(12)
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                        .blur(radius: 6)
+                    VStack {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(.quaternary)
                         
-                        // Lock overlay
-                        VStack(spacing: 15) {
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 50))
-                                .foregroundStyle(.quaternary)
-                            
-                            Text("Unlock Premium Features")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Text("Subscribe to access statistics and personalized recipe suggestions")
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
-                            
-                            Button(action: {
-                                showPaywall = true
-                            }) {
-                                Text("View Subscription Options")
-                                    .font(.headline)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(
-                                        LinearGradient(
-                                            colors: [.purple, .indigo],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
+                        Text("Unlock Premium Features")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        
+                        Text("Subscribe to access statistics and personalized recipe suggestions")
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal)
+                        
+                        Button(action: {
+                            showPaywall = true
+                        }) {
+                            Text("View Subscription Options")
+                                .font(.headline)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    LinearGradient(
+                                        colors: [.purple, .indigo],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
                                     )
-                                    .foregroundStyle(.white)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .padding(.top, 10)
-                            .padding(.horizontal, 40)
+                                )
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(radius: 5)
-                        .padding()
                     }
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .padding()
                 }
                 .navigationTitle("Summary")
                 .sheet(isPresented: $showPaywall) {
@@ -181,25 +138,26 @@ struct SummaryView: View {
                     if filteredRecipes.count > 0 {
                         Section {
                             ScrollView(.horizontal) {
-                                LazyHStack(spacing: 22) {
+                                LazyHStack {
                                     ForEach(filteredRecipes) { recipe in
                                         NavigationLink {
                                             RecipeDetailsView(recipe: recipe)
                                                 .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
                                         } label: {
-                                            SummaryRowView(recipe: recipe, width: geometry.size.width)
+                                            SummaryRowView(recipe: recipe, width: geometry.size.width - 32, heigth: heightView * 0.36)
+                                                .padding(.horizontal)
                                                 .matchedTransitionSource(id: recipe.id, in: namespace)
                                                 .scrollTransition(
                                                     axis: .horizontal
                                                 ) { content, phase in
                                                     content
                                                         .rotationEffect(.degrees(phase.value * 2.5))
+                                                        .scaleEffect(phase.isIdentity ? 1 : 0.85)
                                                         .offset(y: phase.isIdentity ? 0 : 8)
                                                         .blur(radius: phase.isIdentity ? 0 : 4)
                                                 }
                                                 .containerRelativeFrame(.horizontal)
                                         }
-                                        .padding(.vertical, 4)
                                     }
                                     .scrollTargetLayout()
                                 }
@@ -211,7 +169,7 @@ struct SummaryView: View {
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 2)
+                                .padding(.horizontal)
                         }
                     }
                     
@@ -267,6 +225,7 @@ struct SummaryView: View {
                             }
                         }
                         .padding(.vertical, 4)
+                        .padding(.horizontal)
                     }
                     
                     if totalFoodEaten > 0 {
@@ -319,6 +278,7 @@ struct SummaryView: View {
                             }
                         }
                         .padding(.vertical, 4)
+                        .padding(.horizontal)
                     }
                     
                     if totalFoodRefilled > 0 {
@@ -371,9 +331,9 @@ struct SummaryView: View {
                             }
                         }
                         .padding(.vertical, 4)
+                        .padding(.horizontal)
                     }
                 }
-                .padding(.horizontal)
                 .navigationTitle("Summary")
             }
         }

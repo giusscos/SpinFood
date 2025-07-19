@@ -114,41 +114,71 @@ struct FoodView: View {
     }
     
     var body: some View {
-        List(selection: $selectedItems) {
+        VStack {
             if !filteredFood.isEmpty {
-                ForEach(filteredFood) { food in
-                    FoodRowView(food: food)
-                        .onTapGesture {
-                            if selectedItems.isEmpty {
-                                activeSheet = .edit(food)
+                List(selection: $selectedItems) {
+                    ForEach(filteredFood) { food in
+                        FoodRowView(food: food)
+                            .onTapGesture {
+                                if selectedItems.isEmpty {
+                                    activeSheet = .edit(food)
+                                }
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    modelContext.delete(food)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                
+                                Button {
+                                    activeSheet = .edit(food)
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.blue)
+                            }
+                    }
+                }
+                .searchable(text: $searchText, prompt: "Search food")
+                .sheet(item: $activeSheet) { sheet in
+                    switch sheet {
+                    case .edit(let food):
+                        EditFoodView(food: food)
+                    case .refillMulti:
+                        NavigationStack {
+                            FoodRefillView(food: food.filter { $0.currentQuantity < $0.quantity })
+                                .presentationDragIndicator(.visible)
+                        }
+                    case .refillSelected(let selectedFood):
+                        NavigationStack {
+                            FoodRefillView(food: selectedFood)
+                                .presentationDragIndicator(.visible)
+                        }
+                    case .create:
+                        CreateFoodView()
+                    }
+                }
+                .alert("Confirm Deletion", isPresented: $showDeleteConfirmation) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete", role: .destructive) {
+                        for id in selectedItems {
+                            if let foodToDelete = food.first(where: { $0.id == id }) {
+                                modelContext.delete(foodToDelete)
                             }
                         }
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                modelContext.delete(food)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                            
-                            Button {
-                                activeSheet = .edit(food)
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            .tint(.blue)
-                        }
+                        selectedItems.removeAll()
+                        editMode?.wrappedValue = .inactive
+                    }
+                } message: {
+                    Text("Are you sure you want to delete \(selectedItems.count) selected item\(selectedItems.count > 1 ? "s" : "")? This action cannot be undone.")
                 }
             } else if searchText.isNotEmpty && filteredFood.isEmpty {
                 ContentUnavailableView("No food found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
             } else {
                 ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
             }
         }
-        .searchable(text: $searchText, prompt: "Search food")
         .navigationTitle("Food")
         .toolbar {
             if !food.isEmpty {
@@ -229,38 +259,6 @@ struct FoodView: View {
                     Label("Menu", systemImage: "ellipsis.circle")
                 }
             }
-        }
-        .sheet(item: $activeSheet) { sheet in
-            switch sheet {
-            case .edit(let food):
-                EditFoodView(food: food)
-            case .refillMulti:
-                NavigationStack {
-                    FoodRefillView(food: food.filter { $0.currentQuantity < $0.quantity })
-                        .presentationDragIndicator(.visible)
-                }
-            case .refillSelected(let selectedFood):
-                NavigationStack {
-                    FoodRefillView(food: selectedFood)
-                        .presentationDragIndicator(.visible)
-                }
-            case .create:
-                CreateFoodView()
-            }
-        }
-        .alert("Confirm Deletion", isPresented: $showDeleteConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                for id in selectedItems {
-                    if let foodToDelete = food.first(where: { $0.id == id }) {
-                        modelContext.delete(foodToDelete)
-                    }
-                }
-                selectedItems.removeAll()
-                editMode?.wrappedValue = .inactive
-            }
-        } message: {
-            Text("Are you sure you want to delete \(selectedItems.count) selected item\(selectedItems.count > 1 ? "s" : "")? This action cannot be undone.")
         }
     }
 }

@@ -21,7 +21,7 @@ struct SettingsView: View {
                         manageSubscription.toggle()
                     }
                 }
-                    
+                
                 Link("Send me a Feedback", destination: URL(string: "mailto:hello@giusscos.com")!)
                     .foregroundColor(.blue)
                 
@@ -33,7 +33,9 @@ struct SettingsView: View {
             } header: {
                 Text("Support")
             }
-        }.manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Store().groupId)
+        }
+        .navigationTitle("Settings")
+        .manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Store().groupId)
     }
 }
 

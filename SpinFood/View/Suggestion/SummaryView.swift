@@ -12,8 +12,6 @@ import Charts
 struct SummaryView: View {
     @Namespace private var namespace
     
-    @State var store = Store()
-    
     @State private var showStoreView: Bool = false
     @State private var showPaywall: Bool = false
     
@@ -24,10 +22,6 @@ struct SummaryView: View {
     @Query var consumptions: [FoodConsumptionModel]
     
     @Query var refills: [FoodRefillModel]
-    
-    var hasActiveSubscription: Bool {
-        !store.purchasedSubscriptions.isEmpty
-    }
     
     var filteredRecipes: [RecipeModel] {
         recipes.filter { recipe in
@@ -74,96 +68,25 @@ struct SummaryView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            let heightView = geometry.size.height
-            
-            if store.isLoading {
-                VStack {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    
-                    Text("Checking subscription status...")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 10)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if !hasActiveSubscription {
-                VStack(spacing: 20) {
-                    VStack {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 50))
-                            .foregroundStyle(.quaternary)
-                        
-                        Text("Unlock Premium Features")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        Text("Subscribe to access statistics and personalized recipe suggestions")
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal)
-                        
-                        Button(action: {
-                            showPaywall = true
-                        }) {
-                            Text("View Subscription Options")
-                                .font(.headline)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(
-                                    LinearGradient(
-                                        colors: [.purple, .indigo],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                    }
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .padding()
-                }
-                .navigationTitle("Summary")
-                .sheet(isPresented: $showPaywall) {
-                    PaywallView(store: store)
-                }
-            } else if filteredRecipes.count == 0 && totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 {
+        VStack {
+            if filteredRecipes.count == 0 && totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 {
                 ContentUnavailableView("No data to show", systemImage: "chart.pie", description: Text("Start cooking recipes or adding food to see your statistics and suggestions"))
             } else {
-                ScrollView {
+                List {
                     if filteredRecipes.count > 0 {
                         Section {
-                            ScrollView(.horizontal) {
-                                LazyHStack {
-                                    ForEach(filteredRecipes) { recipe in
-                                        NavigationLink {
-                                            RecipeDetailsView(recipe: recipe)
-                                                .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
-                                        } label: {
-                                            SummaryRowView(recipe: recipe, width: geometry.size.width - 32, heigth: heightView * 0.36)
-                                                .padding(.horizontal)
-                                                .matchedTransitionSource(id: recipe.id, in: namespace)
-                                                .scrollTransition(
-                                                    axis: .horizontal
-                                                ) { content, phase in
-                                                    content
-                                                        .rotationEffect(.degrees(phase.value * 2.5))
-                                                        .scaleEffect(phase.isIdentity ? 1 : 0.85)
-                                                        .offset(y: phase.isIdentity ? 0 : 8)
-                                                        .blur(radius: phase.isIdentity ? 0 : 4)
-                                                }
-                                                .containerRelativeFrame(.horizontal)
-                                        }
+                            LazyHStack {
+                                ForEach(filteredRecipes) { recipe in
+                                    NavigationLink {
+                                        RecipeDetailsView(recipe: recipe)
+                                            .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                                    } label: {
+                                        SummaryRowView(recipe: recipe)
+                                            .padding(.horizontal)
+                                            .matchedTransitionSource(id: recipe.id, in: namespace)
                                     }
-                                    .scrollTargetLayout()
                                 }
                             }
-                            .scrollIndicators(.hidden)
-                            .scrollTargetBehavior(.viewAligned)
                         } header: {
                             Text("Based on your ingredients")
                                 .font(.headline)
@@ -334,9 +257,9 @@ struct SummaryView: View {
                         .padding(.horizontal)
                     }
                 }
-                .navigationTitle("Summary")
             }
         }
+        .navigationTitle("Summary")
     }
     
     private func getMostCookedRecipe() -> RecipeModel? {

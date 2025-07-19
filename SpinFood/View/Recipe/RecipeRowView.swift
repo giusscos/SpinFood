@@ -9,10 +9,9 @@ import SwiftUI
 
 struct RecipeRowView: View {
     var recipe: RecipeModel
-    var height: CGFloat?
     
     var body: some View {
-        RecipeImageView(recipe: recipe, height: height)
+        RecipeImageView(recipe: recipe)
     }
 }
 

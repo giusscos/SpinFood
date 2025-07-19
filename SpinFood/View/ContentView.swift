@@ -16,38 +16,36 @@ struct ContentView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            if store.isLoading {
-                ProgressView()
-            } else if hasActiveSubscription {
-                TabView {
-                    Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
-                        NavigationStack {
-                            SummaryView()
-                        }
-                    }
-                    
-                    Tab("Recipes", systemImage: "fork.knife") {
-                        NavigationStack {
-                            RecipeView()
-                        }
-                    }
-                    
-                    Tab("Food", systemImage: "carrot.fill") {
-                        NavigationStack {
-                            FoodView()
-                        }
-                    }
-                    
-                    Tab("Settings", systemImage: "gear") {
-                        NavigationStack {
-                            SettingsView()
-                        }
+        if store.isLoading {
+            ProgressView()
+        } else if hasActiveSubscription {
+            TabView {
+                Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
+                    NavigationStack{
+                        SummaryView()
                     }
                 }
-            } else {
-                PaywallView()
+                
+                Tab("Recipes", systemImage: "fork.knife") {
+                    NavigationStack {
+                        RecipeView()
+                    }
+                }
+                
+                Tab("Food", systemImage: "carrot.fill") {
+                    NavigationStack {
+                        FoodView()
+                    }
+                }
+                
+                Tab("Settings", systemImage: "gear") {
+                    NavigationStack {
+                        SettingsView()
+                    }
+                }
             }
+        } else {
+            PaywallView()
         }
     }
 }

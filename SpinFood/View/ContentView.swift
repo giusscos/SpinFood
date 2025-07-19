@@ -9,34 +9,44 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
+    @State var store = Store()
     
-    @Query(sort: \RecipeModel.createdAt, order: .reverse) private var recipes: [RecipeModel]
-
+    var hasActiveSubscription: Bool {
+        !store.purchasedSubscriptions.isEmpty || !store.purchasedProducts.isEmpty
+    }
+    
     var body: some View {
-        TabView {
-            Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
-                NavigationStack {
-                    SummaryView()
+        NavigationStack {
+            if store.isLoading {
+                ProgressView()
+            } else if hasActiveSubscription {
+                TabView {
+                    Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
+                        NavigationStack {
+                            SummaryView()
+                        }
+                    }
+                    
+                    Tab("Recipes", systemImage: "fork.knife") {
+                        NavigationStack {
+                            RecipeView()
+                        }
+                    }
+                    
+                    Tab("Food", systemImage: "carrot.fill") {
+                        NavigationStack {
+                            FoodView()
+                        }
+                    }
+                    
+                    Tab("Settings", systemImage: "gear") {
+                        NavigationStack {
+                            SettingsView()
+                        }
+                    }
                 }
-            }
-            
-            Tab("Recipes", systemImage: "fork.knife") {
-                NavigationStack {
-                    RecipeView()
-                }
-            }
-            
-            Tab("Food", systemImage: "carrot.fill") {
-                NavigationStack {
-                    FoodView()
-                }
-            }
-            
-            Tab("Settings", systemImage: "gear") {
-                NavigationStack {
-                    SettingsView()
-                }
+            } else {
+                PaywallView()
             }
         }
     }
@@ -44,5 +54,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [RecipeModel.self, FoodRefillModel.self], inMemory: true)
 }

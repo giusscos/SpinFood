@@ -14,7 +14,36 @@
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "24.99",
+      "familyShareable" : false,
+      "internalID" : "4E2361B1",
+      "localizations" : [
+        {
+          "description" : "Get unlimited lifetime access",
+          "displayName" : "Foo lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.giusscos.fooFamilyLifetime",
+      "referenceName" : "Foo lifetime access",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "49.99",
+      "familyShareable" : true,
+      "internalID" : "C709961E",
+      "localizations" : [
+        {
+          "description" : "Get unlimited family lifetime access",
+          "displayName" : "Foo family lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.giusscos.fooLifetime",
+      "referenceName" : "Foo lifetime family access",
+      "type" : "NonConsumable"
+    }
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
@@ -94,14 +123,14 @@
           },
           "localizations" : [
             {
-              "description" : "Unlock recipe suggestions and more monthly",
-              "displayName" : "Monthly Pro Access",
+              "description" : "Get unlimited family access for this month",
+              "displayName" : "Foo+",
               "locale" : "en_US"
             }
           ],
-          "productID" : "sp_099_1m_3d",
+          "productID" : "f_099_1m_3d",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "SpinFood Pro Access, 0.99, 1 month, 3 days free",
+          "referenceName" : "Foo Pro Access, 0.99, 1 month, 3 days free",
           "subscriptionGroupID" : "FE73F688",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -122,14 +151,70 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Unlock recipe suggestions and more for 1 year",
-              "displayName" : "Annual Pro Access",
+              "description" : "Get unlimited access for this year",
+              "displayName" : "Foo+",
               "locale" : "en_US"
             }
           ],
-          "productID" : "sf_999_1y",
+          "productID" : "f_999_1y",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "SpinFood Pro Access, 9.99, 1 year",
+          "referenceName" : "Foo Pro Access, 9.99, 1 year",
+          "subscriptionGroupID" : "FE73F688",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "B735E85E",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Get unlimited family access for this year",
+              "displayName" : "Foo+ Family",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "f_3999_1y_f",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Foo Family Pro Access, 39.99, 1 year",
+          "subscriptionGroupID" : "FE73F688",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "9F4C023D",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Get unlimited family access for this month",
+              "displayName" : "Foo+ Family",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "f_399_1m_f",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Foo Family Pro Access, 3.99, 1 month",
           "subscriptionGroupID" : "FE73F688",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

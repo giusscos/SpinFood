@@ -162,7 +162,7 @@ struct RecipeView: View {
                     }
                 }
             }
-            .searchable(text: $searchText, prompt: "Search recipes...")
+            .searchable(text: $searchText, prompt: "Search recipes")
             .navigationTitle(Text("Recipes"))
             .toolbar {
                 ToolbarItem (placement: .topBarTrailing) {

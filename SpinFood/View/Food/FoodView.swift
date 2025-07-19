@@ -148,7 +148,7 @@ struct FoodView: View {
                     .listRowBackground(Color.clear)
             }
         }
-        .searchable(text: $searchText, prompt: "Search food...")
+        .searchable(text: $searchText, prompt: "Search food")
         .navigationTitle("Food")
         .toolbar {
             if !food.isEmpty {

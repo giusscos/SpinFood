@@ -39,7 +39,7 @@ struct FoodRowView: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
-        }.padding(8)
+        }
     }
 }
 

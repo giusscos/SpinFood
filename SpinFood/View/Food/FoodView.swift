@@ -70,7 +70,6 @@ struct FoodView: View {
     @State private var sortOption: FoodSortOption = .nameAsc
     @State private var filterOption: FoodFilterOption = .all
     @State private var selectedItems = Set<UUID>()
-    @State private var showDeleteConfirmation = false
     
     var filteredFood: [FoodModel] {
         var result = food
@@ -114,72 +113,57 @@ struct FoodView: View {
     }
     
     var body: some View {
-        VStack {
+        List(selection: $selectedItems) {
             if !filteredFood.isEmpty {
-                List(selection: $selectedItems) {
-                    ForEach(filteredFood) { food in
-                        FoodRowView(food: food)
-                            .onTapGesture {
-                                if selectedItems.isEmpty {
-                                    activeSheet = .edit(food)
-                                }
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    modelContext.delete(food)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                                
-                                Button {
-                                    activeSheet = .edit(food)
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
-                                .tint(.blue)
-                            }
-                    }
-                }
-                .searchable(text: $searchText, prompt: "Search food")
-                .sheet(item: $activeSheet) { sheet in
-                    switch sheet {
-                    case .edit(let food):
-                        EditFoodView(food: food)
-                    case .refillMulti:
-                        NavigationStack {
-                            FoodRefillView(food: food.filter { $0.currentQuantity < $0.quantity })
-                                .presentationDragIndicator(.visible)
-                        }
-                    case .refillSelected(let selectedFood):
-                        NavigationStack {
-                            FoodRefillView(food: selectedFood)
-                                .presentationDragIndicator(.visible)
-                        }
-                    case .create:
-                        CreateFoodView()
-                    }
-                }
-                .alert("Confirm Deletion", isPresented: $showDeleteConfirmation) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Delete", role: .destructive) {
-                        for id in selectedItems {
-                            if let foodToDelete = food.first(where: { $0.id == id }) {
-                                modelContext.delete(foodToDelete)
+                ForEach(filteredFood) { food in
+                    FoodRowView(food: food)
+                        .onTapGesture {
+                            if selectedItems.isEmpty {
+                                activeSheet = .edit(food)
                             }
                         }
-                        selectedItems.removeAll()
-                        editMode?.wrappedValue = .inactive
-                    }
-                } message: {
-                    Text("Are you sure you want to delete \(selectedItems.count) selected item\(selectedItems.count > 1 ? "s" : "")? This action cannot be undone.")
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                modelContext.delete(food)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            
+                            Button {
+                                activeSheet = .edit(food)
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
                 }
-            } else if searchText.isNotEmpty && filteredFood.isEmpty {
+            }
+            else if searchText.isNotEmpty && filteredFood.isEmpty {
                 ContentUnavailableView("No food found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
             } else {
                 ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))
             }
         }
+        .searchable(text: $searchText, prompt: "Search food")
         .navigationTitle("Food")
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .edit(let food):
+                EditFoodView(food: food)
+            case .refillMulti:
+                NavigationStack {
+                    FoodRefillView(food: food.filter { $0.currentQuantity < $0.quantity })
+                        .presentationDragIndicator(.visible)
+                }
+            case .refillSelected(let selectedFood):
+                NavigationStack {
+                    FoodRefillView(food: selectedFood)
+                        .presentationDragIndicator(.visible)
+                }
+            case .create:
+                CreateFoodView()
+            }
+        }
         .toolbar {
             if !food.isEmpty {
                 ToolbarItem(placement: .topBarLeading) {
@@ -189,71 +173,93 @@ struct FoodView: View {
             
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    // Sort options
-                    Menu {
-                        Picker("Sort by", selection: $sortOption) {
-                            Text(FoodSortOption.nameAsc.label).tag(FoodSortOption.nameAsc)
-                            Text(FoodSortOption.nameDesc.label).tag(FoodSortOption.nameDesc)
-                            Divider()
-                            Text(FoodSortOption.quantityAsc.label).tag(FoodSortOption.quantityAsc)
-                            Text(FoodSortOption.quantityDesc.label).tag(FoodSortOption.quantityDesc)
-                            Divider()
-                            Text(FoodSortOption.dateAsc.label).tag(FoodSortOption.dateAsc)
-                            Text(FoodSortOption.dateDesc.label).tag(FoodSortOption.dateDesc)
+                    if !food.isEmpty {
+                        // Sort options
+                        Menu {
+                            Picker("Sort by", selection: $sortOption) {
+                                Text(FoodSortOption.nameAsc.label)
+                                    .tag(FoodSortOption.nameAsc)
+                                
+                                Text(FoodSortOption.nameDesc.label)
+                                    .tag(FoodSortOption.nameDesc)
+                                
+                                Divider()
+                                
+                                Text(FoodSortOption.quantityAsc.label)
+                                    .tag(FoodSortOption.quantityAsc)
+                                
+                                Text(FoodSortOption.quantityDesc.label)
+                                    .tag(FoodSortOption.quantityDesc)
+                                
+                                Divider()
+                                
+                                Text(FoodSortOption.dateAsc.label)
+                                    .tag(FoodSortOption.dateAsc)
+                                
+                                Text(FoodSortOption.dateDesc.label)
+                                    .tag(FoodSortOption.dateDesc)
+                            }
+                        } label: {
+                            Label("Sort", systemImage: "arrow.up.arrow.down")
                         }
-                    } label: {
-                        Label("Sort", systemImage: "arrow.up.arrow.down")
-                    }
-                    
-                    // Filter options
-                    Menu {
-                        Picker("Filter", selection: $filterOption) {
-                            Text(FoodFilterOption.all.label).tag(FoodFilterOption.all)
-                            Text(FoodFilterOption.lowStock.label).tag(FoodFilterOption.lowStock)
-                            Text(FoodFilterOption.outOfStock.label).tag(FoodFilterOption.outOfStock)
+                        
+                        // Filter options
+                        Menu {
+                            Picker("Filter", selection: $filterOption) {
+                                Text(FoodFilterOption.all.label)
+                                    .tag(FoodFilterOption.all)
+                                
+                                Text(FoodFilterOption.lowStock.label)
+                                    .tag(FoodFilterOption.lowStock)
+                                
+                                Text(FoodFilterOption.outOfStock.label)
+                                    .tag(FoodFilterOption.outOfStock)
+                            }
+                        } label: {
+                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                         }
-                    } label: {
-                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                        
+                        Divider()
+                        
+                        // Refill button
+                        Button {
+                            activeSheet = .refillMulti
+                        } label: {
+                            Label("Refill all food", systemImage: "bag.fill.badge.plus")
+                        }
+                        
+                        // Refill Selected option - show whenever in edit mode
+                        Button {
+                            let selectedFood = food.filter { selectedItems.contains($0.id) }
+                            activeSheet = .refillSelected(selectedFood)
+                        } label: {
+                            Label("Refill Selected", systemImage: "cart.fill.badge.plus")
+                        }
+                        .disabled(selectedItems.isEmpty)
+                        
+                        // Delete Selected option - only enable when items are selected
+                        Button(role: .destructive) {
+                            for id in selectedItems {
+                                if let foodToDelete = food.first(where: { $0.id == id }) {
+                                    modelContext.delete(foodToDelete)
+                                }
+                            }
+                            selectedItems.removeAll()
+                            editMode?.wrappedValue = .inactive
+
+                        } label: {
+                            Label("Delete Selected", systemImage: "trash")
+                        }
+                        .disabled(selectedItems.isEmpty)
+                        
+                        Divider()
                     }
-                    
-                    Divider()
-                    
-                    // Refill button
-                    Button {
-                        activeSheet = .refillMulti
-                    } label: {
-                        Label("Refill all food", systemImage: "bag.fill.badge.plus")
-                            .labelStyle(.titleAndIcon)
-                    }
-                    .disabled(food.isEmpty)
-                    
-                    // Refill Selected option - show whenever in edit mode
-                    Button {
-                        let selectedFood = food.filter { selectedItems.contains($0.id) }
-                        activeSheet = .refillSelected(selectedFood)
-                    } label: {
-                        Label("Refill Selected", systemImage: "cart.fill.badge.plus")
-                            .labelStyle(.titleAndIcon)
-                    }
-                    .disabled(selectedItems.isEmpty)
-                    
-                    // Delete Selected option - only enable when items are selected
-                    Button(role: .destructive) {
-                        showDeleteConfirmation = true
-                    } label: {
-                        Label("Delete Selected", systemImage: "trash")
-                            .labelStyle(.titleAndIcon)
-                    }
-                    .disabled(selectedItems.isEmpty)
-                    
-                    Divider()
                     
                     // Add button
                     Button {
                         activeSheet = .create
                     } label: {
                         Label("Add", systemImage: "plus")
-                            .labelStyle(.titleAndIcon)
                     }
                 } label: {
                     Label("Menu", systemImage: "ellipsis.circle")

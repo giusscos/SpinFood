@@ -222,7 +222,7 @@ struct RecipeView: View {
                 }
             }
         }
-        .sheet(item: $activeRecipeSheet) { sheet in
+        .fullScreenCover(item: $activeRecipeSheet, content: { sheet in
             switch sheet {
             case .create:
                 EditRecipeView()
@@ -231,7 +231,7 @@ struct RecipeView: View {
                 EditRecipeView(recipe: value)
                     .interactiveDismissDisabled()
             }
-        }
+        })
     }
 }
 

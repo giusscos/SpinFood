@@ -54,16 +54,34 @@ struct RecipeDetailsView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            let heightView = geometry.size.height
-            
-            NavigationStack {
+        NavigationStack {
+            GeometryReader { geometry in
+                let size = geometry.size
+                
                 List {
                     Section {
-                        RecipeImageView(recipe: recipe, height: heightView * 0.36)
+                        if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity, maxHeight: size.height * 0.5)
+                                .mask(
+                                    LinearGradient(colors: [.black, .black, .black, .black, .clear, .clear], startPoint: .top, endPoint: .bottom)
+                                        .blur(radius: 16)
+                                )
+                                .overlay(alignment: .bottom) {
+                                    Text(recipe.name)
+                                        .font(.title)
+                                        .fontWeight(.semibold)
+                                        .padding(.bottom, 32)
+                                        .multilineTextAlignment(.center)
+                                }
+                        }
                     }
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .frame(minHeight: size.height * 0.5)
+                    .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                     
                     if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                         Section {
@@ -154,6 +172,9 @@ struct RecipeDetailsView: View {
                         .listRowBackground(Color.clear)
                     }
                 }
+                .listStyle(.plain)
+                .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+                .ignoresSafeArea(.container)
             }
             .sheet(item: $activeRecipeDetailSheet) { sheet in
                 switch sheet {

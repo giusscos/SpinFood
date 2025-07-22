@@ -158,6 +158,15 @@ struct RecipeView: View {
         .searchable(text: $searchText, prompt: "Search recipes")
         .navigationTitle("Recipes")
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    activeRecipeSheet = .create
+                } label: {
+                    Label("Add", systemImage: "plus.circle.fill")
+                }
+                .disabled(food.isEmpty)
+            }
+            
             ToolbarItem (placement: .topBarTrailing) {
                 Menu {
                     if !recipes.isEmpty {
@@ -208,15 +217,6 @@ struct RecipeView: View {
                         
                         Divider()
                     }
-                    
-                    // Add button
-                    Button {
-                        activeRecipeSheet = .create
-                    } label: {
-                        Label("Add", systemImage: "plus")
-                            .labelStyle(.titleAndIcon)
-                    }
-                    .disabled(food.isEmpty)
                 } label: {
                     Label("Menu", systemImage: "ellipsis.circle")
                 }

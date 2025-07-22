@@ -6,27 +6,66 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EditFoodView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
-    @Bindable var food: FoodModel
+    var food: FoodModel?
     
     @State private var name: String = ""
     @State private var quantity: Decimal = 0.0
     @State private var currentQuantity: Decimal = 0.0
     @State private var unit: FoodUnit = .gram
     
+    enum Field: Hashable {
+        case name
+        case quantity
+        case currentQuantity
+    }
+    
+    @FocusState private var focusedField: Field?
+    
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     TextField("Name", text: $name)
+                        .autocorrectionDisabled()
+                        .focused($focusedField, equals: .name)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .quantity
+                        }
+
+                    HStack {
+                        Text("Quantity")
+                        
+                        TextField("Quantity", value: $quantity, format: .number)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .submitLabel(food != nil ? .next : .done)
+                            .onSubmit {
+                                focusedField = food != nil ? .currentQuantity : nil
+                            }
+                    }
                     
-                    DecimalField(title: "Quantity", value: $quantity)
-                    
-                    DecimalField(title: "Current quantity", value: $currentQuantity)
+                    if food != nil {
+                        HStack {
+                            Text("Current quantity")
+                            
+                            TextField("Current quantity", value: $currentQuantity, format: .number)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .submitLabel(.done)
+                                .onSubmit {
+                                    focusedField = nil
+                                }
+                        }
+                    }
                     
                     Picker("Unit", selection: $unit) {
                         ForEach(FoodUnit.allCases, id: \.self) { unit in
@@ -37,55 +76,56 @@ struct EditFoodView: View {
                     Text("Food details")
                 }
             }
-            .navigationTitle("Edit Food")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(food != nil ? "Edit food" : "Create food")
             .toolbar {
-                ToolbarItem (placement: .topBarLeading, content: {
-                    Button {
-                        undoAndClose()
-                    } label: {
-                        Label("Undo", systemImage: "chevron.backward")
-                            .labelStyle(.titleOnly)
-                    }
-                })
-                
                 ToolbarItem (placement: .topBarTrailing, content: {
                     Button {
                         saveFood()
                     } label: {
-                        Label("Save", systemImage: "checkmark")
-                            .labelStyle(.titleOnly)
+                        Text("Save")
                     }
                 })
             }
-        }
-        .onAppear() {
-            name = food.name
-            quantity = food.quantity
-            currentQuantity = food.currentQuantity
-            unit = food.unit
+            .onAppear() {
+                focusedField = .name
+                
+                if let food = food {
+                    name = food.name
+                    quantity = food.quantity
+                    currentQuantity = food.currentQuantity
+                    unit = food.unit
+                }
+            }
         }
     }
     
-    func undoAndClose() {
-        dismiss()
-    }
-    
-    func saveFood() {
-        food.name = name
-        food.currentQuantity = currentQuantity
-        
-        if quantity <= currentQuantity {
-             quantity = currentQuantity
+    func saveFood() {        
+        if let food = food {
+            food.name = name
+            food.currentQuantity = currentQuantity
+            
+            if quantity <= currentQuantity {
+                quantity = currentQuantity
+            }
+            
+            food.quantity = quantity
+            food.unit = unit
+        } else {
+            let newFood = FoodModel(
+                name: name,
+                quantity: quantity,
+                currentQuantity: quantity,
+                unit: unit,
+                createdAt: .now
+            )
+            
+            modelContext.insert(newFood)
         }
-        
-        food.quantity = quantity
-        food.unit = unit
         
         dismiss()
     }
 }
 
 #Preview {
-    EditFoodView(food: FoodModel(name: "Carrot"))
+    EditFoodView(food: FoodModel(name: "Carrots"))
 }

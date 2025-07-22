@@ -62,11 +62,11 @@ struct RecipeDetailView: View {
                     }
                 }
                 
-                if !recipe.stepInstructions.isEmpty {
+                if let steps = recipe.steps, !steps.isEmpty {
                     Section {
-                        ForEach(recipe.stepInstructions.indices, id: \.self) { index in
+                        ForEach(steps) { step in
                             VStack(alignment: .leading) {
-                                Text("\(index + 1). \(recipe.stepInstructions[index])")
+                                Text(step.text)
                                     .font(.footnote)
                                     .lineLimit(2)
                                     .foregroundStyle(.secondary)

@@ -148,6 +148,8 @@ struct FoodView: View {
         .navigationTitle("Food")
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
+            case .create:
+                EditFoodView()
             case .edit(let food):
                 EditFoodView(food: food)
             case .refillMulti:
@@ -160,14 +162,20 @@ struct FoodView: View {
                     FoodRefillView(food: selectedFood)
                         .presentationDragIndicator(.visible)
                 }
-            case .create:
-                CreateFoodView()
             }
         }
         .toolbar {
             if !food.isEmpty {
                 ToolbarItem(placement: .topBarLeading) {
                     EditButton()
+                }
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    activeSheet = .create
+                } label: {
+                    Label("Add", systemImage: "plus.circle.fill")
                 }
             }
             
@@ -253,13 +261,6 @@ struct FoodView: View {
                         .disabled(selectedItems.isEmpty)
                         
                         Divider()
-                    }
-                    
-                    // Add button
-                    Button {
-                        activeSheet = .create
-                    } label: {
-                        Label("Add", systemImage: "plus")
                     }
                 } label: {
                     Label("Menu", systemImage: "ellipsis.circle")

@@ -127,16 +127,16 @@ struct RecipeDetailsView: View {
                         .listRowBackground(Color.clear)
                     }
                     
-                    if !recipe.stepInstructions.isEmpty {
+                    if let steps = recipe.steps, !steps.isEmpty {
                         Section {
-                            ForEach(Array(zip(recipe.stepInstructions.indices, recipe.stepInstructions)), id: \.0) { index, instructions in
+                            ForEach(steps) { step in
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("\(index + 1)- \(instructions);")
+                                    Text(step.text)
                                         .font(.headline)
                                         .padding(.vertical, 4)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     
-                                    if index < recipe.stepImages.count, let imageData = recipe.stepImages[index], let uiImage = UIImage(data: imageData) {
+                                    if let imageData = step.image, let uiImage = UIImage(data: imageData) {
                                         Image(uiImage: uiImage)
                                             .resizable()
                                             .scaledToFit()

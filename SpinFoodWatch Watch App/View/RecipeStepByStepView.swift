@@ -20,39 +20,43 @@ struct RecipeStepByStepView: View {
     @State private var showConfirmFinish: Bool = false
     
     var totalSteps: Int {
-        return recipe.stepInstructions.count
+        if let steps = recipe.steps {
+            return steps.count
+        } else {
+            return 0
+        }
     }
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("Step \(currentStepIndex + 1) of \(totalSteps)")
-                    .font(.headline)
-                
-                if !recipe.stepInstructions.isEmpty && currentStepIndex < recipe.stepInstructions.count {
-                    // Step image (if available)
-                    if currentStepIndex < recipe.stepImages.count,
-                       let imageData = recipe.stepImages[currentStepIndex],
-                       let uiImage = UIImage(data: imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-                    
-                    // Step instructions
-                    Text(recipe.stepInstructions[currentStepIndex])
-                        .multilineTextAlignment(.leading)
-                        .font(.body)
-                        .padding(.vertical)
-                        .frame(maxHeight: .infinity, alignment: .topLeading)
-                } else {
-                    Text("No steps available for this recipe")
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding()
+//            VStack(alignment: .leading, spacing: 15) {
+//                Text("Step \(currentStepIndex + 1) of \(totalSteps)")
+//                    .font(.headline)
+//                
+//                if !recipe.steps.isEmpty && currentStepIndex < recipe.steps.count {
+//                    // Step image (if available)
+//                    if currentStepIndex < recipe.stepImages.count,
+//                       let imageData = recipe.step[currentStepIndex],
+//                       let uiImage = UIImage(data: imageData) {
+//                        Image(uiImage: uiImage)
+//                            .resizable()
+//                            .scaledToFit()
+//                            .frame(maxWidth: .infinity)
+//                            .clipShape(RoundedRectangle(cornerRadius: 8))
+//                    }
+//                    
+//                    // Step instructions
+//                    Text(recipe.stepInstructions[currentStepIndex])
+//                        .multilineTextAlignment(.leading)
+//                        .font(.body)
+//                        .padding(.vertical)
+//                        .frame(maxHeight: .infinity, alignment: .topLeading)
+//                } else {
+//                    Text("No steps available for this recipe")
+//                        .foregroundStyle(.secondary)
+//                }
+//            }
+//            .padding()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -134,18 +138,5 @@ struct RecipeStepByStepView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: RecipeModel.self, configurations: config)
-    
-    let sampleRecipe = RecipeModel(name: "Pasta Carbonara")
-    sampleRecipe.stepInstructions = [
-        "Boil water and cook pasta according to package instructions.",
-        "In a bowl, whisk together eggs, grated cheese, and pepper.",
-        "Cook pancetta or bacon until crispy.",
-        "Drain pasta, reserving some pasta water.",
-        "Off heat, quickly mix pasta with egg mixture and pancetta."
-    ]
-    
-    return RecipeStepByStepView(recipe: sampleRecipe)
-        .modelContainer(container)
+    RecipeStepByStepView(recipe: RecipeModel(name: "Carbonara"))
 } 

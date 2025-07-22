@@ -72,30 +72,7 @@ struct SummaryView: View {
             if filteredRecipes.count == 0 && totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 {
                 ContentUnavailableView("No data to show", systemImage: "chart.pie", description: Text("Start cooking recipes or adding food to see your statistics and suggestions"))
             } else {
-                List {
-                    if filteredRecipes.count > 0 {
-                        Section {
-                            LazyHStack {
-                                ForEach(filteredRecipes) { recipe in
-                                    NavigationLink {
-                                        RecipeDetailsView(recipe: recipe)
-                                            .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
-                                    } label: {
-                                        SummaryRowView(recipe: recipe)
-                                            .padding(.horizontal)
-                                            .matchedTransitionSource(id: recipe.id, in: namespace)
-                                    }
-                                }
-                            }
-                        } header: {
-                            Text("Based on your ingredients")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-                        }
-                    }
-                    
+                List {                    
                     if totalRecipeCooked > 0 {
                         Section {
                             NavigationLink {

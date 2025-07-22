@@ -78,7 +78,6 @@ struct EditRecipeView: View {
     enum Field: Hashable {
         case name
         case recipeDescription
-        case step
     }
     
     @FocusState private var focusedField: Field?
@@ -124,7 +123,7 @@ struct EditRecipeView: View {
                                     }
                                 })
                                 .frame(minHeight: 28, maxHeight: 256)
-                                .focused($focusedField, equals: .name)
+                                .focused($focusedField, equals: .recipeDescription)
                                 .submitLabel(.next)
                                 .onSubmit {
                                     focusedField = nil
@@ -178,6 +177,21 @@ struct EditRecipeView: View {
                     }
                 }
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Cancel")
+                                .font(.headline)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal)
+                        .foregroundStyle(.primary)
+                        .background(.ultraThinMaterial)
+                        .clipShape(.capsule)
+                    }
+                    
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             saveRecipe()
@@ -196,10 +210,11 @@ struct EditRecipeView: View {
                     
                     ToolbarItem(placement: .keyboard) {
                         Button {
-                            focusedField = nil
+                            hideKeyboard()
                         } label: {
                             Image(systemName: "keyboard.chevron.compact.down")
                         }
+                        .tint(.primary)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                 }
@@ -258,6 +273,14 @@ struct EditRecipeView: View {
         dismiss()
     }
 }
+
+#if canImport(UIKit)
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+#endif
 
 #Preview {
     EditRecipeView()

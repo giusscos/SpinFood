@@ -226,8 +226,10 @@ struct RecipeView: View {
             switch sheet {
             case .create:
                 EditRecipeView()
+                    .interactiveDismissDisabled()
             case .edit(let value):
                 EditRecipeView(recipe: value)
+                    .interactiveDismissDisabled()
             }
         }
     }

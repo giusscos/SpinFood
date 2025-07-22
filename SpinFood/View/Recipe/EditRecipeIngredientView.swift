@@ -16,9 +16,9 @@ struct EditRecipeIngredientView: View {
 
     var body: some View {
         if !foods.isEmpty {
-            Section {
-                VStack {
-                    if !ingredients.isEmpty {
+            if !ingredients.isEmpty {
+                Section {
+                    VStack {
                         Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
                             .font(.headline)
                             .padding()
@@ -57,12 +57,12 @@ struct EditRecipeIngredientView: View {
                             }
                         }
                     }
+                    .background(.ultraThinMaterial)
+                    .clipShape(.rect(cornerRadius: 32))
                 }
-                .background(.ultraThinMaterial)
-                .clipShape(.rect(cornerRadius: 32))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
             
             Section {
                 VStack(alignment: .leading, spacing: 16) {
@@ -118,6 +118,7 @@ struct EditRecipeIngredientView: View {
                 .clipShape(.rect(cornerRadius: 32))
             }
             .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
     }
 }

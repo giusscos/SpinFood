@@ -142,18 +142,7 @@ struct EditableStepView: View {
                 })
                 .overlay(alignment: .bottomTrailing) {
                     Button {
-                        if textToBeEdited != "" {
-                            if let index = steps.firstIndex(where: { $0.id == step.id }) {
-                                steps[index].text = textToBeEdited
-                                steps[index].image = imageToBeEdited
-                            }
-                            
-                            textToBeEdited = ""
-                            imageToBeEdited = nil
-                            editingImageItem = nil
-                            
-                            editingStepUUID = nil
-                        }
+                        save()
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
                             .imageScale(.large)
@@ -164,7 +153,26 @@ struct EditableStepView: View {
                     .disabled(textToBeEdited.isEmpty)
                     .padding(4)
                 }
+                .submitLabel(.done)
+                .onSubmit {
+                    save()
+                }
                 .frame(minHeight: 28, maxHeight: 256)
+        }
+    }
+    
+    func save() {
+        if textToBeEdited != "" {
+            if let index = steps.firstIndex(where: { $0.id == step.id }) {
+                steps[index].text = textToBeEdited
+                steps[index].image = imageToBeEdited
+            }
+            
+            textToBeEdited = ""
+            imageToBeEdited = nil
+            editingImageItem = nil
+            
+            editingStepUUID = nil
         }
     }
 }
@@ -235,13 +243,7 @@ struct CreateStepView: View {
                 })
                 .overlay(alignment: .bottomTrailing) {
                     Button {
-                        if newStep.text != "" {
-                            steps.append(StepRecipe(text: newStep.text, image: newStep.image))
-                            
-                            newStep.text = ""
-                            newStep.image = nil
-                            stepImageItem = nil
-                        }
+                        save()
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
                             .imageScale(.large)
@@ -252,11 +254,26 @@ struct CreateStepView: View {
                     .disabled(newStep.text.isEmpty)
                     .padding(4)
                 }
+                .submitLabel(.done)
+                .onSubmit {
+                    save()
+                }
                 .frame(minHeight: 28, maxHeight: 256)
         }
         .padding()
         .background(.ultraThinMaterial)
         .clipShape(.rect(cornerRadius: 32))
+        .padding(.bottom, 48)
+    }
+    
+    func save() {
+        if newStep.text != "" {
+            steps.append(StepRecipe(text: newStep.text, image: newStep.image))
+            
+            newStep.text = ""
+            newStep.image = nil
+            stepImageItem = nil
+        }
     }
 }
 

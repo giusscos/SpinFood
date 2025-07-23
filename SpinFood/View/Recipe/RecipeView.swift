@@ -123,32 +123,35 @@ struct RecipeView: View {
     }
     
     var body: some View {
-        
         List {
             if !filteredRecipes.isEmpty {
-                ForEach(filteredRecipes) { value in
-                    NavigationLink {
-                        RecipeDetailsView(recipe: value)
-                            .navigationTransition(.zoom(sourceID: value.id, in: namespace))
-                    } label: {
-                        RecipeRowView(recipe: value)
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    modelContext.delete(value)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                Section {
+                    ForEach(filteredRecipes) { value in
+                        NavigationLink {
+                            RecipeDetailsView(recipe: value)
+                                .navigationTransition(.zoom(sourceID: value.id, in: namespace))
+                        } label: {
+                            RecipeRowView(recipe: value)
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        modelContext.delete(value)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                    
+                                    Button {
+                                        activeRecipeSheet = .edit(value)
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
                                 }
-                                
-                                Button {
-                                    activeRecipeSheet = .edit(value)
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
-                                .tint(.blue)
-                            }
+                        }
+                        .matchedTransitionSource(id: value.id, in: namespace)
                     }
-                    .matchedTransitionSource(id: value.id, in: namespace)
                 }
+                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                .clipped()
             } else if searchText.isNotEmpty && filteredRecipes.isEmpty {
                 ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
             } else {

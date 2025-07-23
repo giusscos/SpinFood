@@ -153,10 +153,32 @@ struct EditRecipeView: View {
                     EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
                     
                     EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
+                    
+                    if let recipe = recipe {
+                        Section {
+                            Button (role: .destructive) {
+                                modelContext.delete(recipe)
+                                
+                                dismiss()
+                            } label: {
+                                Text("Delete recipe")
+                                    .font(.headline)
+                                    .padding(.vertical, 8)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            }
+                            .tint(.red)
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.capsule)
+                        }
+                        .padding(.bottom, 48)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    }
                 }
                 .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
                 .listStyle(.plain)
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+                .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
                 .ignoresSafeArea(.container)
                 .background {
                     VStack (spacing: 0) {

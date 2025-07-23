@@ -263,7 +263,6 @@ struct CreateStepView: View {
         .padding()
         .background(.ultraThinMaterial)
         .clipShape(.rect(cornerRadius: 32))
-        .padding(.bottom, 48)
     }
     
     func save() {

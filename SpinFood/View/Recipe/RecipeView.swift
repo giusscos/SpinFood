@@ -218,8 +218,6 @@ struct RecipeView: View {
                         } label: {
                             Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                         }
-                        
-                        Divider()
                     }
                 } label: {
                     Label("Menu", systemImage: "ellipsis.circle")

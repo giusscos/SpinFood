@@ -75,6 +75,8 @@ struct EditRecipeView: View {
     @State private var listBackgroundColor: Color = Color(.systemBackground)
     @State private var showPhotoPicker: Bool = false
     
+    @State private var showDeleteConfirmation: Bool = false
+    
     enum Field: Hashable {
         case name
         case recipeDescription
@@ -154,12 +156,10 @@ struct EditRecipeView: View {
                     
                     EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
                     
-                    if let recipe = recipe {
+                    if let _ = recipe {
                         Section {
                             Button (role: .destructive) {
-                                modelContext.delete(recipe)
-                                
-                                dismiss()
+                                showDeleteConfirmation = true
                             } label: {
                                 Text("Delete recipe")
                                     .font(.headline)
@@ -240,6 +240,12 @@ struct EditRecipeView: View {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                 }
+                .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete Recipe", role: .destructive) {
+                        deleteRecipe()
+                    }
+                })
             }
         }
         .onAppear {
@@ -293,6 +299,14 @@ struct EditRecipeView: View {
         }
         
         dismiss()
+    }
+    
+    func deleteRecipe() {
+        if let recipe = recipe {
+            modelContext.delete(recipe)
+            
+            dismiss()
+        }
     }
 }
 

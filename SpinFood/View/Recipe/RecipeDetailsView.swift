@@ -32,7 +32,6 @@ struct RecipeDetailsView: View {
     @Query var food: [FoodModel]
     
     @State private var showConfirmEat: Bool = false
-    @State private var showDeleteConfirmation: Bool = false
     
     @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
     
@@ -71,13 +70,6 @@ struct RecipeDetailsView: View {
                                     LinearGradient(colors: [.black, .black, .black, .black, .clear, .clear], startPoint: .top, endPoint: .bottom)
                                         .blur(radius: 16)
                                 )
-                                .overlay(alignment: .bottom) {
-                                    Text(recipe.name)
-                                        .font(.title)
-                                        .fontWeight(.semibold)
-                                        .padding(.bottom, 48)
-                                        .multilineTextAlignment(.center)
-                                }
                         }
                     }
                     .frame(minHeight: size.height * 0.5)
@@ -87,7 +79,12 @@ struct RecipeDetailsView: View {
                     
                     if recipe.descriptionRecipe != "" {
                         Section {
-                            VStack (alignment: .leading) {
+                            VStack (alignment: .leading, spacing: 24) {
+                                Text(recipe.name)
+                                    .font(.title)
+                                    .fontWeight(.semibold)
+                                    .multilineTextAlignment(.center)
+                                
                                 Text(recipe.descriptionRecipe)
                                     .multilineTextAlignment(.leading)
                                     .font(.body)
@@ -111,7 +108,7 @@ struct RecipeDetailsView: View {
                                 ForEach(ingredients) { value in
                                     if let ingredient = value.ingredient {
                                         HStack (alignment: .lastTextBaseline) {
-                                            Text("\(ingredient.name):")
+                                            Text(ingredient.name)
                                                 .frame(maxWidth: .infinity, alignment: .leading)
                                             
                                             Text("\(value.quantityNeeded)")
@@ -165,10 +162,9 @@ struct RecipeDetailsView: View {
                                         }
                                         
                                         Text(step.text)
-                                            .font(.headline)
-                                            .padding(.vertical, 4)
+                                            .padding(4)
+                                            .multilineTextAlignment(.leading)
                                             .frame(maxWidth: .infinity, alignment: .leading)
-                                        
                                     }
                                     .padding()
                                     .background(.ultraThinMaterial)
@@ -232,6 +228,7 @@ struct RecipeDetailsView: View {
                     })
                 }
             }
+            .toolbarVisibility(.hidden, for: .tabBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -264,14 +261,6 @@ struct RecipeDetailsView: View {
                     .clipShape(.capsule)
                     .padding(.vertical)
                 }
-            }
-            .alert("Delete Recipe", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Delete", role: .destructive) {
-                    deleteRecipe()
-                }
-            } message: {
-                Text("Are you sure you want to delete \"\(recipe.name)\"? This action cannot be undone.")
             }
             .onAppear() {
                 if let imageData = recipe.image, let uiImage = UIImage(data: imageData), let avgColor = uiImage.averageColor() {

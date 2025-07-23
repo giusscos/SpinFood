@@ -112,6 +112,14 @@ struct FoodView: View {
         editMode?.wrappedValue.isEditing ?? false
     }
     
+    var foodToBeRefilled: [FoodModel] {
+        food.filter { $0.currentQuantity < $0.quantity }
+    }
+    
+    var allFoodToBeRefilled: Bool {
+        foodToBeRefilled.count > 0
+    }
+    
     var body: some View {
         List(selection: $selectedItems) {
             if !filteredFood.isEmpty {
@@ -235,6 +243,7 @@ struct FoodView: View {
                         } label: {
                             Label("Refill all food", systemImage: "bag.fill.badge.plus")
                         }
+                        .disabled(!allFoodToBeRefilled)
                         
                         // Refill Selected option - show whenever in edit mode
                         Button {
@@ -259,8 +268,6 @@ struct FoodView: View {
                             Label("Delete Selected", systemImage: "trash")
                         }
                         .disabled(selectedItems.isEmpty)
-                        
-                        Divider()
                     }
                 } label: {
                     Label("Menu", systemImage: "ellipsis.circle")

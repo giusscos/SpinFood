@@ -106,14 +106,19 @@ struct RecipeDetailsView: View {
                             VStack (alignment: .leading) {
                                 Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
                                     .font(.headline)
+                                    .padding(.bottom)
                                 
                                 ForEach(ingredients) { value in
                                     if let ingredient = value.ingredient {
-                                        HStack {
+                                        HStack (alignment: .lastTextBaseline) {
                                             Text("\(ingredient.name):")
                                                 .frame(maxWidth: .infinity, alignment: .leading)
                                             
-                                            Text("\(value.quantityNeeded)\(ingredient.unit.abbreviation)")
+                                            Text("\(value.quantityNeeded)")
+                                            +
+                                            Text("\(ingredient.unit.abbreviation)")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
                                         }
                                         .font(.headline)
                                         .lineLimit(1)

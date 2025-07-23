@@ -11,23 +11,32 @@ struct RecipeRowView: View {
     var recipe: RecipeModel
     
     var body: some View {
-        if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: 300)
-            //                .mask(
-            //                    LinearGradient(colors: [.black, .black, .black, .black, .clear, .clear], startPoint: .top, endPoint: .bottom)
-            //                        .blur(radius: 16)
-            //                )
-//                .overlay(alignment: .bottom) {
-//                    Text(recipe.name)
-//                        .font(.title)
-//                        .fontWeight(.semibold)
-//                        .padding(.bottom, 24)
-//                        .multilineTextAlignment(.center)
-//                        .frame(maxWidth: .init(), alignment: .center)
-//                }
+        VStack (alignment: .leading) {
+            if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .clipShape(.rect(cornerRadius: 20))
+            }
+            
+            Group {
+                Text(recipe.name)
+                    .font(.headline)
+                
+                Text(recipe.descriptionRecipe)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .lineLimit(1)
+            .padding(.leading, 8)
+        }
+        .padding()
+        .background(.ultraThinMaterial)
+        .clipShape(.rect(cornerRadius: 32))
+        .overlay {
+            RoundedRectangle(cornerRadius: 32)
+                .stroke(.secondary.opacity(0.25), lineWidth: 1)
         }
     }
 }

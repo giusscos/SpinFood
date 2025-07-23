@@ -150,8 +150,9 @@ struct RecipeView: View {
                         .matchedTransitionSource(id: value.id, in: namespace)
                     }
                 }
-                .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                .clipped()
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(.init(top: 4, leading: 4, bottom: 4, trailing: 4))
             } else if searchText.isNotEmpty && filteredRecipes.isEmpty {
                 ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
             } else {

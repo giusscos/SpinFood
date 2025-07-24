@@ -12,84 +12,45 @@ struct CookRecipeStepByStepView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
-    @Bindable var recipe: RecipeModel
-    var onComplete: () -> Void
+    @Query var recipes: [RecipeModel]
+        
+    @State var currentIndex: Int = 0
+    @State var showEatConfirmation: Bool = false
     
-    @State private var currentStepIndex: Int
+    var recipe: RecipeModel
     
-    // Computed properties
-//    private var hasSteps: Bool {
-//        return !recipe.steps.isEmpty
-//    }
-//    
-//    private var currentStepInstructions: String? {
-//        guard hasSteps && currentStepIndex < recipe.steps.count else { return nil }
-//        return recipe.steps[currentStepIndex]
-//    }
-//    
-//    private var currentStepImage: Data? {
-//        if let steps = recipe.steps {
-//            guard hasSteps && currentStepIndex < steps.count else { return nil }
-//            return recipe.steps[currentStepIndex]
-//        }
-//    }
-//    
-//    private var isLastStep: Bool {
-//        if let steps = recipe.steps {
-//            return currentStepIndex == steps.count - 1
-//        } else {
-//            return false
-//        }
-//    }
-    
-    private var isFirstStep: Bool {
-        return currentStepIndex == 0
-    }
-    
-    init(recipe: RecipeModel, onComplete: @escaping () -> Void) {
-        self.recipe = recipe
-        self.onComplete = onComplete
-        // Initialize with the last visited step or 0
-        self._currentStepIndex = State(initialValue: recipe.lastStepIndex)
-    }
+    var steps: [StepRecipe]
     
     var body: some View {
         NavigationStack {
-            VStack {
-//                if !hasSteps {
-//                    ContentUnavailableView("No Steps Available", systemImage: "list.bullet.clipboard", description: Text("This recipe doesn't have any steps."))
-//                } else if let instructions = currentStepInstructions {
-//                    Text("Step \(currentStepIndex + 1) of \(recipe.steps.count)")
-//                        .font(.subheadline)
-//                        .foregroundStyle(.secondary)
-//                    
-//                    ProgressView(value: Double(currentStepIndex + 1), total: Double(recipe.steps.count))
-//                        .padding()
-//                    
-//                    ScrollView {
-//                        VStack(alignment: .leading, spacing: 16) {
-//                            // Step image
-//                            if let imageData = currentStepImage, let uiImage = UIImage(data: imageData) {
-//                                Image(uiImage: uiImage)
-//                                    .resizable()
-//                                    .scaledToFit()
-//                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-//                                    .frame(height: 200)
-//                                    .frame(maxWidth: .infinity)
-//                            }
-//                            
-//                            // Step description
-//                            Text(instructions)
-//                                .font(.body)
-//                                .frame(maxWidth: .infinity, alignment: .leading)
-//                                .multilineTextAlignment(.leading)
-//                        }
-//                        .padding()
-//                    }
-//                }
-            }
+            TabView(selection: $currentIndex, content: {
+                ForEach(steps.indices, id: \.self) { index in
+                    ScrollView {
+                        VStack (alignment: .leading, spacing: 16) {
+                            if let imageData = steps[index].image, let uiImage = UIImage(data: imageData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: .infinity, maxHeight: 300)
+                                    .clipShape(.rect(cornerRadius: 20))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            
+                            Text(steps[index].text)
+                                .padding(4)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.bottom, 24)
+                    }
+                    .tag(index)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                }
+            })
+            .tabViewStyle(.page)
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
             .navigationTitle(recipe.name)
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -99,68 +60,37 @@ struct CookRecipeStepByStepView: View {
                     }
                 }
                 
-//                ToolbarItem(placement: .topBarTrailing) {
-//                    Button {
-//                        currentStepIndex = recipe.stepInstructions.count - 1
-//                        recipe.lastStepIndex = currentStepIndex
-//                    } label: {
-//                        Label("Skip to End", systemImage: "forward.end.fill")
-//                            .font(.subheadline)
-//                    }
-//                }
-                
-//                ToolbarItem(placement: .bottomBar) {
-//                    HStack {
-//                        Button {
-//                            if currentStepIndex > 0 {
-//                                withAnimation {
-//                                    currentStepIndex -= 1
-//                                    recipe.lastStepIndex = currentStepIndex
-//                                }
-//                            }
-//                        } label: {
-//                            Label("Previous", systemImage: "arrow.left.circle.fill")
-//                                .labelStyle(.iconOnly)
-//                                .font(.title)
-//                        }
-//                        .frame(maxWidth: .infinity, alignment: .leading)
-//                        .disabled(isFirstStep)
-//                        .foregroundStyle(isFirstStep ? .secondary : Color.accentColor)
-//                        
-//                        if isLastStep {
-//                            Button {
-//                                // Instead of showing a local sheet, use the passed completion handler
-//                                dismiss()
-//                                onComplete()
-//                            } label: {
-//                                Label("Complete", systemImage: "checkmark.circle.fill")
-//                                    .labelStyle(.iconOnly)
-//                                    .font(.title)
-//                            }
-//                            .foregroundStyle(Color.purple)
-//                        } else {
-//                            Button {
-//                                withAnimation {
-//                                    currentStepIndex += 1
-//                                    recipe.lastStepIndex = currentStepIndex
-//                                }
-//                            } label: {
-//                                Label("Next", systemImage: "arrow.right.circle.fill")
-//                                    .labelStyle(.iconOnly)
-//                                    .font(.title)
-//                            }
-//                        }
-//                    }
-//                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        if currentIndex == steps.count - 1 {
+                            if let ingredients = recipe.ingredients, !ingredients.isEmpty {
+                                showEatConfirmation = true
+                            }
+                        } else {
+                            withAnimation {
+                                currentIndex = steps.count - 1
+                            }
+                        }
+                    } label: {
+                        Text(currentIndex == steps.count - 1 ? "Eat" : "Skip")
+                    }
+                }
             }
-            .onChange(of: currentStepIndex) { _, newValue in
-                // Save progress
-                recipe.lastStepIndex = newValue
+            .sheet(isPresented: $showEatConfirmation, content: {
+                if let ingredients = recipe.ingredients, !ingredients.isEmpty {
+                    RecipeConfirmEatView(recipe: recipe)
+                }
+            })
+            .onAppear() {
+                currentIndex = recipe.lastStepIndex
+            }
+            .onDisappear() {
+                recipe.lastStepIndex = currentIndex
             }
         }
     }
 }
 
 #Preview {
-    CookRecipeStepByStepView(recipe: RecipeModel(name: "Carbonara"), onComplete: {})
-} 
+    CookRecipeStepByStepView(recipe: RecipeModel(name: "Recipe"), steps: [StepRecipe(text: "Step 1")])
+}

@@ -14,16 +14,8 @@ struct RecipeConfirmEatView: View {
     
     @Query var foods: [FoodModel]
     
-    var ingredients: [RecipeFoodModel]
     var recipe: RecipeModel
-    var isFromCookingFlow: Bool
-    
-    init(ingredients: [RecipeFoodModel], recipe: RecipeModel, isFromCookingFlow: Bool = false) {
-        self.ingredients = ingredients
-        self.recipe = recipe
-        self.isFromCookingFlow = isFromCookingFlow
-    }
-    
+        
     var body: some View {
         NavigationStack {
             List {
@@ -33,8 +25,10 @@ struct RecipeConfirmEatView: View {
                         .font(.headline)
                         .fontWeight(.medium)
                 }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
                 
-                if !ingredients.isEmpty {
+                if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     Section {
                         ForEach(ingredients) { ingredient in
                             IngredientRowView(ingredient: ingredient)
@@ -44,7 +38,7 @@ struct RecipeConfirmEatView: View {
                     }
                 }
             }
-            .navigationTitle(isFromCookingFlow ? "Complete Recipe" : "Cook Recipe")
+            .navigationTitle("Ready to eat?")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -55,29 +49,36 @@ struct RecipeConfirmEatView: View {
                     }
                 }
                 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .bottomBar) {
                     Button {
                         consumeFood()
+                        
                         dismiss()
                     } label: {
                         Text("Confirm")
-                            .fontWeight(.bold)
+                            .font(.headline)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                 }
             }
         }
     }
     
     private func consumeFood() {
-        // Mark the recipe as cooked
-        recipe.cookedAt.append(Date.now)
-        
-        // Reset the step index after completing
-        recipe.lastStepIndex = 0
-        
-        // Find and update ingredient stocks
-        for ingredient in ingredients {
-            updateIngredientQuantity(ingredient)
+        if let ingredients = recipe.ingredients, !ingredients.isEmpty {
+            // Mark the recipe as cooked
+            recipe.cookedAt.append(Date.now)
+            
+            // Reset the step index after completing
+            recipe.lastStepIndex = 0
+            
+            // Find and update ingredient stocks
+            for ingredient in ingredients {
+                updateIngredientQuantity(ingredient)
+            }
         }
     }
     
@@ -115,35 +116,24 @@ struct RecipeConfirmEatView: View {
     }
 }
 
-// Extract the ingredient row to a separate view
 struct IngredientRowView: View {
     let ingredient: RecipeFoodModel
     
     var body: some View {
         if let item = ingredient.ingredient {
             HStack {
-                VStack(alignment: .leading) {
-                    Text(item.name)
-                        .font(.headline)
-                    
-                    Text(item.unit.rawValue)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+                Text(item.name)
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Spacer()
-                
-                let quantityText = "\(ingredient.quantityNeeded) \(item.unit.abbreviation)"
-                Text("- \(quantityText)")
+                Text("- \("\(ingredient.quantityNeeded) \(item.unit.abbreviation)")")
                     .font(.headline)
                     .foregroundStyle(.red)
             }
-        } else {
-            EmptyView()
         }
     }
 }
 
 #Preview {
-    RecipeConfirmEatView(ingredients: [], recipe: RecipeModel(name: "Carbonara"))
+    RecipeConfirmEatView(recipe: RecipeModel(name: "Carbonara"))
 }

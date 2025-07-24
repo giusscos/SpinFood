@@ -126,7 +126,6 @@ struct EditRecipeView: View {
                                 })
                                 .frame(minHeight: 28, maxHeight: 256)
                                 .focused($focusedField, equals: .recipeDescription)
-                                .submitLabel(.next)
                                 .onSubmit {
                                     focusedField = nil
                                 }

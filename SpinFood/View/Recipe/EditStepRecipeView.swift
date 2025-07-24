@@ -254,7 +254,6 @@ struct CreateStepView: View {
                     .disabled(newStep.text.isEmpty)
                     .padding(4)
                 }
-                .submitLabel(.done)
                 .onSubmit {
                     save()
                 }

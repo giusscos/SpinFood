@@ -56,7 +56,7 @@ struct FoodRefillView: View {
                                 Image(systemName: "arrow.right")
                                 
                                 HStack(alignment: .lastTextBaseline, spacing: 2) {
-                                    VStack (alignment: .leading) {
+                                    VStack (alignment: .trailing) {
                                         HStack (alignment: .lastTextBaseline, spacing: 0) {
                                             Text("Goal")
                                             

@@ -6,6 +6,7 @@ struct RecipeCookingStatsView: View {
     @Namespace private var namespace
     
     @Query var recipes: [RecipeModel]
+    
     @State private var selectedRange: DateRange = .week
     @State private var referenceDate: Date = Date()
     @State private var selectedDataPoint: (date: Date, count: Int)? = nil

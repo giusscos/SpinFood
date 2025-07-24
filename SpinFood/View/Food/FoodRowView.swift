@@ -19,10 +19,16 @@ struct FoodRowView: View {
             HStack (alignment: .lastTextBaseline, spacing: 2) {
                 VStack (alignment: .trailing) {
                     if food.quantity != food.currentQuantity {
-                        Text("\(food.quantity)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.semibold)
+                        HStack (spacing: 2) {
+                            Text("Initial: ")
+                            
+                            Text("\(food.quantity)")
+                            +
+                            Text(food.unit.abbreviation)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fontWeight(.semibold)
                         
                         Text("\(food.currentQuantity)")
                             .font(.headline)

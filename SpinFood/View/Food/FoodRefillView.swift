@@ -21,14 +21,17 @@ struct FoodRefillView: View {
                             .font(.title)
                             .fontWeight(.bold)
                         
-                        Text("This are the food you will refill:")
-                            .font(.subheadline)
-                            .multilineTextAlignment(.leading)
+                        Group {
+                            Text(food.count == 1 ? "This is" : "These are")
+                            +
+                            Text("the food you will refill:")
+                        }
+                        .font(.subheadline)
+                        .multilineTextAlignment(.leading)
                     }
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    .listRowSpacing(0)
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
                 
                 Section {
                     ForEach(food) { value in
@@ -37,41 +40,57 @@ struct FoodRefillView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             HStack(spacing: 6) {
-                                HStack(spacing: 2) {
-                                    Text("\(value.quantity - value.currentQuantity)")
-                                        .font(.headline)
-                                        .fontWeight(.semibold)
-                                    
-                                    Text(value.unit.abbreviation)
-                                        .font(.headline)
-                                        .foregroundStyle(.secondary)
-                                }
+                                VStack (alignment: .trailing) {
+                                    HStack (alignment: .lastTextBaseline, spacing: 0) {
+                                        Text("Needed")
                                 
+                                        Image(systemName: "arrow.down")
+                                            .imageScale(.small)
+                                    }
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    
+                                    Text("\(value.quantity - value.currentQuantity)")
+                                }
+                                    
                                 Image(systemName: "arrow.right")
                                 
-                                HStack(spacing: 2) {
-                                    Text("\(value.quantity)")
-                                        .font(.headline)
-                                        .fontWeight(.semibold)
-                                    
+                                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                                    VStack (alignment: .leading) {
+                                        HStack (alignment: .lastTextBaseline, spacing: 0) {
+                                            Text("Goal")
+                                            
+                                            Image(systemName: "arrow.down")
+                                                .imageScale(.small)
+                                        }
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        
+                                        Text("\(value.quantity)")
+                                            .fontWeight(.semibold)
+                                    }
+   
                                     Text(value.unit.abbreviation)
-                                        .font(.headline)
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            .font(.headline)
                         }
                     }
-                } header: {
-                    Text("Food")
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .bottomBar) {
                     Button {
                         refillAllFood()
                     } label: {
-                        Label("Confirm", systemImage: "checkmark")
+                        Text("Confirm")
+                            .font(.headline)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                 }
             }
         }

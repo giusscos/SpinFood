@@ -17,7 +17,7 @@ struct SummaryView: View {
     
     @Query var recipes: [RecipeModel]
     
-    @Query var food: [FoodModel]
+    @Query var foods: [FoodModel]
     
     @Query var consumptions: [FoodConsumptionModel]
     
@@ -29,7 +29,7 @@ struct SummaryView: View {
             
             return recipeIngredients.allSatisfy { recipeFood in
                 guard let requiredIngredient = recipeFood.ingredient else { return false }
-                guard let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) else { return false }
+                guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return false }
                 
                 // If units are the same, direct comparison
                 if requiredIngredient.unit == inventoryItem.unit {

@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class FoodRefillModel {
+final class FoodRefillModel {
     var id: UUID = UUID()
     var refilledAt: Date = Date.now
     var quantity: Decimal = 0.0 // How much was refilled

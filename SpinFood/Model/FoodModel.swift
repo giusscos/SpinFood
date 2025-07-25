@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class FoodModel {
+final class FoodModel {
     var id: UUID = UUID()
     var name: String = ""
     var quantity: Decimal = 0.0

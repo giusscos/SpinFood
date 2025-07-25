@@ -59,7 +59,7 @@ struct RecipeView: View {
     @Namespace var namespace
     
     @Query var recipes: [RecipeModel]
-    @Query var food: [FoodModel]
+    @Query var foods: [FoodModel]
     
     @State private var activeRecipeSheet: ActiveRecipeSheet?
     @State private var searchText = ""
@@ -84,7 +84,7 @@ struct RecipeView: View {
                 
                 return recipeIngredients.allSatisfy { recipeFood in
                     guard let requiredIngredient = recipeFood.ingredient else { return false }
-                    guard let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) else { return false }
+                    guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return false }
                     
                     return inventoryItem.currentQuantity >= recipeFood.quantityNeeded
                 }
@@ -96,7 +96,7 @@ struct RecipeView: View {
                 
                 return !recipeIngredients.allSatisfy { recipeFood in
                     guard let requiredIngredient = recipeFood.ingredient else { return false }
-                    guard let inventoryItem = food.first(where: { $0.id == requiredIngredient.id }) else { return false }
+                    guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return false }
                     
                     return inventoryItem.currentQuantity >= recipeFood.quantityNeeded
                 }
@@ -153,7 +153,7 @@ struct RecipeView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 .listRowInsets(.init(top: 4, leading: 4, bottom: 4, trailing: 4))
-            } else if searchText.isNotEmpty && filteredRecipes.isEmpty {
+            } else if !searchText.isEmpty && filteredRecipes.isEmpty {
                 ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
             } else {
                 ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
@@ -168,59 +168,61 @@ struct RecipeView: View {
                 } label: {
                     Label("Add", systemImage: "plus.circle.fill")
                 }
-                .disabled(food.isEmpty)
+                .disabled(foods.isEmpty)
             }
             
-            ToolbarItem (placement: .topBarTrailing) {
-                Menu {
-                    if !recipes.isEmpty {
-                        // Sort options
-                        Menu {
-                            Picker("Sort by", selection: $sortOption) {
-                                Text(RecipeSortOption.nameAsc.label)
-                                    .tag(RecipeSortOption.nameAsc)
-                                
-                                Text(RecipeSortOption.nameDesc.label)
-                                    .tag(RecipeSortOption.nameDesc)
-                                
-                                Divider()
-                                
-                                Text(RecipeSortOption.dateAsc.label)
-                                    .tag(RecipeSortOption.dateAsc)
-                                
-                                Text(RecipeSortOption.dateDesc.label)
-                                    .tag(RecipeSortOption.dateDesc)
-                                
-                                Divider()
-                                
-                                Text(RecipeSortOption.durationAsc.label)
-                                    .tag(RecipeSortOption.durationAsc)
-                                
-                                Text(RecipeSortOption.durationDesc.label)
-                                    .tag(RecipeSortOption.durationDesc)
+            if !recipes.isEmpty {
+                ToolbarItem (placement: .topBarTrailing) {
+                    Menu {
+                        if !recipes.isEmpty {
+                            // Sort options
+                            Menu {
+                                Picker("Sort by", selection: $sortOption) {
+                                    Text(RecipeSortOption.nameAsc.label)
+                                        .tag(RecipeSortOption.nameAsc)
+                                    
+                                    Text(RecipeSortOption.nameDesc.label)
+                                        .tag(RecipeSortOption.nameDesc)
+                                    
+                                    Divider()
+                                    
+                                    Text(RecipeSortOption.dateAsc.label)
+                                        .tag(RecipeSortOption.dateAsc)
+                                    
+                                    Text(RecipeSortOption.dateDesc.label)
+                                        .tag(RecipeSortOption.dateDesc)
+                                    
+                                    Divider()
+                                    
+                                    Text(RecipeSortOption.durationAsc.label)
+                                        .tag(RecipeSortOption.durationAsc)
+                                    
+                                    Text(RecipeSortOption.durationDesc.label)
+                                        .tag(RecipeSortOption.durationDesc)
+                                }
+                            } label: {
+                                Label("Sort", systemImage: "arrow.up.arrow.down")
                             }
-                        } label: {
-                            Label("Sort", systemImage: "arrow.up.arrow.down")
-                        }
-                        
-                        // Filter options
-                        Menu {
-                            Picker("Filter", selection: $filterOption) {
-                                Text(RecipeFilterOption.all.label)
-                                    .tag(RecipeFilterOption.all)
-                                
-                                Text(RecipeFilterOption.canCook.label)
-                                    .tag(RecipeFilterOption.canCook)
-                                
-                                Text(RecipeFilterOption.cantCook.label)
-                                    .tag(RecipeFilterOption.cantCook)
+                            
+                            // Filter options
+                            Menu {
+                                Picker("Filter", selection: $filterOption) {
+                                    Text(RecipeFilterOption.all.label)
+                                        .tag(RecipeFilterOption.all)
+                                    
+                                    Text(RecipeFilterOption.canCook.label)
+                                        .tag(RecipeFilterOption.canCook)
+                                    
+                                    Text(RecipeFilterOption.cantCook.label)
+                                        .tag(RecipeFilterOption.cantCook)
+                                }
+                            } label: {
+                                Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                             }
-                        } label: {
-                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                         }
+                    } label: {
+                        Label("Menu", systemImage: "ellipsis.circle")
                     }
-                } label: {
-                    Label("Menu", systemImage: "ellipsis.circle")
                 }
             }
         }

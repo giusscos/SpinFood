@@ -3,7 +3,7 @@ import Foundation
 import SwiftData
 
 @Model
-class FoodConsumptionModel {
+final class FoodConsumptionModel {
     var id: UUID = UUID()
     var consumedAt: Date = Date.now
     var quantity: Decimal = 0.0

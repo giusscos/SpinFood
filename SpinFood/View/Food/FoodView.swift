@@ -146,7 +146,7 @@ struct FoodView: View {
                         }
                 }
             }
-            else if searchText.isNotEmpty && filteredFood.isEmpty {
+            else if !searchText.isEmpty && filteredFood.isEmpty {
                 ContentUnavailableView("No food found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
             } else {
                 ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))
@@ -187,90 +187,92 @@ struct FoodView: View {
                 }
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    if !food.isEmpty {
-                        // Sort options
-                        Menu {
-                            Picker("Sort by", selection: $sortOption) {
-                                Text(FoodSortOption.nameAsc.label)
-                                    .tag(FoodSortOption.nameAsc)
-                                
-                                Text(FoodSortOption.nameDesc.label)
-                                    .tag(FoodSortOption.nameDesc)
-                                
-                                Divider()
-                                
-                                Text(FoodSortOption.quantityAsc.label)
-                                    .tag(FoodSortOption.quantityAsc)
-                                
-                                Text(FoodSortOption.quantityDesc.label)
-                                    .tag(FoodSortOption.quantityDesc)
-                                
-                                Divider()
-                                
-                                Text(FoodSortOption.dateAsc.label)
-                                    .tag(FoodSortOption.dateAsc)
-                                
-                                Text(FoodSortOption.dateDesc.label)
-                                    .tag(FoodSortOption.dateDesc)
-                            }
-                        } label: {
-                            Label("Sort", systemImage: "arrow.up.arrow.down")
-                        }
-                        
-                        // Filter options
-                        Menu {
-                            Picker("Filter", selection: $filterOption) {
-                                Text(FoodFilterOption.all.label)
-                                    .tag(FoodFilterOption.all)
-                                
-                                Text(FoodFilterOption.lowStock.label)
-                                    .tag(FoodFilterOption.lowStock)
-                                
-                                Text(FoodFilterOption.outOfStock.label)
-                                    .tag(FoodFilterOption.outOfStock)
-                            }
-                        } label: {
-                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
-                        }
-                        
-                        Divider()
-                        
-                        // Refill button
-                        Button {
-                            activeSheet = .refillMulti
-                        } label: {
-                            Label("Refill all food", systemImage: "bag.fill.badge.plus")
-                        }
-                        .disabled(!allFoodToBeRefilled)
-                        
-                        // Refill Selected option - show whenever in edit mode
-                        Button {
-                            let selectedFood = food.filter { selectedItems.contains($0.id) }
-                            activeSheet = .refillSelected(selectedFood)
-                        } label: {
-                            Label("Refill Selected", systemImage: "cart.fill.badge.plus")
-                        }
-                        .disabled(selectedItems.isEmpty)
-                        
-                        // Delete Selected option - only enable when items are selected
-                        Button(role: .destructive) {
-                            for id in selectedItems {
-                                if let foodToDelete = food.first(where: { $0.id == id }) {
-                                    modelContext.delete(foodToDelete)
+            if !food.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        if !food.isEmpty {
+                            // Sort options
+                            Menu {
+                                Picker("Sort by", selection: $sortOption) {
+                                    Text(FoodSortOption.nameAsc.label)
+                                        .tag(FoodSortOption.nameAsc)
+                                    
+                                    Text(FoodSortOption.nameDesc.label)
+                                        .tag(FoodSortOption.nameDesc)
+                                    
+                                    Divider()
+                                    
+                                    Text(FoodSortOption.quantityAsc.label)
+                                        .tag(FoodSortOption.quantityAsc)
+                                    
+                                    Text(FoodSortOption.quantityDesc.label)
+                                        .tag(FoodSortOption.quantityDesc)
+                                    
+                                    Divider()
+                                    
+                                    Text(FoodSortOption.dateAsc.label)
+                                        .tag(FoodSortOption.dateAsc)
+                                    
+                                    Text(FoodSortOption.dateDesc.label)
+                                        .tag(FoodSortOption.dateDesc)
                                 }
+                            } label: {
+                                Label("Sort", systemImage: "arrow.up.arrow.down")
                             }
-                            selectedItems.removeAll()
-                            editMode?.wrappedValue = .inactive
-
-                        } label: {
-                            Label("Delete Selected", systemImage: "trash")
+                            
+                            // Filter options
+                            Menu {
+                                Picker("Filter", selection: $filterOption) {
+                                    Text(FoodFilterOption.all.label)
+                                        .tag(FoodFilterOption.all)
+                                    
+                                    Text(FoodFilterOption.lowStock.label)
+                                        .tag(FoodFilterOption.lowStock)
+                                    
+                                    Text(FoodFilterOption.outOfStock.label)
+                                        .tag(FoodFilterOption.outOfStock)
+                                }
+                            } label: {
+                                Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                            }
+                            
+                            Divider()
+                            
+                            // Refill button
+                            Button {
+                                activeSheet = .refillMulti
+                            } label: {
+                                Label("Refill all food", systemImage: "bag.fill.badge.plus")
+                            }
+                            .disabled(!allFoodToBeRefilled)
+                            
+                            // Refill Selected option - show whenever in edit mode
+                            Button {
+                                let selectedFood = food.filter { selectedItems.contains($0.id) }
+                                activeSheet = .refillSelected(selectedFood)
+                            } label: {
+                                Label("Refill Selected", systemImage: "cart.fill.badge.plus")
+                            }
+                            .disabled(selectedItems.isEmpty)
+                            
+                            // Delete Selected option - only enable when items are selected
+                            Button(role: .destructive) {
+                                for id in selectedItems {
+                                    if let foodToDelete = food.first(where: { $0.id == id }) {
+                                        modelContext.delete(foodToDelete)
+                                    }
+                                }
+                                selectedItems.removeAll()
+                                editMode?.wrappedValue = .inactive
+                                
+                            } label: {
+                                Label("Delete Selected", systemImage: "trash")
+                            }
+                            .disabled(selectedItems.isEmpty)
                         }
-                        .disabled(selectedItems.isEmpty)
+                    } label: {
+                        Label("Menu", systemImage: "ellipsis.circle")
                     }
-                } label: {
-                    Label("Menu", systemImage: "ellipsis.circle")
                 }
             }
         }

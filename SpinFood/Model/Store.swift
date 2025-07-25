@@ -13,7 +13,7 @@ typealias RenewalInfo = StoreKit.Product.SubscriptionInfo.RenewalInfo // The Pro
 typealias RenewalState = StoreKit.Product.SubscriptionInfo.RenewalState // the renewal states of auto-renewable subscriptions.
 
 @Observable
-class Store {
+final class Store {
     private var subscriptions: [Product] = []
     var purchasedSubscriptions: [Product] = []
     private var subscriptionGroupStatus: RenewalState?

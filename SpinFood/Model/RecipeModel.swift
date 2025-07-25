@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class RecipeModel {
+final class RecipeModel {
     var id: UUID = UUID()
     var name: String = ""
     var descriptionRecipe: String = ""

@@ -211,7 +211,7 @@ struct FoodConsumptionStatsView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                     
-                    Picker("Time Range", selection: $selectedRange) {
+                    Picker("Time Range", selection: $selectedRange.animation()) {
                         ForEach(DateRange.allCases) { range in
                             Text(range.rawValue)
                                 .tag(range)

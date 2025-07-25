@@ -129,7 +129,7 @@ struct RecipeCookingStatsView: View {
                             .font(.headline)
                             .foregroundStyle(.secondary)
                     
-                    Picker("Time Range", selection: $selectedRange) {
+                    Picker("Time Range", selection: $selectedRange.animation()) {
                         ForEach(DateRange.allCases) { range in
                             Text(range.rawValue)
                                 .tag(range)
@@ -144,7 +144,6 @@ struct RecipeCookingStatsView: View {
                             x: .value("Date", item.date),
                             y: .value("Recipes", item.count)
                         )
-                        .foregroundStyle(.indigo.gradient)
                         .cornerRadius(12)
                     }
                     .frame(height: 250)
@@ -189,19 +188,9 @@ struct RecipeCookingDetailView: View {
             Section("Cooking History") {
                 if !sortedCookingDates.isEmpty {
                     ForEach(sortedCookingDates, id: \.self) { date in
-                        HStack {
-                            Text(formatDateTime(date))
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            if Calendar.current.isDateInToday(date) {
-                                Text("Today")
-                                    .foregroundStyle(.blue)
-                            } else if Calendar.current.isDateInYesterday(date) {
-                                Text("Yesterday")
-                                    .foregroundStyle(.yellow)
-                            }
-                        }
+                        Text(formatDateTime(date))
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
                     Text("No cooking recorded")

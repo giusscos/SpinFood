@@ -194,7 +194,7 @@ struct FoodRefillStatsView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                     
-                    Picker("Time Range", selection: $selectedRange) {
+                    Picker("Time Range", selection: $selectedRange.animation()) {
                         ForEach(DateRange.allCases) { range in
                             Text(range.rawValue)
                                 .tag(range)
@@ -232,18 +232,6 @@ struct FoodRefillStatsView: View {
                     .chartLegend(position: .bottom)
                 }
                 .padding(.vertical)
-                .onAppear {
-                    // Update chart data when view appears
-                    processedChartData = prepareChartData()
-                }
-                .onChange(of: selectedRange) { _, _ in
-                    // Update data when selected range changes
-                    processedChartData = prepareChartData()
-                }
-                .onChange(of: referenceDate) { _, _ in
-                    // Update data when reference date changes
-                    processedChartData = prepareChartData()
-                }
             }
             
             Section("Refilled Food") {
@@ -265,6 +253,18 @@ struct FoodRefillStatsView: View {
             }
         }
         .navigationTitle("Refill Statistics")
+        .onAppear {
+            // Update chart data when view appears
+            processedChartData = prepareChartData()
+        }
+        .onChange(of: selectedRange) { _, _ in
+            // Update data when selected range changes
+            processedChartData = prepareChartData()
+        }
+        .onChange(of: referenceDate) { _, _ in
+            // Update data when reference date changes
+            processedChartData = prepareChartData()
+        }
     }
     
     private func formatDate(_ date: Date) -> String {

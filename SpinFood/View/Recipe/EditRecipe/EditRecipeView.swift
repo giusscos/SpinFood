@@ -96,8 +96,7 @@ struct EditRecipeView: View {
                         VStack (spacing: 16) {
                             TextField("Name", text: $name)
                                 .autocorrectionDisabled()
-                                .font(.title)
-                                .fontWeight(.semibold)
+                                .font(.headline)
                                 .padding(.horizontal, 10)
                                 .focused($focusedField, equals: .name)
                                 .submitLabel(.next)

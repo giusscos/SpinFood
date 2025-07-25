@@ -16,19 +16,20 @@ struct FoodRowView: View {
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            HStack (alignment: .lastTextBaseline, spacing: 2) {
-                VStack (alignment: .trailing) {
+            VStack (alignment: .trailing) {
+                HStack (spacing: 2) {
+                    Text("Initial: ")
+                    
+                    Text("\(food.quantity)")
+                    +
+                    Text(food.unit.abbreviation)
+                }
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                
+                HStack (alignment: .lastTextBaseline, spacing: 2) {
                     if food.quantity != food.currentQuantity {
-                        HStack (spacing: 2) {
-                            Text("Initial: ")
-                            
-                            Text("\(food.quantity)")
-                            +
-                            Text(food.unit.abbreviation)
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fontWeight(.semibold)
                         
                         Text("\(food.currentQuantity)")
                             .font(.headline)
@@ -38,11 +39,11 @@ struct FoodRowView: View {
                             .font(.headline)
                             .fontWeight(.semibold)
                     }
+                    
+                    Text(food.unit.abbreviation)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
                 }
-                
-                Text(food.unit.abbreviation)
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }

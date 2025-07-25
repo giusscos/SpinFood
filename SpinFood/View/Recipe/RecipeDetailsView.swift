@@ -267,19 +267,23 @@ struct RecipeDetailsIngredientView: View {
                     
                     ForEach(ingredients) { value in
                         if let ingredient = value.ingredient {
+                            let missingIngredient = missingIngredients.contains(where: { $0.id == value.id })
                             HStack (alignment: .lastTextBaseline) {
                                 Text(ingredient.name)
+                                    .font(.headline)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 
                                 Text("\(value.quantityNeeded)")
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(missingIngredient ? .red : .primary)
                                 +
                                 Text("\(ingredient.unit.abbreviation)")
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(missingIngredient ? .red : .secondary)
+
                             }
-                            .font(.headline)
                             .lineLimit(1)
-                            .foregroundStyle(missingIngredients.contains(where: { $0.id == value.id }) ? .red : .primary)
                         }
                     }
                 }

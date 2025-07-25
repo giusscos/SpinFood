@@ -79,6 +79,11 @@ struct CookRecipeStepByStepView: View {
             .sheet(isPresented: $showEatConfirmation, content: {
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     RecipeConfirmEatView(recipe: recipe)
+                        .onDisappear() {
+                            dismiss()
+                            
+                            currentIndex = 0
+                        }
                 }
             })
             .onAppear() {

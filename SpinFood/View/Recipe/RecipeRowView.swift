@@ -34,10 +34,6 @@ struct RecipeRowView: View {
         .padding()
         .background(.ultraThinMaterial)
         .clipShape(.rect(cornerRadius: 32))
-        .overlay {
-            RoundedRectangle(cornerRadius: 32)
-                .stroke(.secondary.opacity(0.25), lineWidth: 1)
-        }
     }
 }
 

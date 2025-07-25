@@ -24,7 +24,7 @@ struct FoodRefillView: View {
                         Group {
                             Text(food.count == 1 ? "This is" : "These are")
                             +
-                            Text("the food you will refill:")
+                            Text(" the food you will refill:")
                         }
                         .font(.subheadline)
                         .multilineTextAlignment(.leading)
@@ -50,14 +50,19 @@ struct FoodRefillView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     
-                                    Text("\(value.quantity - value.currentQuantity)")
+                                    HStack (alignment: .lastTextBaseline, spacing: 2) {
+                                        Text("\(value.quantity - value.currentQuantity)")
+                                        
+                                        Text(value.unit.abbreviation)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                                     
                                 Image(systemName: "arrow.right")
                                 
-                                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                                    VStack (alignment: .trailing) {
-                                        HStack (alignment: .lastTextBaseline, spacing: 0) {
+                                VStack (alignment: .trailing) {
+                                    HStack (alignment: .lastTextBaseline, spacing: 0) {
+                                        HStack(alignment: .lastTextBaseline, spacing: 2) {
                                             Text("Goal")
                                             
                                             Image(systemName: "arrow.down")
@@ -66,12 +71,13 @@ struct FoodRefillView: View {
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                         
-                                        Text("\(value.quantity)")
-                                            .fontWeight(.semibold)
                                     }
-   
-                                    Text(value.unit.abbreviation)
-                                        .foregroundStyle(.secondary)
+                                    HStack (alignment: .lastTextBaseline, spacing: 2) {
+                                        Text("\(value.quantity)")
+                                                                                    
+                                        Text(value.unit.abbreviation)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                             }
                             .font(.headline)

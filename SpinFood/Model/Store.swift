@@ -150,6 +150,9 @@ final class Store {
                 print("failed updating products")
             }
         }
+
+        let purchasedIDs = purchasedSubscriptions.map { $0.id } + purchasedProducts.map { $0.id }
+        WatchConnectivityManager.shared.sendPurchasedProducts(purchasedIDs)
     }
 }
 

@@ -6,22 +6,30 @@
 //
 
 import SwiftUI
-import SwiftData
-import StoreKit
 
 struct ContentView: View {
+    @AppStorage("hasPaid") var hasPaid: Bool = false
+    
+    @State private var watchStore = WatchStore()
+    
     var body: some View {
-//        if syncManager.hasActiveSubscription {
+        if !watchStore.purchasedProductIDs.isEmpty || hasPaid {
             TabView {
                 StatsView()
                 RecipeListView()
                 FoodListView()
             }
-//        } else {
-//            Text("Subscribe or buy lifetime access on the iPhone app")
-//                .padding()
-//                .multilineTextAlignment(.center)
-//        }
+            .onAppear() {
+                hasPaid = true
+            }
+        } else {
+            Text("Subscribe or buy lifetime access on the iPhone app")
+                .padding()
+                .multilineTextAlignment(.center)
+                .onAppear() {
+                    hasPaid = false
+                }
+        }
     }
 }
 

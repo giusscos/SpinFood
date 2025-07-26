@@ -55,7 +55,6 @@
 				Model/FoodRefillModel.swift,
 				Model/RecipeFoodModel.swift,
 				Model/RecipeModel.swift,
-				Model/Store.swift,
 				storekitSubsOffline.storekit,
 				storekitSubsOnline.storekit,
 				View/Components/TimePickerView.swift,

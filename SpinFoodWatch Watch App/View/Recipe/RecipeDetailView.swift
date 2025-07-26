@@ -10,7 +10,10 @@ import SwiftData
 
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    
     @Query var food: [FoodModel]
+    
+    @State var showCookingSheet: Bool = false
     
     var recipe: RecipeModel
     
@@ -23,77 +26,87 @@ struct RecipeDetailView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                // Recipe Image
-                if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+            List {
+                Section {
+                    if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
                 }
+                .listRowBackground(Color.clear)
                 
-                // Recipe Description
                 if !recipe.descriptionRecipe.isEmpty {
-                    Text(recipe.descriptionRecipe)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    Section {
+                        Text(recipe.descriptionRecipe)
+                    }
                 }
                 
-                // Ingredients Section
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     Section {
                         ForEach(ingredients) { ingredient in
                             if let food = ingredient.ingredient {
                                 HStack {
                                     Text(food.name)
-                                        .font(.footnote)
-                                    Spacer()
-                                    Text("\(ingredient.quantityNeeded) \(food.unit.abbreviation)")
-                                        .font(.footnote)
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                    
+                                    Text("\(ingredient.quantityNeeded)")
+                                        .font(.headline)
+                                        .foregroundStyle(missingIngredients.contains(where: { $0.id == ingredient.id }) ? .red : .secondary)
+                                    +
+                                    Text("\(food.unit.abbreviation)")
+                                        .font(.subheadline)
                                         .foregroundStyle(missingIngredients.contains(where: { $0.id == ingredient.id }) ? .red : .secondary)
                                 }
                             }
                         }
                     } header: {
-                        Text("Ingredients")
-                            .font(.headline)
+                        Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
                     }
                 }
                 
                 if let steps = recipe.steps, !steps.isEmpty {
                     Section {
                         ForEach(steps) { step in
-                            VStack(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                if let imageData = step.image, let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(maxWidth: .infinity, maxHeight: 127)
+                                        .clipShape(.rect(cornerRadius: 20))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                
                                 Text(step.text)
-                                    .font(.footnote)
-                                    .lineLimit(2)
-                                    .foregroundStyle(.secondary)
+                                    .padding(4)
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .padding(.vertical, 2)
                         }
                     } header: {
-                        Text("Steps")
-                            .font(.headline)
+                        Text(steps.count == 1 ? "Step" : "Steps")
                     }
                 }
-            }
-            .padding(.horizontal)
-        }
-        .navigationTitle(recipe.name)
-        .toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                // Cook Button
-                NavigationLink {
-                    RecipeStepByStepView(recipe: recipe)
+                
+                Button {
+                    showCookingSheet = true
                 } label: {
-                    Label("Start Cooking", systemImage: "play.fill")
+                    Label("Start Cooking", systemImage: "frying.pan.fill")
                 }
-                .tint(hasAllIngredients ? .purple : .secondary)
+                .buttonStyle(.bordered)
                 .disabled(!hasAllIngredients)
+                .listRowBackground(Color.clear)
             }
-        }
+            .navigationTitle(recipe.name)
+            .sheet(isPresented: $showCookingSheet) {
+                if let steps = recipe.steps {
+                    RecipeStepByStepView(recipe: recipe, steps: steps)
+                }
+            }
     }
 }
 

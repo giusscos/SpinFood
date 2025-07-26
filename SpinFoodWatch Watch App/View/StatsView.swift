@@ -80,8 +80,7 @@ struct StatsView: View {
                                         Text("\(mostCooked.name)")
                                             .font(.headline)
                                         
-                                        Text("\(mostCooked.cookedAt.count) times")
-                                        
+                                        Text("\(mostCooked.cookedAt.count) time\(mostCooked.cookedAt.count == 1 ? "" : "s" )")
                                     } else {
                                         Text("\(totalRecipeCooked)")
                                     }

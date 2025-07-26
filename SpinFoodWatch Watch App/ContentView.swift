@@ -17,7 +17,6 @@ struct ContentView: View {
                 RecipeListView()
                 FoodListView()
             }
-            .tabViewStyle(.verticalPage)
 //        } else {
 //            Text("Subscribe or buy lifetime access on the iPhone app")
 //                .padding()

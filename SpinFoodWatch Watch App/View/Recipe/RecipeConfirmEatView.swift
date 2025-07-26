@@ -1,8 +1,8 @@
 //
 //  RecipeConfirmEatView.swift
-//  SpinFood
+//  SpinFoodWatch Watch App
 //
-//  Created by Giuseppe Cosenza on 11/12/24.
+//  Created by Giuseppe Cosenza on 26/07/25.
 //
 
 import SwiftUI
@@ -15,16 +15,14 @@ struct RecipeConfirmEatView: View {
     @Query var foods: [FoodModel]
     
     var recipe: RecipeModel
-        
+    
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    Text("You have all the ingredients. Do you want to cook \(recipe.name)?")
+                    Text("Do you want to cook \(recipe.name)?")
                         .font(.headline)
                 }
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
                 
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     Section {
@@ -34,33 +32,20 @@ struct RecipeConfirmEatView: View {
                     } header: {
                         Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
                     }
+                    
+                    Section {
+                        Button {
+                            consumeFood()
+                            
+                            dismiss()
+                        } label: {
+                            Text("Confirm")
+                                .font(.headline)
+                        }
+                    }
                 }
             }
             .navigationTitle("Ready to eat?")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Text("Cancel")
-                    }
-                }
-                
-                ToolbarItem(placement: .bottomBar) {
-                    Button {
-                        consumeFood()
-                        
-                        dismiss()
-                    } label: {
-                        Text("Confirm")
-                            .font(.headline)
-                            .padding(.vertical, 8)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                }
-            }
         }
     }
     
@@ -134,3 +119,4 @@ struct IngredientRowView: View {
 #Preview {
     RecipeConfirmEatView(recipe: RecipeModel(name: "Carbonara"))
 }
+

@@ -53,9 +53,9 @@ struct FoodListView: View {
                         Text("No food found")
                             .foregroundStyle(.secondary)
                     } else {
-                        ForEach(filteredFood) { item in
-                            NavigationLink(destination: FoodDetailView(food: item)) {
-                                FoodRowView(food: item)
+                        ForEach(filteredFood) { food in
+                            NavigationLink(destination: FoodDetailView(food: food)) {
+                                FoodRowView(food: food)
                             }
                         }
                     }

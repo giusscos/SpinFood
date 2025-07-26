@@ -31,43 +31,8 @@ struct RecipeListView: View {
                 } else {
                     ForEach(filteredRecipes) { recipe in
                             NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-                                if let imageData = recipe.image,
-                                   let uiImage = UIImage(data: imageData) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .overlay (alignment: .bottom) {
-                                            Color.clear
-                                                .background(.ultraThinMaterial)
-                                                .frame(maxWidth: .infinity)
-                                                .mask(
-                                                    LinearGradient(
-                                                        gradient: Gradient(colors: [.black, .black, .clear, .clear, .clear]),
-                                                        startPoint: .bottom,
-                                                        endPoint: .top
-                                                    )
-                                                )
-                                                .overlay(alignment: .bottom) {
-                                                    VStack (alignment: .leading) {
-                                                        Text("\(recipe.duration.formatted)")
-                                                            .font(.subheadline)
-                                                            .foregroundStyle(.secondary)
-                                                        
-                                                        Text(recipe.name)
-                                                            .font(.headline)
-                                                    }
-                                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                                    .tint(.primary)
-                                                    .multilineTextAlignment(.leading)
-                                                    .padding(8)
-                                                }
-                                        }
-                                        .clipped()
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                }
+                                RecipeRowView(recipe: recipe)
                             }
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                     }
                 }
             }

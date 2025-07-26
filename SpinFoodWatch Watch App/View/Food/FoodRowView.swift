@@ -1,8 +1,8 @@
 //
 //  FoodRowView.swift
-//  SpinFood
+//  SpinFoodWatch Watch App
 //
-//  Created by Giuseppe Cosenza on 10/12/24.
+//  Created by Giuseppe Cosenza on 26/07/25.
 //
 
 import SwiftUI
@@ -14,18 +14,17 @@ struct FoodRowView: View {
         HStack {
             Text(food.name)
                 .font(.headline)
-                .fontWeight(.semibold)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
             VStack (alignment: .trailing) {
                 if food.quantity != food.currentQuantity {
-                    HStack (spacing: 2) {
-                        Text("Initial: ")
-                        
+                    Group {
                         Text("\(food.quantity)")
                         +
                         Text(food.unit.abbreviation)
                     }
-                    .font(.caption)
+                    .font(.caption2)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                 }
@@ -46,11 +45,10 @@ struct FoodRowView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 }
 
 #Preview {
-    FoodRowView(food: FoodModel(name: "Carrot", quantity: 10))
+    FoodRowView(food: FoodModel(name: "Apple"))
 }

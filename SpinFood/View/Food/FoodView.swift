@@ -162,7 +162,7 @@ struct FoodView: View {
                 EditFoodView(food: food)
             case .refillMulti:
                 NavigationStack {
-                    FoodRefillView(food: food.filter { $0.currentQuantity < $0.quantity })
+                    FoodRefillView(food: foodToBeRefilled)
                         .presentationDragIndicator(.visible)
                 }
             case .refillSelected(let selectedFood):

@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-// MARK: - Recipes Cooked Details
 struct RecipeCookingStatsDetailView: View {
     @Query var recipes: [RecipeModel]
     @State private var selectedDate: Date = Date()
@@ -58,181 +57,83 @@ struct RecipeCookingStatsDetailView: View {
         }
     }
     
-    var topRecipesInPeriod: [RecipeCookingData] {
-        let interval = weekDateInterval
-        
-        let recipesInPeriod = cookedRecipes.map { recipe -> RecipeCookingData in
-            let datesCookedInPeriod = recipe.cookedAt.filter { 
-                $0 >= interval.start && $0 <= interval.end
-            }.sorted(by: >)
-            
-            return RecipeCookingData(
-                recipe: recipe,
-                dates: datesCookedInPeriod
-            )
-        }.filter { !$0.dates.isEmpty }
-        .sorted { $0.dates.count > $1.dates.count }
-        
-        return recipesInPeriod
-    }
-    
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Chart Section
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Weekly Cooking Activity")
-                        .font(.headline)
-                        .padding(.horizontal)
+        List {
+            Section {
+                VStack {
                     
-                    if chartData.isEmpty || chartData.allSatisfy({ $0.count == 0 }) {
-                        Text("No cooking activity this week")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding()
-                    } else {
-                        Chart {
-                            ForEach(chartData) { data in
-                                BarMark(
-                                    x: .value("Day", data.date, unit: .day),
-                                    y: .value("Count", data.count)
-                                )
-                                .foregroundStyle(Color.indigo.gradient)
-                                .cornerRadius(4)
-                            }
-                        }
-                        .frame(height: 150)
-                        .padding(.horizontal)
-                        .chartXAxis {
-                            AxisMarks(values: .stride(by: .day)) { value in
-                                if let date = value.as(Date.self) {
-                                    AxisValueLabel {
-                                        Text(formatDayShort(date))
-                                    }
-                                }
-                            }
+                    Text(formatDateRange(weekDateInterval))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    Chart {
+                        ForEach(chartData) { data in
+                            BarMark(
+                                x: .value("Day", data.date, unit: .day),
+                                y: .value("Count", data.count)
+                            )
+                            .foregroundStyle(Color.indigo.gradient)
+                            .cornerRadius(16)
                         }
                     }
+                    .frame(height: 127)
+                    .padding()
                     
-                    // Date navigation
-                    VStack {
-                        Text(formatDateRange(weekDateInterval))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding()
-                        
-                        HStack {
-                            Button {
-                                // Go back one week
-                                if let newDate = Calendar.current.date(byAdding: .day, value: -7, to: selectedDate) {
+                    HStack {
+                        Button {
+                            if let newDate = Calendar.current.date(byAdding: .day, value: -7, to: selectedDate) {
+                                withAnimation {
                                     selectedDate = newDate
                                 }
-                            } label: {
-                                Label("Back", systemImage: "chevron.left")
-                                    .font(.caption)
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            Button {
-                                // Go forward one week (but not beyond today)
-                                if let newDate = Calendar.current.date(byAdding: .day, value: 7, to: selectedDate) {
+                        } label: {
+                            Image(systemName: "chevron.left")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.circle)
+                        
+                        Button {
+                            // Go forward one week (but not beyond today)
+                            if let newDate = Calendar.current.date(byAdding: .day, value: 7, to: selectedDate) {
+                                withAnimation {
                                     selectedDate = min(newDate, Date())
                                 }
-                            } label: {
-                                Label("Next", systemImage: "chevron.right")
-                                    .font(.caption)
                             }
-                            .disabled(Calendar.current.isDateInToday(selectedDate) || Calendar.current.isDate(selectedDate, inSameDayAs: Date()))
+                        } label: {
+                            Image(systemName: "chevron.right")
                         }
-                        .padding(.horizontal)
-                    }
-                }
-                .padding(.vertical)
-                .background(Color.indigo.opacity(0.05))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                // Most cooked recipes this period
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Most Cooked This Week")
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    if topRecipesInPeriod.isEmpty {
-                        Text("No recipes cooked this week")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding()
-                    } else {
-                        ForEach(topRecipesInPeriod.prefix(5)) { item in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(item.recipe.name)
-                                        .font(.headline)
-                                        .lineLimit(1)
-                                    
-                                    Text("\(formatDateShort(item.dates.first ?? Date()))")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                
-                                Spacer()
-                                
-                                Text("\(item.dates.count)×")
-                                    .font(.callout)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.indigo)
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color.indigo.opacity(0.05))
-                            .cornerRadius(8)
-                            .padding(.horizontal)
-                        }
-                    }
-                }
-                
-                // All cooked recipes section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("All Cooked Recipes")
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    ForEach(cookedRecipes) { recipe in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(recipe.name)
-                                    .font(.headline)
-                                    .lineLimit(1)
-                                
-                                if recipe.cookedAt.count > 0 {
-                                    Text("Last: \(formatDateShort(recipe.cookedAt.max() ?? Date()))")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            
-                            Spacer()
-                            
-                            Text("\(recipe.cookedAt.count)×")
-                                .font(.callout)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.indigo)
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                        .background(Color.indigo.opacity(0.05))
-                        .cornerRadius(8)
-                        .padding(.horizontal)
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.circle)
+                        .disabled(Calendar.current.isDateInToday(selectedDate) || Calendar.current.isDate(selectedDate, inSameDayAs: Date()))
                     }
                 }
             }
-            .padding(.vertical)
+            
+            Section(cookedRecipes.count == 1 ? "Cooked recipe" : "Cooked recipes") {
+                ForEach(cookedRecipes) { recipe in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            if recipe.cookedAt.count > 0, let lastDate = recipe.cookedAt.last {
+                                Text("\(formatDateShort(lastDate))")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Text(recipe.name)
+                                .font(.headline)
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Text("x\(recipe.cookedAt.count)")
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.indigo)
+                    }
+                }
+            }
         }
         .navigationTitle("Cooked Recipes")
-        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func formatDayShort(_ date: Date) -> String {

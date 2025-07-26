@@ -158,7 +158,8 @@ struct RecipeCookingStatsView: View {
                     } label: {
                         HStack {
                             Text(recipe.name)
-                            Spacer()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
                             Text("\(recipe.cookedAt.count) times")
                                 .foregroundStyle(.secondary)
                         }

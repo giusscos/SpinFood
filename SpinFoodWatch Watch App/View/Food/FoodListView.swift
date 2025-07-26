@@ -14,20 +14,7 @@ struct FoodListView: View {
     
     @State private var searchText = ""
     @State private var showingLowStockOnly = false
-    @State private var showingAutoRefillConfirmation = false
-    
-    // Add formatter for decimal values
-    private let decimalFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 1
-        return formatter
-    }()
-    
-    // Helper method to format decimal values
-    private func formatDecimal(_ value: Decimal) -> String {
-        return decimalFormatter.string(from: value as NSNumber) ?? "0.0"
-    }
+    @State private var showingRefillConfirmation = false
     
     var filteredFood: [FoodModel] {
         var result = food
@@ -43,34 +30,32 @@ struct FoodListView: View {
         return result
     }
     
+    var foodToBeRefilled: [FoodModel] {
+        food.filter { $0.currentQuantity < $0.quantity }
+    }
+    
     var body: some View {
         NavigationStack {
                 List {
                     if !food.isEmpty {
-                        Toggle("Low Stock Only", isOn: $showingLowStockOnly)
+                        Toggle("Low Stock", isOn: $showingLowStockOnly)
                     
-                        Button {
-                            showingAutoRefillConfirmation = true
-                        } label: {
-                            Label("Refill All", systemImage: "cart.fill.badge.plus")
+                        if foodToBeRefilled.count > 0 {
+                            Button {
+                                showingRefillConfirmation = true
+                            } label: {
+                                Label("Refill food", systemImage: "cart.fill.badge.plus")
+                            }
                         }
                     }
                     
                     if filteredFood.isEmpty {
-                        Text("No food items found")
+                        Text("No food found")
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(filteredFood) { item in
                             NavigationLink(destination: FoodDetailView(food: item)) {
-                                HStack {
-                                    Text(item.name)
-                                        .lineLimit(1)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    
-                                    Text("\(formatDecimal(item.currentQuantity)) \(item.unit.abbreviation)")
-                                        .font(.caption)
-                                        .foregroundStyle(item.currentQuantity < item.quantity * 0.2 ? .red : .secondary)
-                                }
+                                FoodRowView(food: item)
                             }
                         }
                     }
@@ -78,12 +63,12 @@ struct FoodListView: View {
                 .navigationTitle("Food")
                 .searchable(text: $searchText, prompt: "Search food")
                 .confirmationDialog(
-                    "Auto Refill All Food?",
-                    isPresented: $showingAutoRefillConfirmation,
+                    "Refill All Food?",
+                    isPresented: $showingRefillConfirmation,
                     titleVisibility: .visible
                 ) {
-                    Button("Refill All") {
-                        autoRefillAllFood()
+                    Button("Refill") {
+                        refillAllFood()
                     }
                     
                     Button("Cancel", role: .cancel) {}
@@ -93,25 +78,19 @@ struct FoodListView: View {
         }
     }
     
-    // Function to auto-refill all food items
-    private func autoRefillAllFood() {
+    private func refillAllFood() {
         let date = Date()
         
         for item in food where item.currentQuantity < item.quantity {
-            let refillAmount = item.quantity - item.currentQuantity
-            
-            // Create a refill record
             let refill = FoodRefillModel(
                 refilledAt: date,
-                quantity: refillAmount,
+                quantity: item.quantity - item.currentQuantity,
                 unit: item.unit,
                 food: item
             )
             
-            // Add refill to the model context
             modelContext.insert(refill)
             
-            // Update the food quantity to maximum
             item.currentQuantity = item.quantity
         }
     }

@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import Charts
 
 struct StatsView: View {
     @Query var recipes: [RecipeModel]
@@ -67,136 +66,83 @@ struct StatsView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if totalRecipeCooked > 0 || totalFoodEaten > 0 || totalFoodRefilled > 0 {
-                        // Recipes cooked section
-                        if totalRecipeCooked > 0 {
-                            NavigationLink(destination: RecipeCookingStatsDetailView()) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text("Recipes cooked")
-                                            .font(.headline)
-                                            .foregroundStyle(.indigo)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    
+            List {
+                if totalRecipeCooked > 0 || totalFoodEaten > 0 || totalFoodRefilled > 0 {
+                    if totalRecipeCooked > 0 {
+                        NavigationLink(destination: RecipeCookingStatsDetailView()) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Recipes cooked")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                
+                                Group {
                                     if let mostCooked = getMostCookedRecipe() {
                                         Text("\(mostCooked.name)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .font(.headline)
                                         
                                         Text("\(mostCooked.cookedAt.count) times")
-                                            .font(.title3)
-                                            .foregroundStyle(.indigo)
-                                            .fontWeight(.bold)
+                                        
                                     } else {
                                         Text("\(totalRecipeCooked)")
-                                            .font(.title3)
-                                            .foregroundStyle(.indigo)
-                                            .fontWeight(.bold)
                                     }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(Color.indigo.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .font(.title3)
+                                .foregroundStyle(.indigo.gradient)
+                                .fontWeight(.semibold)
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
+                    }
+                    
+                    if totalFoodEaten > 0, let mostConsumed = getMostConsumedFood() {
+                        NavigationLink(destination: FoodConsumptionStatsDetailView()) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Food eaten")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                
+                                Text("\(mostConsumed.name)")
+                                    .font(.headline)
+                                
+                                Text("\(NSDecimalNumber(decimal: getTotalQuantity(for: mostConsumed)).doubleValue, specifier: "%.1f") \(mostConsumed.unit.abbreviation)")
+                                    .font(.title3)
+                                    .foregroundStyle(.purple.gradient)
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                    }
+                    
+                    if totalFoodRefilled > 0, let mostRefilled = getMostRefilledFood() {
+                        NavigationLink(destination: FoodRefillStatsDetailView()) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Food refilled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                
+                                Text("\(mostRefilled.name)")
+                                    .font(.headline)
+                                
+                                Text("\(NSDecimalNumber(decimal: getTotalRefilledQuantity(for: mostRefilled)).doubleValue, specifier: "%.1f") \(mostRefilled.unit.abbreviation)")
+                                    .font(.title3)
+                                    .foregroundStyle(.green.gradient)
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                    }
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "chart.pie")
+                            .font(.title)
+                            .foregroundStyle(.secondary)
                         
-                        // Food eaten section
-                        if totalFoodEaten > 0 {
-                            NavigationLink(destination: FoodConsumptionStatsDetailView()) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text("Food eaten")
-                                            .font(.headline)
-                                            .foregroundStyle(.purple)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    
-                                    if let mostConsumed = getMostConsumedFood() {
-                                        Text("\(mostConsumed.name)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        
-                                        Text("\(NSDecimalNumber(decimal: getTotalQuantity(for: mostConsumed)).doubleValue, specifier: "%.1f") \(mostConsumed.unit.abbreviation)")
-                                            .font(.title3)
-                                            .foregroundStyle(.purple)
-                                            .fontWeight(.bold)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(Color.purple.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
+                        Text("No data to show")
+                            .font(.headline)
                         
-                        // Food refilled section
-                        if totalFoodRefilled > 0 {
-                            NavigationLink(destination: FoodRefillStatsDetailView()) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text("Food refilled")
-                                            .font(.headline)
-                                            .foregroundStyle(.green)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    
-                                    if let mostRefilled = getMostRefilledFood() {
-                                        Text("\(mostRefilled.name)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        
-                                        Text("\(NSDecimalNumber(decimal: getTotalRefilledQuantity(for: mostRefilled)).doubleValue, specifier: "%.1f") \(mostRefilled.unit.abbreviation)")
-                                            .font(.title3)
-                                            .foregroundStyle(.green)
-                                            .fontWeight(.bold)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(Color.green.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    } else {
-                        // No data view
-                        VStack(spacing: 8) {
-                            Image(systemName: "chart.pie")
-                                .font(.largeTitle)
-                                .foregroundStyle(.secondary)
-                            Text("No data to show")
-                                .font(.headline)
-                            Text("Start cooking recipes or adding food to see your statistics")
-                                .font(.caption)
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
+                        Text("Start cooking recipes or adding food to see your statistics")
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
                     }
                 }
-                .padding()
             }
             .navigationTitle("Stats")
         }
@@ -206,4 +152,4 @@ struct StatsView: View {
 #Preview {
     StatsView()
         .modelContainer(for: [RecipeModel.self, FoodModel.self, RecipeFoodModel.self], inMemory: true)
-} 
+}

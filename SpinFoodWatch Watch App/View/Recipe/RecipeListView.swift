@@ -26,7 +26,7 @@ struct RecipeListView: View {
         NavigationStack {
             List {
                 if filteredRecipes.isEmpty {
-                    Text("No recipes found")
+                    Text("No recipe found")
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(filteredRecipes) { recipe in

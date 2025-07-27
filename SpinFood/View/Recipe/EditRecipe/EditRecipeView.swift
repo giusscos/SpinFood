@@ -168,7 +168,6 @@ struct EditRecipeView: View {
                             .buttonStyle(.borderedProminent)
                             .buttonBorderShape(.capsule)
                         }
-                        .padding(.bottom, 48)
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                     }
@@ -177,7 +176,7 @@ struct EditRecipeView: View {
                 .listStyle(.plain)
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                 .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
-                .ignoresSafeArea(.container)
+                .ignoresSafeArea(edges: .top)
                 .background {
                     VStack (spacing: 0) {
                         if let imageData, let _ = UIImage(data: imageData) {

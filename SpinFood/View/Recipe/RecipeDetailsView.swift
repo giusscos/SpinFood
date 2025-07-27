@@ -103,7 +103,7 @@ struct RecipeDetailsView: View {
                     RecipeDetailsCookButtonView(recipe: recipe, hasAllIngredients: hasAllIngredients, activeRecipeDetailSheet: $activeRecipeDetailSheet)
                 }
                 .listStyle(.plain)
-                .ignoresSafeArea(.container)
+                .ignoresSafeArea(edges: .top)
                 .background(
                     listBackgroundColor
                         .ignoresSafeArea()
@@ -195,7 +195,6 @@ struct RecipeDetailsCookButtonView: View {
                 .buttonBorderShape(.capsule)
                 .disabled(!hasAllIngredients)
             }
-            .padding(.bottom, 96)
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
         }
@@ -231,15 +230,14 @@ struct RecipeDetailsStepView: View {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(maxWidth: .infinity, maxHeight: 220)
+                                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
                                     .clipShape(.rect(cornerRadius: 20))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             
                             Text(step.text)
-                                .padding(4)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .foregroundColor(.primary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.vertical, 4)
                         }
                         .padding()
                         .background(.ultraThinMaterial)

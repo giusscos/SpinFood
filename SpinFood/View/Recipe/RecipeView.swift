@@ -159,7 +159,7 @@ struct RecipeView: View {
                 ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
             }
         }
-        .searchable(text: $searchText, prompt: "Search recipes")
+        .searchable(text: $searchText, prompt: "Search recipe")
         .navigationTitle("Recipes")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

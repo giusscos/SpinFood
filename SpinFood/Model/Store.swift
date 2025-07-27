@@ -19,15 +19,15 @@ final class Store {
     private var subscriptionGroupStatus: RenewalState?
     var isLoading: Bool = true
     
-//    let productIds: [String] = ["f_099_1m_3d", "f_999_1y", "f_3999_1y_f", "f_399_1m_f"] // test
-//    let groupId: String = "FE73F688" // test
-//
-//    let productLifetimeIds: [String] = ["com.giusscos.fooFamilyLifetime", "com.giusscos.fooLifetime"] // test
+    let productIds: [String] = ["f_099_1m_3d", "f_999_1y", "f_3999_1y_f", "f_399_1m_f"] // test
+    let groupId: String = "FE73F688" // test
+
+    let productLifetimeIds: [String] = ["com.giusscos.fooFamilyLifetime", "com.giusscos.fooLifetime"] // test
     
-    let productIds: [String] = ["f_199_1m_3d", "f_999_1y_1w", "f_fa_2999_1y_1w", "f_fa_399_1m_3d"]
-    let groupId: String = "21742027"
+//    let productIds: [String] = ["f_199_1m_3d", "f_999_1y_1w", "f_fa_2999_1y_1w", "f_fa_399_1m_3d"]
+//    let groupId: String = "21742027"
 //
-    let productLifetimeIds: [String] = ["com.giusscos.fooFamilyLifetime", "com.giusscos.fooLifetime"]
+//    let productLifetimeIds: [String] = ["com.giusscos.fooFamilyLifetime", "com.giusscos.fooLifetime"]
     
     // if there are multiple product types - create multiple variable for each .consumable, .nonconsumable, .autoRenewable, .nonRenewable.
     private var storeProducts: [Product] = []

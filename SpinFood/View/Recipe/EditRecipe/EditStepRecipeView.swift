@@ -88,7 +88,7 @@ struct EditableStepView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(maxHeight: 220)
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
                     .clipShape(.rect(cornerRadius: 20))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .overlay(alignment: .topTrailing) {
@@ -189,7 +189,7 @@ struct CreateStepView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(maxHeight: 220)
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
                     .clipShape(.rect(cornerRadius: 20))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .overlay(alignment: .topTrailing) {
@@ -290,7 +290,8 @@ struct RecipeStepView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(maxWidth: .infinity, maxHeight: 220)
+                    .frame(maxWidth: .infinity)
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
                     .clipShape(.rect(cornerRadius: 20))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

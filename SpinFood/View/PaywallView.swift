@@ -14,53 +14,55 @@ struct PaywallView: View {
     @State private var showLifetimePlans: Bool = false
     
     var body: some View {
-        SubscriptionStoreView(groupID: store.groupId) {
-            VStack {
-                Button {
-                    showLifetimePlans = true
-                } label: {
-                    Label("Save with lifetime plans", systemImage: "sparkle")
-                        .font(.headline)
-                }
-                .tint(.green)
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.capsule)
-                .padding(.vertical)
-                
+        NavigationStack {
+            SubscriptionStoreView(groupID: store.groupId) {
                 VStack {
-                    Image(systemName: "list.clipboard.fill")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.linearGradient(colors: [.indigo, .blue], startPoint: .topLeading, endPoint: .trailing))
-
-                    Text("Foo+")
-                        .font(.title)
-                        .fontWeight(.bold)
+                    Button {
+                        showLifetimePlans = true
+                    } label: {
+                        Label("Save with lifetime plans", systemImage: "sparkle")
+                            .font(.headline)
+                    }
+                    .tint(.green)
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .padding(.vertical)
                     
-                    Text("Add your personal recipes, get personalized recipe suggestions, and track your food waste.")
-                        .multilineTextAlignment(.center)
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal)
+                    VStack {
+                        Image(systemName: "list.clipboard.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.linearGradient(colors: [.indigo, .blue], startPoint: .topLeading, endPoint: .trailing))
+                        
+                        Text("Foo+")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        Text("Add your personal recipes, get personalized recipe suggestions, and track your food waste.")
+                            .multilineTextAlignment(.center)
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal)
+                    }
+                    
+                    // Features
+                    VStack(alignment: .leading, spacing: 15) {
+                        FeatureRow(icon: "chart.pie.fill", color: .purple, text: "Advanced recipe statistics")
+                        FeatureRow(icon: "fork.knife", color: .indigo, text: "Smart ingredient-based suggestions")
+                        FeatureRow(icon: "leaf.fill", color: .green, text: "Food waste reduction tracking")
+                    }
+                    .padding()
                 }
-                
-                // Features
-                VStack(alignment: .leading, spacing: 15) {
-                    FeatureRow(icon: "chart.pie.fill", color: .purple, text: "Advanced recipe statistics")
-                    FeatureRow(icon: "fork.knife", color: .indigo, text: "Smart ingredient-based suggestions")
-                    FeatureRow(icon: "leaf.fill", color: .green, text: "Food waste reduction tracking")
-                }
-                .padding()
             }
-        }
-        .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)
-        .subscriptionStoreButtonLabel(.multiline)
-        .storeButton(.visible, for: .restorePurchases)
-        .subscriptionStorePolicyDestination(url: URL(string: "https://giusscos.it/privacy")!, for: .privacyPolicy)
-        .subscriptionStorePolicyDestination(url: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!, for: .termsOfService)
-        .interactiveDismissDisabled()
-        .sheet(isPresented: $showLifetimePlans) {
-            PaywallLifetimeView()
-                .presentationDetents(.init([.medium]))
+            .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)
+            .subscriptionStoreButtonLabel(.multiline)
+            .storeButton(.visible, for: .restorePurchases)
+            .subscriptionStorePolicyDestination(url: URL(string: "https://giusscos.it/privacy")!, for: .privacyPolicy)
+            .subscriptionStorePolicyDestination(url: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!, for: .termsOfService)
+            .interactiveDismissDisabled()
+            .sheet(isPresented: $showLifetimePlans) {
+                PaywallLifetimeView()
+                    .presentationDetents(.init([.medium]))
+            }
         }
     }
 }

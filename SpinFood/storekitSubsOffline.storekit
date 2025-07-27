@@ -25,7 +25,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.giusscos.fooFamilyLifetime",
+      "productID" : "com.giusscos.fooLifetime",
       "referenceName" : "Foo lifetime access",
       "type" : "NonConsumable"
     },
@@ -40,7 +40,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.giusscos.fooLifetime",
+      "productID" : "com.giusscos.fooFamilyLifetime",
       "referenceName" : "Foo lifetime family access",
       "type" : "NonConsumable"
     }
@@ -123,7 +123,7 @@
           },
           "localizations" : [
             {
-              "description" : "Get unlimited family access for this month",
+              "description" : "Get unlimited access for this month",
               "displayName" : "Foo+",
               "locale" : "en_US"
             }

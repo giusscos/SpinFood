@@ -16,7 +16,7 @@ struct RecipeRowView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(maxWidth: .infinity, maxHeight: 300)
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 450 : 300)
                     .clipShape(.rect(cornerRadius: 20))
             }
             

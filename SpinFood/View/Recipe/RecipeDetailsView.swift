@@ -240,6 +240,7 @@ struct RecipeDetailsStepView: View {
                                 .padding(.vertical, 4)
                         }
                         .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .background(.ultraThinMaterial)
                         .clipShape(.rect(cornerRadius: 32))
                     }

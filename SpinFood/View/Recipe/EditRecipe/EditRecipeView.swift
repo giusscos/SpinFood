@@ -66,7 +66,7 @@ struct EditRecipeView: View {
     @State private var imageData: Data?
     
     @State private var selectedFood: FoodModel?
-    @State private var quantityNeeded: Decimal = 0.0
+    @State private var quantityNeeded: Decimal?
 
     @State private var steps: [StepRecipe] = []
     @State private var newStep: StepRecipe = StepRecipe(text: "")

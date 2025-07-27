@@ -17,19 +17,16 @@ struct FoodRefillView: View {
             List {
                 Section {
                     VStack(alignment: .leading) {
-                        Text("Are you sure?")
-                            .font(.title)
-                            .fontWeight(.bold)
-                        
                         Group {
                             Text(food.count == 1 ? "This is" : "These are")
                             +
                             Text(" the food you will refill:")
                         }
-                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
                     }
                 }
+                .listRowInsets(.init(top: 16, leading: 0, bottom: 16, trailing: 0))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 
@@ -85,18 +82,14 @@ struct FoodRefillView: View {
                     }
                 }
             }
+            .navigationTitle("Ready to refill?")
             .toolbar {
-                ToolbarItem(placement: .bottomBar) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         refillAllFood()
                     } label: {
                         Text("Confirm")
-                            .font(.headline)
-                            .padding(.vertical, 8)
-                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
                 }
             }
         }

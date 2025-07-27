@@ -12,7 +12,7 @@ struct EditRecipeIngredientView: View {
     
     @Binding var ingredients: [RecipeFoodModel]
     @Binding var selectedFood: FoodModel?
-    @Binding var quantityNeeded: Decimal
+    @Binding var quantityNeeded: Decimal?
 
     var body: some View {
         if !foods.isEmpty {
@@ -29,15 +29,15 @@ struct EditRecipeIngredientView: View {
                                 HStack (spacing: 16) {
                                     Text(ingridient.name)
                                         .font(.headline)
-                                        .padding(4)
+                                        .lineLimit(1)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     
                                     Text("\(recipeIngridient.quantityNeeded)")
                                         .font(.headline)
-                                    
+                                    +
                                     Text("\(ingridient.unit.abbreviation)")
                                         .foregroundStyle(.secondary)
                                         .font(.subheadline)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     
                                     Button(role: .destructive) {
                                         withAnimation {
@@ -94,7 +94,7 @@ struct EditRecipeIngredientView: View {
                     .frame(maxWidth: .infinity)
                     
                     Button {
-                        guard let food = selectedFood, quantityNeeded > 0 else { return }
+                        guard let food = selectedFood, let quantityNeeded = quantityNeeded, quantityNeeded > 0 else { return }
                         
                         let newIngredient = RecipeFoodModel(ingredient: food, quantityNeeded: quantityNeeded)
                         
@@ -103,7 +103,7 @@ struct EditRecipeIngredientView: View {
                         }
                         
                         selectedFood = foods.first
-                        quantityNeeded = 0.0
+                        self.quantityNeeded = nil
                     } label: {
                         Text("Add ingredient")
                             .font(.headline)

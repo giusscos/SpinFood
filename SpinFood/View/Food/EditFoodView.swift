@@ -15,8 +15,8 @@ struct EditFoodView: View {
     var food: FoodModel?
     
     @State private var name: String = ""
-    @State private var quantity: Decimal = 0.0
-    @State private var currentQuantity: Decimal = 0.0
+    @State private var quantity: Decimal?
+    @State private var currentQuantity: Decimal?
     @State private var unit: FoodUnit = .gram
     
     enum Field: Hashable {
@@ -102,19 +102,21 @@ struct EditFoodView: View {
     func saveFood() {        
         if let food = food {
             food.name = name
-            food.currentQuantity = currentQuantity
-            
-            if quantity <= currentQuantity {
-                quantity = currentQuantity
+            if let currentQuantity = currentQuantity {
+                food.currentQuantity = currentQuantity
             }
             
-            food.quantity = quantity
+            quantity = currentQuantity
+            
+            if let quantity = quantity {
+                food.quantity = quantity
+            }
             food.unit = unit
         } else {
             let newFood = FoodModel(
                 name: name,
-                quantity: quantity,
-                currentQuantity: quantity,
+                quantity: quantity ?? 0,
+                currentQuantity: quantity ?? 0,
                 unit: unit,
                 createdAt: .now
             )

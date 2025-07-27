@@ -21,8 +21,9 @@ struct RecipeConfirmEatView: View {
             List {
                 Section {
                     Text("You have all the ingredients. Do you want to cook \(recipe.name)?")
-                        .font(.headline)
+                        .foregroundStyle(.secondary)
                 }
+                .listRowInsets(.init(top: 16, leading: 0, bottom: 16, trailing: 0))
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 
@@ -46,19 +47,14 @@ struct RecipeConfirmEatView: View {
                     }
                 }
                 
-                ToolbarItem(placement: .bottomBar) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         consumeFood()
                         
                         dismiss()
                     } label: {
                         Text("Confirm")
-                            .font(.headline)
-                            .padding(.vertical, 8)
-                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
                 }
             }
         }

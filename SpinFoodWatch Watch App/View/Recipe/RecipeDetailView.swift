@@ -9,11 +9,25 @@ import SwiftUI
 import SwiftData
 
 struct RecipeDetailView: View {
+    enum ActiveRecipeDetailSheet: Identifiable {
+        case confirmEat
+        case cookNow
+        
+        var id: String {
+            switch self {
+                case .confirmEat:
+                    return "confirmEat"
+                case .cookNow:
+                    return "cookNow"
+            }
+        }
+    }
+    
     @Environment(\.modelContext) private var modelContext
     
     @Query var food: [FoodModel]
     
-    @State var showCookingSheet: Bool = false
+    @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
     
     var recipe: RecipeModel
     
@@ -93,7 +107,9 @@ struct RecipeDetailView: View {
                 }
                 
                 Button {
-                    showCookingSheet = true
+                    if hasAllIngredients, let ingredients = recipe.ingredients, !ingredients.isEmpty {
+                        return activeRecipeDetailSheet = .confirmEat
+                    }
                 } label: {
                     Label("Start Cooking", systemImage: "frying.pan.fill")
                 }
@@ -102,9 +118,12 @@ struct RecipeDetailView: View {
                 .listRowBackground(Color.clear)
             }
             .navigationTitle(recipe.name)
-            .sheet(isPresented: $showCookingSheet) {
-                if let steps = recipe.steps {
-                    RecipeStepByStepView(recipe: recipe, steps: steps)
+            .sheet(item: $activeRecipeDetailSheet) { sheet in
+                switch sheet {
+                    case .confirmEat:
+                        RecipeConfirmEatView(recipe: recipe)
+                    case .cookNow:
+                        RecipeConfirmEatView(recipe: recipe)
                 }
             }
     }

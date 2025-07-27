@@ -6,8 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
+import StoreKit
 
 struct ContentView: View {
+    @Environment(\.requestReview) var requestReview
+
+    @Query var recipes: [RecipeModel]
+    
     @State var store = Store()
     
     var hasActiveSubscription: Bool {
@@ -41,6 +47,11 @@ struct ContentView: View {
                     NavigationStack {
                         SettingsView()
                     }
+                }
+            }
+            .onAppear() {
+                if recipes.count > 2 {
+                    requestReview()
                 }
             }
         } else {

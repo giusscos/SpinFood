@@ -9,6 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct RecipeStepByStepView: View {
+    
+    
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
@@ -33,8 +35,8 @@ struct RecipeStepByStepView: View {
         NavigationStack {
             TabView(selection: $currentIndex, content: {
                 ForEach(steps.indices, id: \.self) { index in
-                    ScrollView {
-                        VStack (alignment: .leading, spacing: 16) {
+                    List {
+                        Section {
                             if let imageData = steps[index].image, let uiImage = UIImage(data: imageData) {
                                 Image(uiImage: uiImage)
                                     .resizable()
@@ -43,13 +45,16 @@ struct RecipeStepByStepView: View {
                                     .clipShape(.rect(cornerRadius: 20))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        
+                        Section {
                             Text(steps[index].text)
                                 .padding(4)
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.bottom, 24)
                     }
                     .tag(index)
                     .padding()

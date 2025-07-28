@@ -51,13 +51,25 @@ struct PaywallView: View {
                         FeatureRow(icon: "leaf.fill", color: .green, text: "Food waste reduction tracking")
                     }
                     .padding()
+                    
+                    HStack {
+                        Link("Terms of use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                            .foregroundColor(.primary)
+                            .buttonStyle(.plain)
+                        
+                        Text("and")
+                            .foregroundStyle(.secondary)
+                        
+                        Link("Privacy Policy", destination: URL(string: "https://giusscos.it/privacy")!)
+                            .foregroundColor(.primary)
+                            .buttonStyle(.plain)
+                    }
+                    .font(.caption)
                 }
             }
             .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)
             .subscriptionStoreButtonLabel(.multiline)
             .storeButton(.visible, for: .restorePurchases)
-            .subscriptionStorePolicyDestination(url: URL(string: "https://giusscos.it/privacy")!, for: .privacyPolicy)
-            .subscriptionStorePolicyDestination(url: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!, for: .termsOfService)
             .interactiveDismissDisabled()
             .sheet(isPresented: $showLifetimePlans) {
                 PaywallLifetimeView()

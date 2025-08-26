@@ -65,6 +65,7 @@ struct PaywallView: View {
                             .buttonStyle(.plain)
                     }
                     .font(.caption)
+                    .padding()
                 }
             }
             .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)

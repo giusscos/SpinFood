@@ -166,7 +166,7 @@ struct RecipeView: View {
                 Button {
                     activeRecipeSheet = .create
                 } label: {
-                    Label("Add", systemImage: "plus.circle.fill")
+                    Label("Add", systemImage: "plus")
                 }
                 .disabled(foods.isEmpty)
             }
@@ -175,7 +175,6 @@ struct RecipeView: View {
                 ToolbarItem (placement: .topBarTrailing) {
                     Menu {
                         if !recipes.isEmpty {
-                            // Sort options
                             Menu {
                                 Picker("Sort by", selection: $sortOption) {
                                     Text(RecipeSortOption.nameAsc.label)
@@ -204,7 +203,6 @@ struct RecipeView: View {
                                 Label("Sort", systemImage: "arrow.up.arrow.down")
                             }
                             
-                            // Filter options
                             Menu {
                                 Picker("Filter", selection: $filterOption) {
                                     Text(RecipeFilterOption.all.label)
@@ -221,7 +219,7 @@ struct RecipeView: View {
                             }
                         }
                     } label: {
-                        Label("Menu", systemImage: "ellipsis.circle")
+                        Label("Menu", systemImage: "ellipsis")
                     }
                 }
             }

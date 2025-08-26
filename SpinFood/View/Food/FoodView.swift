@@ -183,7 +183,7 @@ struct FoodView: View {
                 Button {
                     activeSheet = .create
                 } label: {
-                    Label("Add", systemImage: "plus.circle.fill")
+                    Label("Add", systemImage: "plus")
                 }
             }
             
@@ -191,7 +191,6 @@ struct FoodView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         if !food.isEmpty {
-                            // Sort options
                             Menu {
                                 Picker("Sort by", selection: $sortOption) {
                                     Text(FoodSortOption.nameAsc.label)
@@ -220,7 +219,6 @@ struct FoodView: View {
                                 Label("Sort", systemImage: "arrow.up.arrow.down")
                             }
                             
-                            // Filter options
                             Menu {
                                 Picker("Filter", selection: $filterOption) {
                                     Text(FoodFilterOption.all.label)
@@ -238,7 +236,6 @@ struct FoodView: View {
                             
                             Divider()
                             
-                            // Refill button
                             Button {
                                 activeSheet = .refillMulti
                             } label: {
@@ -246,16 +243,15 @@ struct FoodView: View {
                             }
                             .disabled(!allFoodToBeRefilled)
                             
-                            // Refill Selected option - show whenever in edit mode
                             Button {
                                 let selectedFood = food.filter { selectedItems.contains($0.id) }
+                                
                                 activeSheet = .refillSelected(selectedFood)
                             } label: {
                                 Label("Refill Selected", systemImage: "cart.fill.badge.plus")
                             }
                             .disabled(selectedItems.isEmpty)
                             
-                            // Delete Selected option - only enable when items are selected
                             Button(role: .destructive) {
                                 for id in selectedItems {
                                     if let foodToDelete = food.first(where: { $0.id == id }) {
@@ -266,12 +262,12 @@ struct FoodView: View {
                                 editMode?.wrappedValue = .inactive
                                 
                             } label: {
-                                Label("Delete Selected", systemImage: "trash")
+                                Label("Delete selected", systemImage: "trash")
                             }
                             .disabled(selectedItems.isEmpty)
                         }
                     } label: {
-                        Label("Menu", systemImage: "ellipsis.circle")
+                        Label("Menu", systemImage: "ellipsis")
                     }
                 }
             }

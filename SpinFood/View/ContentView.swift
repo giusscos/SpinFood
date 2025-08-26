@@ -42,12 +42,6 @@ struct ContentView: View {
                         FoodView()
                     }
                 }
-                
-                Tab("Settings", systemImage: "gear") {
-                    NavigationStack {
-                        SettingsView()
-                    }
-                }
             }
             .onAppear() {
                 if recipes.count > 2 {

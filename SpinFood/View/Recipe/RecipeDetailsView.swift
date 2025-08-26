@@ -75,26 +75,24 @@ struct RecipeDetailsView: View {
                     .listRowBackground(Color.clear)
                     .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                     
-                    if recipe.descriptionRecipe != "" {
-                        Section {
-                            VStack (alignment: .leading, spacing: 24) {
-                                Text(recipe.name)
-                                    .font(.title)
-                                    .fontWeight(.semibold)
-                                    .multilineTextAlignment(.center)
-                                
+                
+                    Section {
+                        VStack (alignment: .leading, spacing: 24) {
+                            Text(recipe.name)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                            
+                            if recipe.descriptionRecipe != "" {
                                 Text(recipe.descriptionRecipe)
                                     .multilineTextAlignment(.leading)
                                     .font(.body)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .padding()
-                            .background(.ultraThinMaterial)
-                            .clipShape(.rect(cornerRadius: 32))
                         }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                     
                     RecipeDetailsIngredientView(recipe: recipe, missingIngredients: missingIngredients)
                     
@@ -118,40 +116,14 @@ struct RecipeDetailsView: View {
                         CookRecipeStepByStepView(recipe: recipe, steps: steps)
                     }
                 }
-                .navigationBarBackButtonHidden()
-                .toolbarVisibility(.hidden, for: .tabBar)
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Text("Back")
-                                .font(.headline)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
-                        .foregroundColor(.primary)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.capsule)
-                        .padding(.vertical)
-                    }
-                    
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             activeRecipeDetailSheet = .edit(recipe)
                         } label: {
-                            Text("Edit")
-                                .font(.headline)
+                            Label("Edit", systemImage: "pencil")
                         }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
-                        .foregroundColor(.primary)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.capsule)
-                        .padding(.vertical)
                     }
                 }
                 .onAppear() {
@@ -220,9 +192,6 @@ struct RecipeDetailsStepView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .clipShape(.rect(cornerRadius: 32))
                     
                     ForEach(steps) { step in
                         VStack(alignment: .leading, spacing: 8) {
@@ -239,10 +208,7 @@ struct RecipeDetailsStepView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                                 .padding(.vertical, 4)
                         }
-                        .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.rect(cornerRadius: 32))
                     }
                 }
             }
@@ -286,9 +252,6 @@ struct RecipeDetailsIngredientView: View {
                         }
                     }
                 }
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(.rect(cornerRadius: 32))
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)

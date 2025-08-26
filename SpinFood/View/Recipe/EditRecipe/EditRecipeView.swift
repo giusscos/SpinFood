@@ -153,24 +153,6 @@ struct EditRecipeView: View {
                     EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
                     
                     EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
-                    
-                    if let _ = recipe {
-                        Section {
-                            Button (role: .destructive) {
-                                showDeleteConfirmation = true
-                            } label: {
-                                Text("Delete recipe")
-                                    .font(.headline)
-                                    .padding(.vertical, 8)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                            }
-                            .tint(.red)
-                            .buttonStyle(.borderedProminent)
-                            .buttonBorderShape(.capsule)
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    }
                 }
                 .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
                 .listStyle(.plain)
@@ -200,41 +182,44 @@ struct EditRecipeView: View {
                         Button {
                             dismiss()
                         } label: {
-                            Text("Cancel")
-                                .font(.headline)
+                            Label("Cancel", systemImage: "cancel")
                         }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
-                        .foregroundStyle(.primary)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.capsule)
                     }
                     
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            saveRecipe()
-                        } label: {
-                            Text("Save")
-                                .font(.headline)
+                        if #available(iOS 26, *) {
+                            Button (role: .confirm) {
+                                saveRecipe()
+                            } label: {
+                                Label("Save", systemImage: "checkmark")
+                            }
+                            .disabled(name.isEmpty || imageData == nil)
+                        } else {
+                            Button {
+                                saveRecipe()
+                            } label: {
+                                Label("Save", systemImage: "checkmark")
+                            }
+                            .disabled(name.isEmpty || imageData == nil)
                         }
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
-                        .foregroundStyle(.primary)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.capsule)
-                        .disabled(name.isEmpty || imageData == nil)
+                    }
+                    
+                    if let _ = recipe {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button (role: .destructive) {
+                                showDeleteConfirmation = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                     
                     ToolbarItem(placement: .keyboard) {
                         Button {
                             hideKeyboard()
                         } label: {
-                            Image(systemName: "keyboard.chevron.compact.down")
+                            Label("hideKeyboard", systemImage: "keyboard.chevron.compact.down")
                         }
-                        .tint(.primary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                 }
                 .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {

@@ -24,9 +24,11 @@ struct RecipeRowView: View {
                 Text(recipe.name)
                     .font(.headline)
                 
-                Text(recipe.descriptionRecipe)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if recipe.descriptionRecipe != "" {
+                    Text(recipe.descriptionRecipe)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
             .lineLimit(1)
             .padding(.leading, 8)

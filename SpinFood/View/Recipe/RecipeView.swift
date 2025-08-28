@@ -123,117 +123,118 @@ struct RecipeView: View {
     }
     
     var body: some View {
-        List {
-            if !filteredRecipes.isEmpty {
-                Section {
-                    ForEach(filteredRecipes) { value in
-                        NavigationLink {
-                            RecipeDetailsView(recipe: value)
-                                .navigationTransition(.zoom(sourceID: value.id, in: namespace))
-                        } label: {
-                            RecipeRowView(recipe: value)
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        modelContext.delete(value)
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                    
-                                    Button {
-                                        activeRecipeSheet = .edit(value)
-                                    } label: {
-                                        Label("Edit", systemImage: "pencil")
-                                    }
-                                    .tint(.blue)
-                                }
-                        }
-                        .matchedTransitionSource(id: value.id, in: namespace)
-                    }
-                }
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-                .listRowInsets(.init(top: 4, leading: 4, bottom: 4, trailing: 4))
-            } else if !searchText.isEmpty && filteredRecipes.isEmpty {
-                ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
-            } else {
-                ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
-            }
-        }
-        .searchable(text: $searchText, prompt: "Search recipe")
-        .navigationTitle("Recipes")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    activeRecipeSheet = .create
-                } label: {
-                    Label("Add", systemImage: "plus")
-                }
-                .disabled(foods.isEmpty)
-            }
+        GeometryReader { geometry in
+            let size = geometry.size
             
-            if !recipes.isEmpty {
-                ToolbarItem (placement: .topBarTrailing) {
-                    Menu {
-                        if !recipes.isEmpty {
-                            Menu {
-                                Picker("Sort by", selection: $sortOption) {
-                                    Text(RecipeSortOption.nameAsc.label)
-                                        .tag(RecipeSortOption.nameAsc)
-                                    
-                                    Text(RecipeSortOption.nameDesc.label)
-                                        .tag(RecipeSortOption.nameDesc)
-                                    
-                                    Divider()
-                                    
-                                    Text(RecipeSortOption.dateAsc.label)
-                                        .tag(RecipeSortOption.dateAsc)
-                                    
-                                    Text(RecipeSortOption.dateDesc.label)
-                                        .tag(RecipeSortOption.dateDesc)
-                                    
-                                    Divider()
-                                    
-                                    Text(RecipeSortOption.durationAsc.label)
-                                        .tag(RecipeSortOption.durationAsc)
-                                    
-                                    Text(RecipeSortOption.durationDesc.label)
-                                        .tag(RecipeSortOption.durationDesc)
+            VStack {
+                ScrollView (.horizontal, showsIndicators: false) {
+                    if !filteredRecipes.isEmpty {
+                        HStack(spacing: 16) {
+                            ForEach(filteredRecipes) { recipe in
+                                Group {
+                                    NavigationLink {
+                                        RecipeDetailsView(recipe: recipe)
+                                            .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                                    } label: {
+                                        RecipeCardRowView(recipe: recipe, size: size)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .matchedTransitionSource(id: recipe.id, in: namespace)
                                 }
-                            } label: {
-                                Label("Sort", systemImage: "arrow.up.arrow.down")
-                            }
-                            
-                            Menu {
-                                Picker("Filter", selection: $filterOption) {
-                                    Text(RecipeFilterOption.all.label)
-                                        .tag(RecipeFilterOption.all)
-                                    
-                                    Text(RecipeFilterOption.canCook.label)
-                                        .tag(RecipeFilterOption.canCook)
-                                    
-                                    Text(RecipeFilterOption.cantCook.label)
-                                        .tag(RecipeFilterOption.cantCook)
+                                .scrollTransition { content, phase in
+                                    content
+                                        .rotationEffect(phase.isIdentity ? .degrees(0) : .degrees(-12))
+                                        .scaleEffect(phase.isIdentity ? 1 : 0.7)
+                                        .blur(radius: phase.isIdentity ? 0 : 12)
                                 }
-                            } label: {
-                                Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                             }
                         }
+                        .padding()
+                        .scrollTargetLayout()
+                    } else if !searchText.isEmpty && filteredRecipes.isEmpty {
+                        ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
+                    } else {
+                        ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
+                    }
+                }
+                .scrollTargetBehavior(.viewAligned)
+            }
+            .searchable(text: $searchText, prompt: "Search recipe")
+            .navigationTitle("Recipes")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        activeRecipeSheet = .create
                     } label: {
-                        Label("Menu", systemImage: "ellipsis")
+                        Label("Add", systemImage: "plus")
+                    }
+                    .disabled(foods.isEmpty)
+                }
+                
+                if !recipes.isEmpty {
+                    ToolbarItem (placement: .topBarTrailing) {
+                        Menu {
+                            if !recipes.isEmpty {
+                                Menu {
+                                    Picker("Sort by", selection: $sortOption) {
+                                        Text(RecipeSortOption.nameAsc.label)
+                                            .tag(RecipeSortOption.nameAsc)
+                                        
+                                        Text(RecipeSortOption.nameDesc.label)
+                                            .tag(RecipeSortOption.nameDesc)
+                                        
+                                        Divider()
+                                        
+                                        Text(RecipeSortOption.dateAsc.label)
+                                            .tag(RecipeSortOption.dateAsc)
+                                        
+                                        Text(RecipeSortOption.dateDesc.label)
+                                            .tag(RecipeSortOption.dateDesc)
+                                        
+                                        Divider()
+                                        
+                                        Text(RecipeSortOption.durationAsc.label)
+                                            .tag(RecipeSortOption.durationAsc)
+                                        
+                                        Text(RecipeSortOption.durationDesc.label)
+                                            .tag(RecipeSortOption.durationDesc)
+                                    }
+                                } label: {
+                                    Label("Sort", systemImage: "arrow.up.arrow.down")
+                                }
+                                
+                                Menu {
+                                    Picker("Filter", selection: $filterOption) {
+                                        Text(RecipeFilterOption.all.label)
+                                            .tag(RecipeFilterOption.all)
+                                        
+                                        Text(RecipeFilterOption.canCook.label)
+                                            .tag(RecipeFilterOption.canCook)
+                                        
+                                        Text(RecipeFilterOption.cantCook.label)
+                                            .tag(RecipeFilterOption.cantCook)
+                                    }
+                                } label: {
+                                    Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                                }
+                            }
+                        } label: {
+                            Label("Menu", systemImage: "ellipsis")
+                        }
                     }
                 }
             }
+            .fullScreenCover(item: $activeRecipeSheet, content: { sheet in
+                switch sheet {
+                    case .create:
+                        EditRecipeView()
+                            .interactiveDismissDisabled()
+                    case .edit(let value):
+                        EditRecipeView(recipe: value)
+                            .interactiveDismissDisabled()
+                }
+            })
         }
-        .fullScreenCover(item: $activeRecipeSheet, content: { sheet in
-            switch sheet {
-            case .create:
-                EditRecipeView()
-                    .interactiveDismissDisabled()
-            case .edit(let value):
-                EditRecipeView(recipe: value)
-                    .interactiveDismissDisabled()
-            }
-        })
     }
 }
 

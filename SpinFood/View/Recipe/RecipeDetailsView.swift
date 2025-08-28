@@ -32,9 +32,7 @@ struct RecipeDetailsView: View {
     @Query var food: [FoodModel]
     
     @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
-    
-    @State private var imageData: Data?
-    
+        
     var recipe: RecipeModel
     
     var missingIngredients: [RecipeFoodModel] {
@@ -68,7 +66,7 @@ struct RecipeDetailsView: View {
                                 let minY = geometry.frame(in: .named("Scroll")).minY
                                 let progress = (minY > 0 ? minY : 0) / (height * 0.8)
                                 
-                                if let imageData, let uiImage = UIImage(data: imageData) {
+                                if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
                                     Image(uiImage: uiImage)
                                         .resizable()
                                         .scaledToFill()
@@ -127,7 +125,7 @@ struct RecipeDetailsView: View {
                 }
                 .ignoresSafeArea(.container, edges: .top)
                 .background {
-                    if let imageData, let uiImage = UIImage(data: imageData) {
+                    if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
                         let image = Image(uiImage: uiImage)
                         
                         image
@@ -162,11 +160,6 @@ struct RecipeDetailsView: View {
                         }
                     }
                 }
-                .onAppear() {
-                    if let recipeImage = recipe.image {
-                        self.imageData = recipeImage
-                    }
-                }
             }
         }
     }
@@ -184,27 +177,24 @@ struct RecipeDetailsCookButtonView: View {
     
     var body: some View {
         if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-            Section {
-                Button {
-                    if hasAllIngredients {
-                        if let steps = recipe.steps, !steps.isEmpty {
-                            return activeRecipeDetailSheet = .cookNow(steps)
-                        } else if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-                            return activeRecipeDetailSheet = .confirmEat
-                        }
+            Button {
+                if hasAllIngredients {
+                    if let steps = recipe.steps, !steps.isEmpty {
+                        return activeRecipeDetailSheet = .cookNow(steps)
+                    } else if let ingredients = recipe.ingredients, !ingredients.isEmpty {
+                        return activeRecipeDetailSheet = .confirmEat
                     }
-                } label: {
-                    Text("Cook")
-                        .font(.headline)
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.capsule)
-                .disabled(!hasAllIngredients)
+            } label: {
+                Text("Cook")
+                    .font(.headline)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .disabled(!hasAllIngredients)
+            .padding()
         }
     }
 }
@@ -283,7 +273,7 @@ struct RecipeDetailsIngredientView: View {
                         }
                     }
                 }
-                .padding()
+                .padding(.vertical)
             }
             .padding()
         }

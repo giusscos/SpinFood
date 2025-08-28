@@ -48,7 +48,7 @@ struct FoodRefillView: View {
                                     .foregroundStyle(.secondary)
                                     
                                     HStack (alignment: .lastTextBaseline, spacing: 2) {
-                                        Text("\(value.quantity - value.currentQuantity)")
+                                        Text((value.quantity - value.currentQuantity), format: .number)
                                         
                                         Text(value.unit.abbreviation)
                                             .foregroundStyle(.secondary)
@@ -70,7 +70,7 @@ struct FoodRefillView: View {
                                         
                                     }
                                     HStack (alignment: .lastTextBaseline, spacing: 2) {
-                                        Text("\(value.quantity)")
+                                        Text(value.quantity, format: .number)
                                                                                     
                                         Text(value.unit.abbreviation)
                                             .foregroundStyle(.secondary)

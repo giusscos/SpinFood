@@ -21,7 +21,7 @@ struct FoodRowView: View {
                     HStack (spacing: 2) {
                         Text("Initial: ")
                         
-                        Text("\(food.quantity)")
+                        Text(food.quantity, format: .number)
                         +
                         Text(food.unit.abbreviation)
                     }
@@ -32,11 +32,11 @@ struct FoodRowView: View {
                 
                 HStack (alignment: .lastTextBaseline, spacing: 2) {
                     if food.quantity != food.currentQuantity {
-                        Text("\(food.currentQuantity)")
+                        Text(food.currentQuantity, format: .number)
                             .font(.headline)
                             .fontWeight(.semibold)
                     } else {
-                        Text("\(food.quantity)")
+                        Text(food.quantity, format: .number)
                             .font(.headline)
                             .fontWeight(.semibold)
                     }

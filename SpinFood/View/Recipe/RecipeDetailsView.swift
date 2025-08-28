@@ -15,12 +15,12 @@ enum ActiveRecipeDetailSheet: Identifiable {
     
     var id: String {
         switch self {
-        case .edit(let recipe):
-            return "editRecipe-\(recipe.id)"
-        case .confirmEat:
-            return "confirmEat"
-        case .cookNow(let steps):
-            return "cookNow-\(steps.count)"
+            case .edit(let recipe):
+                return "editRecipe-\(recipe.id)"
+            case .confirmEat:
+                return "confirmEat"
+            case .cookNow(let steps):
+                return "cookNow-\(steps.count)"
         }
     }
 }
@@ -33,7 +33,7 @@ struct RecipeDetailsView: View {
     
     @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
     
-    @State private var listBackgroundColor: Color = Color(.systemBackground)
+    @State private var imageData: Data?
     
     var recipe: RecipeModel
     
@@ -53,67 +53,103 @@ struct RecipeDetailsView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            GeometryReader { geometry in
-                let size = geometry.size
-                
-                List {
-                    Section {
-                        if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity, maxHeight: size.height * 0.5)
-                                .mask(
-                                    LinearGradient(colors: [.black, .black, .black, .black, .clear, .clear], startPoint: .top, endPoint: .bottom)
-                                        .blur(radius: 16)
-                                )
-                        }
-                    }
-                    .frame(minHeight: size.height * 0.5)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    
-                
-                    Section {
-                        VStack (alignment: .leading, spacing: 24) {
-                            Text(recipe.name)
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .multilineTextAlignment(.center)
+        GeometryReader { geometry in
+            let safeArea = geometry.safeAreaInsets
+            let size = geometry.size
+            
+            NavigationStack {
+                VStack {
+                    ScrollView {
+                        VStack {
+                            let height = size.height * 0.45
                             
-                            if recipe.descriptionRecipe != "" {
-                                Text(recipe.descriptionRecipe)
-                                    .multilineTextAlignment(.leading)
-                                    .font(.body)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            GeometryReader { geometry in
+                                let size = geometry.size
+                                let minY = geometry.frame(in: .named("Scroll")).minY
+                                let progress = (minY > 0 ? minY : 0) / (height * 0.8)
+                                
+                                if let imageData, let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: size.width, height: size.height + (minY > 0 ? minY : 0))
+                                        .clipped()
+                                        .mask(
+                                            ZStack (alignment: .bottom) {
+                                                Rectangle()
+                                                    .fill(
+                                                        .linearGradient(colors: [
+                                                            .black.opacity(1),
+                                                            .black.opacity(1),
+                                                            .black.opacity(1),
+                                                            .black.opacity(1),
+                                                            .black.opacity(1),
+                                                            .black.opacity(1),
+                                                            .black.opacity(1),
+                                                            .black.opacity(0.75 - progress),
+                                                            .black.opacity(0.50 - progress),
+                                                            .black.opacity(0.25 - progress),
+                                                            .black.opacity(0 - progress),
+                                                        ], startPoint: .top, endPoint: .bottom)
+                                                    )
+                                            }
+                                        )
+                                        .offset(y: (minY > 0 ? -minY : 0))
+                                }
                             }
+                            .frame(height: height + safeArea.top)
+                            
+                            VStack {
+                                VStack (alignment: .leading, spacing: 24) {
+                                    Text(recipe.name)
+                                        .font(.title)
+                                        .fontWeight(.semibold)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    if recipe.descriptionRecipe != "" {
+                                        Text(recipe.descriptionRecipe)
+                                            .multilineTextAlignment(.leading)
+                                            .font(.body)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
+                            }
+                            .padding()
+                            
+                            RecipeDetailsIngredientView(recipe: recipe, missingIngredients: missingIngredients)
+                            
+                            RecipeDetailsStepView(recipe: recipe)
+                            
+                            RecipeDetailsCookButtonView(recipe: recipe, hasAllIngredients: hasAllIngredients, activeRecipeDetailSheet: $activeRecipeDetailSheet)
                         }
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    
-                    RecipeDetailsIngredientView(recipe: recipe, missingIngredients: missingIngredients)
-                    
-                    RecipeDetailsStepView(recipe: recipe)
-                    
-                    RecipeDetailsCookButtonView(recipe: recipe, hasAllIngredients: hasAllIngredients, activeRecipeDetailSheet: $activeRecipeDetailSheet)
+                    .coordinateSpace(name: "Scroll")
                 }
-                .listStyle(.plain)
-                .ignoresSafeArea(edges: .top)
-                .background(
-                    listBackgroundColor
-                        .ignoresSafeArea()
-                )
+                .ignoresSafeArea(.container, edges: .top)
+                .background {
+                    if let imageData, let uiImage = UIImage(data: imageData) {
+                        let image = Image(uiImage: uiImage)
+                        
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: size.width * 1.3, height: size.height * 1.3)
+                            .blur(radius: 64)
+                            .scaleEffect(x: -1, y: 1)
+                            .ignoresSafeArea()
+                    } else {
+                        LinearGradient(colors: [.red, .indigo], startPoint: .topLeading, endPoint: .bottom)
+                            .ignoresSafeArea()
+                    }
+                }
                 .fullScreenCover(item: $activeRecipeDetailSheet) { sheet in
                     switch sheet {
-                    case .edit(let recipe):
-                        EditRecipeView(recipe: recipe)
-                    case .confirmEat:
-                        RecipeConfirmEatView(recipe: recipe)
-                    case .cookNow(let steps):
-                        CookRecipeStepByStepView(recipe: recipe, steps: steps)
+                        case .edit(let recipe):
+                            EditRecipeView(recipe: recipe)
+                        case .confirmEat:
+                            RecipeConfirmEatView(recipe: recipe)
+                        case .cookNow(let steps):
+                            CookRecipeStepByStepView(recipe: recipe, steps: steps)
                     }
                 }
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
@@ -127,8 +163,8 @@ struct RecipeDetailsView: View {
                     }
                 }
                 .onAppear() {
-                    if let imageData = recipe.image, let uiImage = UIImage(data: imageData), let avgColor = uiImage.averageColor() {
-                        listBackgroundColor = Color(avgColor)
+                    if let recipeImage = recipe.image {
+                        self.imageData = recipeImage
                     }
                 }
             }
@@ -154,7 +190,7 @@ struct RecipeDetailsCookButtonView: View {
                         if let steps = recipe.steps, !steps.isEmpty {
                             return activeRecipeDetailSheet = .cookNow(steps)
                         } else if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-                                return activeRecipeDetailSheet = .confirmEat
+                            return activeRecipeDetailSheet = .confirmEat
                         }
                     }
                 } label: {
@@ -178,42 +214,38 @@ struct RecipeDetailsStepView: View {
     
     var body: some View {
         if let steps = recipe.steps, !steps.isEmpty {
-            Section {
-                VStack (alignment: .leading) {
-                    HStack (alignment: .lastTextBaseline, spacing: 4) {
-                        Group {
-                            Text(steps.count == 1 ? "Step" : "Steps")
-                            +
-                            Text(":")
-                        }
-                        .font(.headline)
-                        
-                        Text(recipe.duration.formatted)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+            VStack (alignment: .leading) {
+                HStack (alignment: .lastTextBaseline, spacing: 4) {
+                    Group {
+                        Text(steps.count == 1 ? "Step" : "Steps")
+                        +
+                        Text(":")
                     }
                     
-                    ForEach(steps) { step in
-                        VStack(alignment: .leading, spacing: 8) {
-                            if let imageData = step.image, let uiImage = UIImage(data: imageData) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
-                                    .clipShape(.rect(cornerRadius: 20))
-                            }
-                            
-                            Text(step.text)
-                                .foregroundColor(.primary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.vertical, 4)
+                    Text(recipe.duration.formatted)
+                        .foregroundStyle(.secondary)
+                }
+                .font(.headline)
+                
+                ForEach(steps) { step in
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let imageData = step.image, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
+                                .clipShape(.rect(cornerRadius: 20))
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Text(step.text)
+                            .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.vertical, 4)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .padding()
         }
     }
 }
@@ -224,37 +256,36 @@ struct RecipeDetailsIngredientView: View {
     
     var body: some View {
         if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-            Section {
-                VStack (alignment: .leading) {
-                    Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
-                        .font(.headline)
-                        .padding(.bottom)
-                    
+            VStack (alignment: .leading) {
+                Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
+                    .font(.headline)
+                
+                VStack {
                     ForEach(ingredients) { value in
                         if let ingredient = value.ingredient {
                             let missingIngredient = missingIngredients.contains(where: { $0.id == value.id })
                             HStack (alignment: .lastTextBaseline) {
                                 Text(ingredient.name)
                                     .font(.headline)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .lineLimit(1)
                                 
-                                Text("\(value.quantityNeeded)")
-                                    .font(.body)
-                                    .fontWeight(.medium)
+                                Spacer()
+                                
+                                Text(value.quantityNeeded, format: .number)
+                                    .font(.headline)
                                     .foregroundStyle(missingIngredient ? .red : .primary)
                                 +
-                                Text("\(ingredient.unit.abbreviation)")
-                                    .font(.subheadline)
+                                Text(ingredient.unit.abbreviation)
+                                    .font(.headline)
                                     .foregroundStyle(missingIngredient ? .red : .secondary)
-
                             }
                             .lineLimit(1)
                         }
                     }
                 }
+                .padding()
             }
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .padding()
         }
     }
 }

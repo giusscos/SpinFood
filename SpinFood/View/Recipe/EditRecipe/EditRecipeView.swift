@@ -67,12 +67,11 @@ struct EditRecipeView: View {
     
     @State private var selectedFood: FoodModel?
     @State private var quantityNeeded: Decimal?
-
+    
     @State private var steps: [StepRecipe] = []
     @State private var newStep: StepRecipe = StepRecipe(text: "")
     @State private var stepImageItem: PhotosPickerItem?
     
-    @State private var listBackgroundColor: Color = Color(.systemBackground)
     @State private var showPhotoPicker: Bool = false
     
     @State private var showDeleteConfirmation: Bool = false
@@ -85,173 +84,164 @@ struct EditRecipeView: View {
     @FocusState private var focusedField: Field?
     
     var body: some View {
-        NavigationStack {
-            GeometryReader { geometry in
-                let size = geometry.size
-                
-                List {
-                    EditRecipePhotoView(imageItem: $imageItem, imageData: $imageData, showPhotoPicker: $showPhotoPicker, size: size)
-                    
-                    Section {
-                        VStack (spacing: 16) {
-                            TextField("Name", text: $name)
-                                .autocorrectionDisabled()
-                                .font(.headline)
-                                .padding(.horizontal, 10)
-                                .focused($focusedField, equals: .name)
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .recipeDescription
-                                }
-
-                            TextEditor(text: $descriptionRecipe)
-                                .textEditorStyle(.plain)
-                                .autocorrectionDisabled()
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .padding(.trailing, 26)
-                                .overlay(content: {
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(.secondary.opacity(0.5), lineWidth: 1)
-                                })
-                                .clipShape(.rect(cornerRadius: 20))
-                                .overlay(alignment: .topLeading, content: {
-                                    if descriptionRecipe.isEmpty {
-                                        Text("Add a description")
-                                            .foregroundColor(.secondary)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 10)
-                                    }
-                                })
-                                .frame(minHeight: 28, maxHeight: 256)
-                                .focused($focusedField, equals: .recipeDescription)
-                                .onSubmit {
-                                    focusedField = nil
-                                }
-                        }
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .clipShape(.rect(cornerRadius: 32))
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    
-                    Section {
-                        VStack(alignment: .leading) {
-                            Text("Select duration")
-                                .font(.headline)
+        GeometryReader { geometry in
+            let safeArea = geometry.safeAreaInsets
+            let size = geometry.size
+            
+            NavigationStack {
+                VStack {
+                    ScrollView {
+                        VStack {
+                            EditRecipePhotoView(imageItem: $imageItem, imageData: $imageData, showPhotoPicker: $showPhotoPicker, safeArea: safeArea, size: size)
                             
-                            TimePickerView(duration: $duration)
+                            VStack {
+                                TextField("Name", text: $name)
+                                    .autocorrectionDisabled()
+                                    .font(.title2)
+                                    .fontWeight(.semibold)
+                                    .focused($focusedField, equals: .name)
+                                    .submitLabel(.next)
+                                    .onSubmit {
+                                        focusedField = .recipeDescription
+                                    }
+                                
+                                TextEditor(text: $descriptionRecipe)
+                                    .textEditorStyle(.plain)
+                                    .autocorrectionDisabled()
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .overlay(content: {
+                                        Capsule()
+                                            .stroke(.secondary.opacity(0.5), lineWidth: 1)
+                                    })
+                                    .clipShape(.capsule)
+                                    .overlay(alignment: .topLeading, content: {
+                                        if descriptionRecipe.isEmpty {
+                                            Text("Add a description")
+                                                .foregroundColor(.secondary)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 14)
+                                        }
+                                    })
+                                    .frame(minHeight: 48, maxHeight: 256)
+                                    .focused($focusedField, equals: .recipeDescription)
+                                    .onSubmit {
+                                        focusedField = nil
+                                    }
+                            }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .clipShape(.rect(cornerRadius: 32))
+                            .padding()
+                            
+                            VStack(alignment: .leading) {
+                                Text("Duration")
+                                    .font(.headline)
+                                
+                                TimePickerView(duration: $duration)
+                            }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .clipShape(.rect(cornerRadius: 32))
+                            .padding()
+                            
+                            EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
+                            
+                            EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
                         }
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .clipShape(.rect(cornerRadius: 32))
+                        .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
+                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button {
+                                    dismiss()
+                                } label: {
+                                    Label("Cancel", systemImage: "xmark")
+                                }
+                            }
+                            
+                            ToolbarItem(placement: .topBarTrailing) {
+                                if #available(iOS 26, *) {
+                                    Button (role: .confirm) {
+                                        saveRecipe()
+                                    } label: {
+                                        Label("Save", systemImage: "checkmark")
+                                    }
+                                    .disabled(name.isEmpty || imageData == nil)
+                                } else {
+                                    Button {
+                                        saveRecipe()
+                                    } label: {
+                                        Label("Save", systemImage: "checkmark")
+                                    }
+                                    .disabled(name.isEmpty || imageData == nil)
+                                }
+                            }
+                            
+                            if let _ = recipe {
+                                ToolbarItem(placement: .topBarTrailing) {
+                                    Button (role: .destructive) {
+                                        showDeleteConfirmation = true
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }
+                            
+                            ToolbarItem(placement: .keyboard) {
+                                Button {
+                                    hideKeyboard()
+                                } label: {
+                                    Label("hideKeyboard", systemImage: "keyboard.chevron.compact.down")
+                                }
+                            }
+                        }
+                        .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
+                            Button("Cancel", role: .cancel) { }
+                            Button("Delete Recipe", role: .destructive) {
+                                deleteRecipe()
+                            }
+                        })
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    
-                    EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
-                    
-                    EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
+                    .coordinateSpace(name: "Scroll")
                 }
-                .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
-                .listStyle(.plain)
-                .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
-                .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
-                .ignoresSafeArea(edges: .top)
+                .ignoresSafeArea(.container, edges: .top)
                 .background {
-                    VStack (spacing: 0) {
-                        if let imageData, let _ = UIImage(data: imageData) {
-                            listBackgroundColor
-                                .ignoresSafeArea()
-                        } else {
-                            LinearGradient(colors: [.secondary, .primary], startPoint: .topLeading, endPoint: .bottom)
-                                .ignoresSafeArea()
-                        }
-                    }
-                }
-                .onChange(of: imageData) { _, newData in
-                    if let newData, let uiImage = UIImage(data: newData), let avgColor = uiImage.averageColor() {
-                        listBackgroundColor = Color(avgColor)
+                    if let imageData, let uiImage = UIImage(data: imageData) {
+                        let image = Image(uiImage: uiImage)
+                        
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: size.width * 1.3, height: size.height * 1.3)
+                            .blur(radius: 64)
+                            .scaleEffect(x: -1, y: 1)
+                            .ignoresSafeArea()
                     } else {
-                        listBackgroundColor = Color(.systemBackground)
+                        LinearGradient(colors: [.red, .indigo], startPoint: .topLeading, endPoint: .bottom)
+                            .ignoresSafeArea()
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Label("Cancel", systemImage: "cancel")
-                        }
+                .onAppear {
+                    if let recipe = recipe {
+                        name = recipe.name
+                        descriptionRecipe = recipe.descriptionRecipe
+                        imageData = recipe.image
+                        duration = recipe.duration
+                        ingredients = recipe.ingredients ?? []
+                        steps = recipe.steps ?? []
                     }
                     
-                    ToolbarItem(placement: .topBarTrailing) {
-                        if #available(iOS 26, *) {
-                            Button (role: .confirm) {
-                                saveRecipe()
-                            } label: {
-                                Label("Save", systemImage: "checkmark")
-                            }
-                            .disabled(name.isEmpty || imageData == nil)
-                        } else {
-                            Button {
-                                saveRecipe()
-                            } label: {
-                                Label("Save", systemImage: "checkmark")
-                            }
-                            .disabled(name.isEmpty || imageData == nil)
-                        }
-                    }
-                    
-                    if let _ = recipe {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button (role: .destructive) {
-                                showDeleteConfirmation = true
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .keyboard) {
-                        Button {
-                            hideKeyboard()
-                        } label: {
-                            Label("hideKeyboard", systemImage: "keyboard.chevron.compact.down")
-                        }
-                    }
+                    selectedFood = foods.first
                 }
-                .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Delete Recipe", role: .destructive) {
-                        deleteRecipe()
+                .task(id: imageItem) {
+                    if let data = try? await imageItem?.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data),
+                       let compressedData = uiImage.resizedAndCompressed() {
+                        withAnimation(.smooth) {
+                            imageData = compressedData
+                        }
                     }
-                })
-            }
-        }
-        .onAppear {
-            if let recipe = recipe {
-                name = recipe.name
-                descriptionRecipe = recipe.descriptionRecipe
-                imageData = recipe.image
-                duration = recipe.duration
-                ingredients = recipe.ingredients ?? []
-                steps = recipe.steps ?? []
-            }
-            
-            selectedFood = foods.first
-            
-            if let imageData, let uiImage = UIImage(data: imageData), let avgColor = uiImage.averageColor() {
-                listBackgroundColor = Color(avgColor)
-            }
-        }
-        .task(id: imageItem) {
-            if let data = try? await imageItem?.loadTransferable(type: Data.self),
-               let uiImage = UIImage(data: data),
-               let compressedData = uiImage.resizedAndCompressed() {
-                withAnimation(.smooth) {
-                    imageData = compressedData
                 }
             }
         }
@@ -303,3 +293,4 @@ extension View {
 #Preview {
     EditRecipeView()
 }
+

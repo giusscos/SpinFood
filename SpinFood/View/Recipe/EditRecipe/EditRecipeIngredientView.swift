@@ -17,27 +17,30 @@ struct EditRecipeIngredientView: View {
     var body: some View {
         if !foods.isEmpty {
             if !ingredients.isEmpty {
-                Section {
-                    VStack {
+                VStack {
+                    HStack {
                         Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
                             .font(.headline)
                             .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
                         
+                        Spacer()
+                    }
+                    
+                    VStack (spacing: 12) {
                         ForEach(ingredients) { recipeIngridient in
                             if let ingridient = recipeIngridient.ingredient {
                                 HStack (spacing: 16) {
                                     Text(ingridient.name)
                                         .font(.headline)
                                         .lineLimit(1)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     
-                                    Text("\(recipeIngridient.quantityNeeded)")
+                                    Spacer()
+                                    
+                                    Text(recipeIngridient.quantityNeeded, format: .number)
                                         .font(.headline)
                                     +
-                                    Text("\(ingridient.unit.abbreviation)")
+                                    Text(ingridient.unit.abbreviation)
                                         .foregroundStyle(.secondary)
-                                        .font(.subheadline)
                                     
                                     Button(role: .destructive) {
                                         withAnimation {
@@ -53,72 +56,69 @@ struct EditRecipeIngredientView: View {
                                     .buttonStyle(.borderless)
                                     .buttonBorderShape(.circle)
                                 }
-                                .padding(8)
                             }
                         }
                     }
-                    .background(.ultraThinMaterial)
-                    .clipShape(.rect(cornerRadius: 32))
+                    .padding()
                 }
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-            }
-            
-            Section {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack (spacing: 6) {
-                        Picker("Select Ingredient", selection: $selectedFood) {
-                            ForEach(foods) { value in
-                                Text(value.name)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                    .tag(value)
-                            }
-                        }
-                        .tint(.primary)
-                        .labelsHidden()
-                        .pickerStyle(.menu)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        if let selectedFood = selectedFood {
-                            TextField("Quantity", value: $quantityNeeded, format: .number)
-                                .keyboardType(.decimalPad)
-                                .frame(maxWidth: 64)
-                            
-                            Text(selectedFood.unit.abbreviation)
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                    }
-                    .frame(maxWidth: .infinity)
-                    
-                    Button {
-                        guard let food = selectedFood, let quantityNeeded = quantityNeeded, quantityNeeded > 0 else { return }
-                        
-                        let newIngredient = RecipeFoodModel(ingredient: food, quantityNeeded: quantityNeeded)
-                        
-                        withAnimation {
-                            ingredients.append(newIngredient)
-                        }
-                        
-                        selectedFood = foods.first
-                        self.quantityNeeded = nil
-                    } label: {
-                        Text("Add ingredient")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .disabled(quantityNeeded == 0.0)
-                }
-                .padding()
                 .background(.ultraThinMaterial)
                 .clipShape(.rect(cornerRadius: 32))
+                .padding()
             }
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
+            
+            VStack(alignment: .leading, spacing: 16) {
+                HStack (spacing: 6) {
+                    Picker("Select Ingredient", selection: $selectedFood) {
+                        ForEach(foods) { value in
+                            Text(value.name)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                                .tag(value)
+                        }
+                    }
+                    .tint(.primary)
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    
+                    Spacer()
+                    
+                    if let selectedFood = selectedFood {
+                        TextField("Quantity", value: $quantityNeeded, format: .number)
+                            .keyboardType(.decimalPad)
+                            .frame(maxWidth: 72)
+                        
+                        Text(selectedFood.unit.abbreviation)
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                }
+                
+                Button {
+                    guard let food = selectedFood, let quantityNeeded = quantityNeeded, quantityNeeded > 0 else { return }
+                    
+                    let newIngredient = RecipeFoodModel(ingredient: food, quantityNeeded: quantityNeeded)
+                    
+                    withAnimation {
+                        ingredients.append(newIngredient)
+                    }
+                    
+                    selectedFood = foods.first
+                    self.quantityNeeded = nil
+                } label: {
+                    Text("Add ingredient")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                .tint(.blue)
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .disabled(quantityNeeded == 0.0)
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(.rect(cornerRadius: 32))
+            .padding()
         }
     }
 }

@@ -23,11 +23,17 @@ struct EditStepRecipeView: View {
     var body: some View {
         Section {
             if !steps.isEmpty {
-                Text("Steps")
-                    .font(.headline)
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .clipShape(.capsule)
+                HStack {
+                    Text("Steps")
+                        .font(.headline)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal)
+                        .background(.ultraThinMaterial)
+                        .clipShape(.capsule)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal)
                 
                 ForEach(steps) { step in
                     if let editingStepUUID = editingStepUUID, editingStepUUID == step.id {
@@ -40,6 +46,7 @@ struct EditStepRecipeView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.ultraThinMaterial)
                 .clipShape(.rect(cornerRadius: 32))
+                .padding()
             }
             
             CreateStepView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
@@ -124,7 +131,7 @@ struct EditableStepView: View {
                 .textEditorStyle(.plain)
                 .autocorrectionDisabled()
                 .padding(.leading, 8)
-                .padding(.vertical, 2)
+                .padding(.vertical, 6)
                 .padding(.trailing, 26)
                 .background(.thinMaterial)
                 .overlay(content: {
@@ -137,7 +144,7 @@ struct EditableStepView: View {
                         Text("Step to be edited")
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 14)
                     }
                 })
                 .overlay(alignment: .bottomTrailing) {
@@ -157,7 +164,7 @@ struct EditableStepView: View {
                 .onSubmit {
                     save()
                 }
-                .frame(minHeight: 28, maxHeight: 256)
+                .frame(minHeight: 48, maxHeight: 256)
         }
     }
     
@@ -217,15 +224,15 @@ struct CreateStepView: View {
                 Text(stepImageItem != nil ? "Update step photo" : "Add step photo")
                     .font(.headline)
             }
-                         .tint(.blue)
-                         .buttonStyle(.borderedProminent)
-                         .buttonBorderShape(.capsule)
+             .tint(.blue)
+             .buttonStyle(.borderedProminent)
+             .buttonBorderShape(.capsule)
             
             TextEditor(text: $newStep.text)
                 .textEditorStyle(.plain)
                 .autocorrectionDisabled()
                 .padding(.leading, 8)
-                .padding(.vertical, 2)
+                .padding(.vertical, 6)
                 .padding(.trailing, 26)
                 .background(.thinMaterial)
                 .overlay(content: {
@@ -238,7 +245,7 @@ struct CreateStepView: View {
                         Text("New step")
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 14)
                     }
                 })
                 .overlay(alignment: .bottomTrailing) {
@@ -257,11 +264,12 @@ struct CreateStepView: View {
                 .onSubmit {
                     save()
                 }
-                .frame(minHeight: 28, maxHeight: 256)
+                .frame(minHeight: 48, maxHeight: 256)
         }
         .padding()
         .background(.ultraThinMaterial)
         .clipShape(.rect(cornerRadius: 32))
+        .padding()
     }
     
     func save() {

@@ -143,7 +143,7 @@ struct RecipeView: View {
                                 }
                                 .scrollTransition { content, phase in
                                     content
-                                        .rotationEffect(phase.isIdentity ? .degrees(0) : .degrees(-12))
+                                        .rotationEffect(phase.isIdentity ? .degrees(0) : .degrees(-8))
                                         .scaleEffect(phase.isIdentity ? 1 : 0.7)
                                         .blur(radius: phase.isIdentity ? 0 : 12)
                                 }

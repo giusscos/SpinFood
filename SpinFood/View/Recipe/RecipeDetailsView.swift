@@ -98,7 +98,7 @@ struct RecipeDetailsView: View {
                             .frame(height: height + safeArea.top)
                             
                             VStack {
-                                VStack (alignment: .leading, spacing: 24) {
+                                VStack(spacing: 24) {
                                     Text(recipe.name)
                                         .font(.title)
                                         .fontWeight(.semibold)

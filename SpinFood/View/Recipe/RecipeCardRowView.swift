@@ -35,37 +35,27 @@ struct RecipeCardRowView: View {
                                     .black.opacity(1),
                                     .black.opacity(1),
                                     .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(0.9),
+                                    .black.opacity(0.7),
+                                    .black.opacity(0.3),
                                     .black.opacity(0),
                                 ], startPoint: .top, endPoint: .bottom)
                             )
                     )
-                    .overlay(
-                        VStack {
-                            Spacer()
-                            
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: size.width * 1.1, height: size.height * 0.075)
-                                .blur(radius: 16)
-                                .offset(y: size.height * 0.1)
-                                .scaleEffect(x: -1, y: 1)
-                        }, alignment: .bottom
-                    )
-                    .overlay(
-                        VStack {
-                            Spacer()
-                            
-                            Text(recipe.name)
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .padding()
-                        }
-                        , alignment: .bottom
-                    )
+                    .overlay (alignment: .bottom) {
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: size.width * 1.1, height: size.height * 0.1)
+                            .blur(radius: 64)
+                            .offset(y: size.height * 0.125)
+                            .scaleEffect(x: -1, y: 1)
+                    }
+                    .overlay (alignment: .bottom) {
+                        Text(recipe.name)
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .padding()
+                    }
             }
             .frame(width: size.width * 0.9, height: size.height * 0.8)
             .clipped()

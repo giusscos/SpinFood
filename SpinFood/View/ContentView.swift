@@ -42,6 +42,12 @@ struct ContentView: View {
                         FoodView()
                     }
                 }
+                
+                Tab("Sharing", systemImage: "person.3.fill") {
+                    NavigationStack {
+                        SharingRecipesView()
+                    }
+                }
             }
             .onAppear() {
                 if recipes.count > 2 {

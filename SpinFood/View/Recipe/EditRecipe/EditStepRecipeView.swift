@@ -26,10 +26,6 @@ struct EditStepRecipeView: View {
                 HStack {
                     Text("Steps")
                         .font(.headline)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.capsule)
                     
                     Spacer()
                 }
@@ -44,9 +40,6 @@ struct EditStepRecipeView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.ultraThinMaterial)
-                .clipShape(.rect(cornerRadius: 32))
-                .padding()
             }
             
             CreateStepView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
@@ -266,9 +259,6 @@ struct CreateStepView: View {
                 }
                 .frame(minHeight: 48, maxHeight: 256)
         }
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(.rect(cornerRadius: 32))
         .padding()
     }
     

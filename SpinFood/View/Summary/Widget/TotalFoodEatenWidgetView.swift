@@ -63,33 +63,35 @@ struct TotalFoodEatenWidgetView: View {
                                 }
                             }
                         }
-                        .padding(.vertical)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Chart {
-                            ForEach(consumptions) { consumption in
-                                if let foodName = consumption.food?.name {
-                                    BarMark(
-                                        x: .value("Food", foodName),
-                                        y: .value("Amount", NSDecimalNumber(decimal: consumption.unit.convertToGrams(consumption.quantity)).doubleValue)
-                                    )
-                                    .foregroundStyle(by: .value("Food", foodName))
-                                    .cornerRadius(16)
+                        Spacer()
+                        
+                        VStack {
+                            Spacer()
+                            
+                            Chart {
+                                ForEach(consumptions) { consumption in
+                                    if let foodName = consumption.food?.name {
+                                        SectorMark(
+                                            angle: .value("Amount", NSDecimalNumber(decimal: consumption.unit.convertToGrams(consumption.quantity)).doubleValue),
+                                            innerRadius: .ratio(0.6)
+                                        )
+                                        .foregroundStyle(by: .value("Food", foodName))
+                                    }
                                 }
                             }
+                            .chartLegend(.hidden)
+                            .chartYAxis(.hidden)
+                            .chartXAxis(.hidden)
                         }
-                        .chartLegend(.hidden)
-                        .chartYAxis(.hidden)
-                        .chartXAxis(.hidden)
-                        .padding(.top, 32)
                     }
                     .matchedTransitionSource(id: foodConsumptionTransitionId, in: namespace)
                 }
             }
-            .listRowInsets(.init(top: 16, leading: 16, bottom: 0, trailing: 16))
         }    }
 }
 
 #Preview {
     TotalFoodEatenWidgetView(totalFoodEaten: 10)
 }
+

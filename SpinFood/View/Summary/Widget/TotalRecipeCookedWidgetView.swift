@@ -46,26 +46,27 @@ struct TotalRecipeCookedWidgetView: View {
                                 }
                             }
                         }
-                        .padding(.vertical)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        Chart(cookedRecipes) { value in
-                            BarMark(
-                                x: .value("Recipe", value.name),
-                                y: .value("Amount", value.cookedAt.count),
-                            )
-                            .foregroundStyle(by: .value("Recipe", value.name))
-                            .cornerRadius(16)
+                        Spacer()
+                        
+                        VStack {
+                            Spacer()
+                            
+                            Chart(cookedRecipes) { value in
+                                SectorMark(
+                                    angle: .value("Amount", value.cookedAt.count),
+                                    innerRadius: .ratio(0.6)
+                                )
+                                .foregroundStyle(by: .value("Recipe", value.name))
+                            }
+                            .chartLegend(.hidden)
+                            .chartYAxis(.hidden)
+                            .chartXAxis(.hidden)
                         }
-                        .chartLegend(.hidden)
-                        .chartYAxis(.hidden)
-                        .chartXAxis(.hidden)
-                        .padding(.top, 32)
                     }
                     .matchedTransitionSource(id: recipeCookingTransitionId, in: namespace)
                 }
             }
-            .listRowInsets(.init(top: 16, leading: 16, bottom: 0, trailing: 16))
         }
     }
     

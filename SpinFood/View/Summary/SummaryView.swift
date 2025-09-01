@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import Charts
 
 struct SummaryView: View {
     @Namespace private var namespace

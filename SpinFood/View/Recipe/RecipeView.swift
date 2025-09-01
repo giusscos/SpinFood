@@ -29,12 +29,18 @@ enum RecipeSortOption {
     
     var label: String {
         switch self {
-        case .nameAsc: return "Name (A-Z)"
-        case .nameDesc: return "Name (Z-A)"
-        case .dateAsc: return "Date (Oldest first)"
-        case .dateDesc: return "Date (Newest first)"
-        case .durationAsc: return "Duration (Shortest first)"
-        case .durationDesc: return "Duration (Longest first)"
+        case .nameAsc: 
+                return "Name (A-Z)"
+        case .nameDesc: 
+                return "Name (Z-A)"
+        case .dateAsc: 
+                return "Date (Oldest first)"
+        case .dateDesc: 
+                return "Date (Newest first)"
+        case .durationAsc: 
+                return "Duration (Shortest first)"
+        case .durationDesc: 
+                return "Duration (Longest first)"
         }
     }
 }
@@ -46,9 +52,12 @@ enum RecipeFilterOption {
     
     var label: String {
         switch self {
-        case .all: return "All Recipes"
-        case .canCook: return "Ready to Cook"
-        case .cantCook: return "Missing Ingredients"
+            case .all:
+                return "All Recipes"
+            case .canCook: 
+                return "Ready to Cook"
+            case .cantCook: 
+                return "Missing Ingredients"
         }
     }
 }
@@ -62,17 +71,11 @@ struct RecipeView: View {
     @Query var foods: [FoodModel]
     
     @State private var activeRecipeSheet: ActiveRecipeSheet?
-    @State private var searchText = ""
     @State private var sortOption: RecipeSortOption = .nameAsc
     @State private var filterOption: RecipeFilterOption = .all
     
     var filteredRecipes: [RecipeModel] {
         var result = recipes
-        
-        // Apply text search filter
-        if !searchText.isEmpty {
-            result = result.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
-        }
         
         // Apply selected filter
         switch filterOption {
@@ -151,7 +154,7 @@ struct RecipeView: View {
                         }
                         .padding()
                         .scrollTargetLayout()
-                    } else if !searchText.isEmpty && filteredRecipes.isEmpty {
+                    } else if filteredRecipes.isEmpty {
                         ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
                     } else {
                         ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
@@ -159,7 +162,6 @@ struct RecipeView: View {
                 }
                 .scrollTargetBehavior(.viewAligned)
             }
-            .searchable(text: $searchText, prompt: "Search recipe")
             .navigationTitle("Recipes")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

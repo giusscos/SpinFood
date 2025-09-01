@@ -63,30 +63,31 @@ struct TotalFoodRefilledWidgetView: View {
                                 }
                             }
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .padding(.vertical)
                         
-                        Chart {
-                            ForEach(refills) { refill in
-                                if let foodName = refill.food?.name {
-                                    BarMark(
-                                        x: .value("Food", foodName),
-                                        y: .value("Amount", NSDecimalNumber(decimal: refill.unit.convertToGrams(refill.quantity)).doubleValue),
-                                    )
-                                    .foregroundStyle(by: .value("Food", foodName))
-                                    .cornerRadius(16)
+                        Spacer()
+                        
+                        VStack {
+                            Spacer()
+                            
+                            Chart {
+                                ForEach(refills) { refill in
+                                    if let foodName = refill.food?.name {
+                                        SectorMark(
+                                            angle: .value("Amount", NSDecimalNumber(decimal: refill.unit.convertToGrams(refill.quantity)).doubleValue),
+                                            innerRadius: .ratio(0.6)
+                                        )
+                                        .foregroundStyle(by: .value("Food", foodName))
+                                    }
                                 }
                             }
+                            .chartLegend(.hidden)
+                            .chartYAxis(.hidden)
+                            .chartXAxis(.hidden)
                         }
-                        .chartLegend(.hidden)
-                        .chartYAxis(.hidden)
-                        .chartXAxis(.hidden)
-                        .padding(.top, 32)
                     }
                     .matchedTransitionSource(id: foodRefillTransitionId, in: namespace)
                 }
             }
-            .listRowInsets(.init(top: 16, leading: 16, bottom: 0, trailing: 16))
         }
     }
 }

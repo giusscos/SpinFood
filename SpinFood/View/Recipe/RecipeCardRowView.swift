@@ -12,6 +12,8 @@ struct RecipeCardRowView: View {
     
     var size: CGSize
     
+    var hideTitle: Bool = false
+    
     var body: some View {
         if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
             let image = Image(uiImage: uiImage)
@@ -42,19 +44,23 @@ struct RecipeCardRowView: View {
                             )
                     )
                     .overlay (alignment: .bottom) {
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: size.width * 1.1, height: size.height * 0.1)
-                            .blur(radius: 64)
-                            .offset(y: size.height * 0.125)
-                            .scaleEffect(x: -1, y: 1)
+                        if !hideTitle {
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: size.width * 1.1, height: size.height * 0.1)
+                                .blur(radius: 64)
+                                .offset(y: size.height * 0.125)
+                                .scaleEffect(x: -1, y: 1)
+                        }
                     }
                     .overlay (alignment: .bottom) {
-                        Text(recipe.name)
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .padding()
+                        if !hideTitle {
+                            Text(recipe.name)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .padding()
+                        }
                     }
             }
             .frame(width: size.width * 0.9, height: size.height * 0.8)

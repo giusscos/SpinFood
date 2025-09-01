@@ -108,30 +108,22 @@ struct EditRecipeView: View {
                                 TextEditor(text: $descriptionRecipe)
                                     .textEditorStyle(.plain)
                                     .autocorrectionDisabled()
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .overlay(content: {
-                                        Capsule()
-                                            .stroke(.secondary.opacity(0.5), lineWidth: 1)
-                                    })
-                                    .clipShape(.capsule)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 4)
                                     .overlay(alignment: .topLeading, content: {
                                         if descriptionRecipe.isEmpty {
                                             Text("Add a description")
                                                 .foregroundColor(.secondary)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 14)
+                                                .padding(.horizontal, 10)
+                                                .padding(.vertical, 12)
                                         }
                                     })
-                                    .frame(minHeight: 48, maxHeight: 256)
+                                    .frame(minHeight: 64, maxHeight: 256)
                                     .focused($focusedField, equals: .recipeDescription)
                                     .onSubmit {
                                         focusedField = nil
                                     }
                             }
-                            .padding()
-                            .background(.ultraThinMaterial)
-                            .clipShape(.rect(cornerRadius: 32))
                             .padding()
                             
                             VStack(alignment: .leading) {
@@ -141,16 +133,12 @@ struct EditRecipeView: View {
                                 TimePickerView(duration: $duration)
                             }
                             .padding()
-                            .background(.ultraThinMaterial)
-                            .clipShape(.rect(cornerRadius: 32))
-                            .padding()
                             
                             EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
                             
                             EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
                         }
                         .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
-                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
                                 Button {
@@ -192,7 +180,7 @@ struct EditRecipeView: View {
                                 Button {
                                     hideKeyboard()
                                 } label: {
-                                    Label("hideKeyboard", systemImage: "keyboard.chevron.compact.down")
+                                    Label("Hide Keyboard", systemImage: "keyboard.chevron.compact.down")
                                 }
                             }
                         }

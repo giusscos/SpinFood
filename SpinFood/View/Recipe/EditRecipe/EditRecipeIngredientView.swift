@@ -61,9 +61,6 @@ struct EditRecipeIngredientView: View {
                     }
                     .padding()
                 }
-                .background(.ultraThinMaterial)
-                .clipShape(.rect(cornerRadius: 32))
-                .padding()
             }
             
             VStack(alignment: .leading, spacing: 16) {
@@ -79,8 +76,7 @@ struct EditRecipeIngredientView: View {
                     .tint(.primary)
                     .labelsHidden()
                     .pickerStyle(.menu)
-                    
-                    Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     
                     if let selectedFood = selectedFood {
                         TextField("Quantity", value: $quantityNeeded, format: .number)
@@ -115,9 +111,6 @@ struct EditRecipeIngredientView: View {
                 .buttonBorderShape(.capsule)
                 .disabled(quantityNeeded == 0.0)
             }
-            .padding()
-            .background(.ultraThinMaterial)
-            .clipShape(.rect(cornerRadius: 32))
             .padding()
         }
     }

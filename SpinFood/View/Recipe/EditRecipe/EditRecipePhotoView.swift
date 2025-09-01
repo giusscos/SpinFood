@@ -13,6 +13,7 @@ struct EditRecipePhotoView: View {
     @Binding var imageData: Data?
     
     @Binding var showPhotoPicker: Bool
+    @Binding var showAdjustPhoto: Bool
     
     var safeArea: EdgeInsets
     var size: CGSize
@@ -67,6 +68,12 @@ struct EditRecipePhotoView: View {
                             } label: {
                                 Label("Update", systemImage: "photo")
                             }
+                            
+                            Button {
+                                showAdjustPhoto = true
+                            } label: {
+                                Label("Adjust", systemImage: "slider.horizontal.3")
+                            }
                         } label: {
                             Text("Edit background".capitalized)
                                 .font(.headline)
@@ -117,7 +124,9 @@ struct EditRecipePhotoView: View {
         imageItem: .constant(nil),
         imageData: .constant(nil),
         showPhotoPicker: .constant(false),
+        showAdjustPhoto: .constant(false),
         safeArea: EdgeInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0)),
         size: CGSize(width: 300, height: 200)
     )
 }
+

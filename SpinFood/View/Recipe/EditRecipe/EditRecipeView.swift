@@ -9,47 +9,6 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 
-// MARK: - UIImage Extension for Average Color
-extension UIImage {
-    func averageColor() -> UIColor? {
-        guard let inputImage = CIImage(image: self) else { return nil }
-        let extent = inputImage.extent
-        let context = CIContext(options: [.workingColorSpace: NSNull()])
-        let parameters = [kCIInputExtentKey: CIVector(cgRect: extent)]
-        guard let filter = CIFilter(name: "CIAreaAverage", parameters: parameters) else { return nil }
-        filter.setValue(inputImage, forKey: kCIInputImageKey)
-        guard let outputImage = filter.outputImage else { return nil }
-        var bitmap = [UInt8](repeating: 0, count: 4)
-        context.render(outputImage,
-                       toBitmap: &bitmap,
-                       rowBytes: 4,
-                       bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
-                       format: .RGBA8,
-                       colorSpace: nil)
-        return UIColor(red: CGFloat(bitmap[0]) / 255.0,
-                       green: CGFloat(bitmap[1]) / 255.0,
-                       blue: CGFloat(bitmap[2]) / 255.0,
-                       alpha: 1.0)
-    }
-    
-    // Ridimensiona e comprime l'immagine
-    func resizedAndCompressed(maxDimension: CGFloat = 1024, compressionQuality: CGFloat = 0.7) -> Data? {
-        let size = self.size
-        let aspectRatio = size.width / size.height
-        var newSize: CGSize
-        if aspectRatio > 1 {
-            newSize = CGSize(width: maxDimension, height: maxDimension / aspectRatio)
-        } else {
-            newSize = CGSize(width: maxDimension * aspectRatio, height: maxDimension)
-        }
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 0.7)
-        self.draw(in: CGRect(origin: .zero, size: newSize))
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return newImage?.jpegData(compressionQuality: compressionQuality)
-    }
-}
-
 struct EditRecipeView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
@@ -73,6 +32,7 @@ struct EditRecipeView: View {
     @State private var stepImageItem: PhotosPickerItem?
     
     @State private var showPhotoPicker: Bool = false
+    @State private var showAdjustPhoto: Bool = false
     
     @State private var showDeleteConfirmation: Bool = false
     
@@ -92,104 +52,73 @@ struct EditRecipeView: View {
                 VStack {
                     ScrollView {
                         VStack {
-                            EditRecipePhotoView(imageItem: $imageItem, imageData: $imageData, showPhotoPicker: $showPhotoPicker, safeArea: safeArea, size: size)
-                            
-                            VStack {
-                                TextField("Name", text: $name)
-                                    .autocorrectionDisabled()
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                                    .focused($focusedField, equals: .name)
-                                    .submitLabel(.next)
-                                    .onSubmit {
-                                        focusedField = .recipeDescription
-                                    }
+                            if !showAdjustPhoto {
+                                EditRecipePhotoView(imageItem: $imageItem, imageData: $imageData, showPhotoPicker: $showPhotoPicker, showAdjustPhoto: $showAdjustPhoto , safeArea: safeArea, size: size)
                                 
-                                TextEditor(text: $descriptionRecipe)
-                                    .textEditorStyle(.plain)
-                                    .autocorrectionDisabled()
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 4)
-                                    .overlay(alignment: .topLeading, content: {
-                                        if descriptionRecipe.isEmpty {
-                                            Text("Add a description")
-                                                .foregroundColor(.secondary)
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 12)
+                                VStack {
+                                    TextField("Name", text: $name)
+                                        .autocorrectionDisabled()
+                                        .font(.title2)
+                                        .fontWeight(.semibold)
+                                        .focused($focusedField, equals: .name)
+                                        .submitLabel(.next)
+                                        .onSubmit {
+                                            focusedField = .recipeDescription
                                         }
-                                    })
-                                    .frame(minHeight: 64, maxHeight: 256)
-                                    .focused($focusedField, equals: .recipeDescription)
-                                    .onSubmit {
-                                        focusedField = nil
-                                    }
-                            }
-                            .padding()
-                            
-                            VStack(alignment: .leading) {
-                                Text("Duration")
-                                    .font(.headline)
+                                    
+                                    TextEditor(text: $descriptionRecipe)
+                                        .textEditorStyle(.plain)
+                                        .autocorrectionDisabled()
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 4)
+                                        .overlay(alignment: .topLeading, content: {
+                                            if descriptionRecipe.isEmpty {
+                                                Text("Add a description")
+                                                    .foregroundColor(.secondary)
+                                                    .padding(.horizontal, 10)
+                                                    .padding(.vertical, 12)
+                                            }
+                                        })
+                                        .frame(minHeight: 64, maxHeight: 256)
+                                        .focused($focusedField, equals: .recipeDescription)
+                                        .onSubmit {
+                                            focusedField = nil
+                                        }
+                                }
+                                .padding()
                                 
-                                TimePickerView(duration: $duration)
+                                VStack(alignment: .leading) {
+                                    Text("Duration")
+                                        .font(.headline)
+                                    
+                                    TimePickerView(duration: $duration)
+                                }
+                                .padding()
+                                
+                                EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
+                                
+                                EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
+                            } else {
+                                let height = size.height * 0.45
+                                
+                                GeometryReader { geometry in
+                                    let size = geometry.size
+                                    let minY = geometry.frame(in: .named("Scroll")).minY
+                                    
+                                    if let imageData, let uiImage = UIImage(data: imageData) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: size.width, height: size.height + (minY > 0 ? minY : 0))
+                                            .offset(y: (minY > 0 ? -minY : 0))
+                                        
+                                        // TODO: Add cropping/adjustment controls here, ensuring image can't exit frame
+                                    }
+                                }
+                                .frame(height: height + safeArea.top)
                             }
-                            .padding()
-                            
-                            EditRecipeIngredientView(foods: foods, ingredients: $ingredients, selectedFood: $selectedFood, quantityNeeded: $quantityNeeded)
-                            
-                            EditStepRecipeView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
                         }
                         .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button {
-                                    dismiss()
-                                } label: {
-                                    Label("Cancel", systemImage: "xmark")
-                                }
-                            }
-                            
-                            ToolbarItem(placement: .topBarTrailing) {
-                                if #available(iOS 26, *) {
-                                    Button (role: .confirm) {
-                                        saveRecipe()
-                                    } label: {
-                                        Label("Save", systemImage: "checkmark")
-                                    }
-                                    .disabled(name.isEmpty || imageData == nil)
-                                } else {
-                                    Button {
-                                        saveRecipe()
-                                    } label: {
-                                        Label("Save", systemImage: "checkmark")
-                                    }
-                                    .disabled(name.isEmpty || imageData == nil)
-                                }
-                            }
-                            
-                            if let _ = recipe {
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Button (role: .destructive) {
-                                        showDeleteConfirmation = true
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                }
-                            }
-                            
-                            ToolbarItem(placement: .keyboard) {
-                                Button {
-                                    hideKeyboard()
-                                } label: {
-                                    Label("Hide Keyboard", systemImage: "keyboard.chevron.compact.down")
-                                }
-                            }
-                        }
-                        .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
-                            Button("Cancel", role: .cancel) { }
-                            Button("Delete Recipe", role: .destructive) {
-                                deleteRecipe()
-                            }
-                        })
                     }
                     .coordinateSpace(name: "Scroll")
                 }
@@ -231,6 +160,87 @@ struct EditRecipeView: View {
                         }
                     }
                 }
+                .toolbar {
+                    if showAdjustPhoto {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                showAdjustPhoto = false
+                            } label: {
+                                Label("Cancel", systemImage: "xmark")
+                            }
+                        }
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            if #available(iOS 26, *) {
+                                Button(role: .confirm) {
+                                    // Save image adjustments here if needed
+                                    showAdjustPhoto = false
+                                } label: {
+                                    Label("Save", systemImage: "checkmark")
+                                }
+                                .disabled(imageData == nil)
+                            } else {
+                                Button {
+                                    // Save image adjustments here if needed
+                                    showAdjustPhoto = false
+                                } label: {
+                                    Label("Save", systemImage: "checkmark")
+                                }
+                                .disabled(imageData == nil)
+                            }
+                        }
+                    } else {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                dismiss()
+                            } label: {
+                                Label("Cancel", systemImage: "xmark")
+                            }
+                        }
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            if #available(iOS 26, *) {
+                                Button (role: .confirm) {
+                                    saveRecipe()
+                                } label: {
+                                    Label("Save", systemImage: "checkmark")
+                                }
+                                .disabled(name.isEmpty || imageData == nil)
+                            } else {
+                                Button {
+                                    saveRecipe()
+                                } label: {
+                                    Label("Save", systemImage: "checkmark")
+                                }
+                                .disabled(name.isEmpty || imageData == nil)
+                            }
+                        }
+                        
+                        if let _ = recipe {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button (role: .destructive) {
+                                    showDeleteConfirmation = true
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                        
+                        ToolbarItem(placement: .keyboard) {
+                            Button {
+                                hideKeyboard()
+                            } label: {
+                                Label("Hide Keyboard", systemImage: "keyboard.chevron.compact.down")
+                            }
+                        }
+                    }
+                }
+                .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete Recipe", role: .destructive) {
+                        deleteRecipe()
+                    }
+                })
             }
         }
     }

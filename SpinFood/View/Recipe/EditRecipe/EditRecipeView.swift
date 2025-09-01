@@ -151,15 +151,6 @@ struct EditRecipeView: View {
                     
                     selectedFood = foods.first
                 }
-                .task(id: imageItem) {
-                    if let data = try? await imageItem?.loadTransferable(type: Data.self),
-                       let uiImage = UIImage(data: data),
-                       let compressedData = uiImage.resizedAndCompressed() {
-                        withAnimation(.smooth) {
-                            imageData = compressedData
-                        }
-                    }
-                }
                 .toolbar {
                     if showAdjustPhoto {
                         ToolbarItem(placement: .topBarLeading) {

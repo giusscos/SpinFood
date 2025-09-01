@@ -21,7 +21,7 @@ struct EditStepRecipeView: View {
     @State var editingImageItem: PhotosPickerItem?
     
     var body: some View {
-        Section {
+        VStack {
             if !steps.isEmpty {
                 HStack {
                     Text("Steps")
@@ -43,26 +43,6 @@ struct EditStepRecipeView: View {
             }
             
             CreateStepView(steps: $steps, newStep: $newStep, stepImageItem: $stepImageItem)
-        }
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .task(id: stepImageItem) {
-            if let data = try? await stepImageItem?.loadTransferable(type: Data.self),
-               let uiImage = UIImage(data: data),
-               let compressedData = uiImage.resizedAndCompressed() {
-                withAnimation {
-                    newStep.image = compressedData
-                }
-            }
-        }
-        .task(id: editingImageItem) {
-            if let data = try? await editingImageItem?.loadTransferable(type: Data.self),
-               let uiImage = UIImage(data: data),
-               let compressedData = uiImage.resizedAndCompressed() {
-                withAnimation(.smooth) {
-                    imageToBeEdited = compressedData
-                }
-            }
         }
     }
 }

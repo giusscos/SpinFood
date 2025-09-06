@@ -43,27 +43,29 @@ struct RecipeCardRowView: View {
                                 ], startPoint: .top, endPoint: .bottom)
                             )
                     )
-                    .overlay (alignment: .bottom) {
+                    .background {
                         if !hideTitle {
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: size.width * 1.1, height: size.height * 0.1)
+                                .frame(width: size.width * 1.3, height: size.height * 1.3)
                                 .blur(radius: 64)
                                 .offset(y: size.height * 0.125)
                                 .scaleEffect(x: -1, y: 1)
                         }
                     }
-                    .overlay (alignment: .bottom) {
-                        if !hideTitle {
-                            Text(recipe.name)
-                                .font(.title)
-                                .fontWeight(.semibold)
-                                .padding()
-                        }
-                    }
+                
+                Spacer()
             }
-            .frame(width: size.width * 0.9, height: size.height * 0.8)
+            .frame(width: size.width * 0.9, height: size.height * 0.9)
+            .overlay (alignment: .bottom) {
+                if !hideTitle {
+                    Text(recipe.name)
+                        .font(.title)
+                        .fontWeight(.semibold)
+                        .padding()
+                }
+            }
             .clipped()
             .clipShape(.rect(cornerRadius: 32))
         }

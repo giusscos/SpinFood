@@ -69,11 +69,13 @@ struct EditRecipePhotoView: View {
                                 Label("Update", systemImage: "photo")
                             }
                             
-                            Button {
-                                showAdjustPhoto = true
-                            } label: {
-                                Label("Adjust", systemImage: "slider.horizontal.3")
-                            }
+//                            Button {
+//                                withAnimation {
+//                                    showAdjustPhoto = true
+//                                }
+//                            } label: {
+//                                Label("Adjust", systemImage: "crop")
+//                            }
                         } label: {
                             Text("Edit background".capitalized)
                                 .font(.headline)

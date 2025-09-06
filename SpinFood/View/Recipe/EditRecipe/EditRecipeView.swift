@@ -219,7 +219,7 @@ struct EditRecipeView: View {
                         
                         ToolbarItem(placement: .keyboard) {
                             Button {
-                                hideKeyboard()
+                                focusedField = .none
                             } label: {
                                 Label("Hide Keyboard", systemImage: "keyboard.chevron.compact.down")
                             }
@@ -270,14 +270,6 @@ struct EditRecipeView: View {
         }
     }
 }
-
-#if canImport(UIKit)
-extension View {
-    func hideKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-}
-#endif
 
 #Preview {
     EditRecipeView()

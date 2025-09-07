@@ -16,39 +16,38 @@ struct ContentView: View {
     
     @State var store = Store()
     
+    @State var isPresentingPaywall: Bool = false
+    
     var hasActiveSubscription: Bool {
         !store.purchasedSubscriptions.isEmpty || !store.purchasedProducts.isEmpty
     }
     
     var body: some View {
-        if store.isLoading {
-            ProgressView()
-        } else if hasActiveSubscription {
-            TabView {
-                Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
-                    NavigationStack{
-                        SummaryView()
-                    }
-                }
-                
-                Tab("Recipes", systemImage: "fork.knife") {
-                    NavigationStack {
-                        RecipeView()
-                    }
-                }
-                
-                Tab("Food", systemImage: "carrot.fill") {
-                    NavigationStack {
-                        FoodView()
-                    }
+        TabView {
+            Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
+                NavigationStack{
+                    SummaryView()
                 }
             }
-            .onAppear() {
-                if recipes.count > 2 {
-                    requestReview()
+            
+            Tab("Recipes", systemImage: "fork.knife") {
+                NavigationStack {
+                    RecipeView()
                 }
             }
-        } else {
+            
+            Tab("Food", systemImage: "carrot.fill") {
+                NavigationStack {
+                    FoodView()
+                }
+            }
+        }
+        .onAppear() {
+            if recipes.count > 2 {
+                requestReview()
+            }
+        }
+        .fullScreenCover(isPresented: $isPresentingPaywall) {
             PaywallView()
         }
     }

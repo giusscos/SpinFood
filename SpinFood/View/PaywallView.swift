@@ -71,7 +71,6 @@ struct PaywallView: View {
             .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)
             .subscriptionStoreButtonLabel(.multiline)
             .storeButton(.visible, for: .restorePurchases)
-            .interactiveDismissDisabled()
             .sheet(isPresented: $showLifetimePlans) {
                 PaywallLifetimeView()
                     .presentationDetents(.init([.medium]))

@@ -13,7 +13,6 @@ struct EditRecipePhotoView: View {
     @Binding var imageData: Data?
     
     @Binding var showPhotoPicker: Bool
-    @Binding var showAdjustPhoto: Bool
     
     var safeArea: EdgeInsets
     var size: CGSize
@@ -27,7 +26,9 @@ struct EditRecipePhotoView: View {
             let progress = (minY > 0 ? minY : 0) / (height * 0.8)
             
             if let imageData, let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage)
+                let image = Image(uiImage: uiImage)
+                
+                image
                     .resizable()
                     .scaledToFill()
                     .frame(width: size.width, height: size.height + (minY > 0 ? minY : 0))
@@ -68,14 +69,6 @@ struct EditRecipePhotoView: View {
                             } label: {
                                 Label("Update", systemImage: "photo")
                             }
-                            
-//                            Button {
-//                                withAnimation {
-//                                    showAdjustPhoto = true
-//                                }
-//                            } label: {
-//                                Label("Adjust", systemImage: "crop")
-//                            }
                         } label: {
                             Text("Edit background".capitalized)
                                 .font(.headline)
@@ -126,7 +119,6 @@ struct EditRecipePhotoView: View {
         imageItem: .constant(nil),
         imageData: .constant(nil),
         showPhotoPicker: .constant(false),
-        showAdjustPhoto: .constant(false),
         safeArea: EdgeInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0)),
         size: CGSize(width: 300, height: 200)
     )

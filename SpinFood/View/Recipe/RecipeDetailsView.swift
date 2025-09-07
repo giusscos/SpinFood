@@ -153,10 +153,21 @@ struct RecipeDetailsView: View {
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            activeRecipeDetailSheet = .edit(recipe)
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
+                        if  #available(iOS 26, *) {
+                            Button {
+                                activeRecipeDetailSheet = .edit(recipe)
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                        } else {
+                            Button {
+                                activeRecipeDetailSheet = .edit(recipe)
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.accent)
+                            .buttonStyle(.borderedProminent)
+                            .buttonBorderShape(.circle)
                         }
                     }
                 }

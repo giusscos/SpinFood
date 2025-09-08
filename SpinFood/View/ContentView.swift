@@ -23,32 +23,40 @@ struct ContentView: View {
     }
     
     var body: some View {
-        TabView {
-            Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
-                NavigationStack{
-                    SummaryView()
+        if store.isLoading {
+            ProgressView()
+        } else {
+            TabView {
+                Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
+                    NavigationStack{
+                        SummaryView()
+                    }
+                }
+                
+                Tab("Recipes", systemImage: "fork.knife") {
+                    NavigationStack {
+                        RecipeView()
+                    }
+                }
+                
+                Tab("Food", systemImage: "carrot.fill") {
+                    NavigationStack {
+                        FoodView()
+                    }
                 }
             }
-            
-            Tab("Recipes", systemImage: "fork.knife") {
-                NavigationStack {
-                    RecipeView()
+            .onAppear() {
+                if recipes.count == 2 && !hasActiveSubscription {
+                    isPresentingPaywall = true
+                }
+                
+                if recipes.count > 2 {
+                    requestReview()
                 }
             }
-            
-            Tab("Food", systemImage: "carrot.fill") {
-                NavigationStack {
-                    FoodView()
-                }
+            .fullScreenCover(isPresented: $isPresentingPaywall) {
+                PaywallView()
             }
-        }
-        .onAppear() {
-            if recipes.count > 2 {
-                requestReview()
-            }
-        }
-        .fullScreenCover(isPresented: $isPresentingPaywall) {
-            PaywallView()
         }
     }
 }

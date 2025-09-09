@@ -125,9 +125,6 @@ struct EditRecipeView: View {
                                 } label: {
                                     Label("Cancel", systemImage: "xmark")
                                 }
-                                .tint(.secondary)
-                                .buttonStyle(.bordered)
-                                .buttonBorderShape(.circle)
                             }
                             
                             ToolbarItem(placement: .topBarTrailing) {
@@ -145,8 +142,6 @@ struct EditRecipeView: View {
                                         Label("Save", systemImage: "checkmark")
                                     }
                                     .tint(.accent)
-                                    .buttonStyle(.borderedProminent)
-                                    .buttonBorderShape(.circle)
                                     .disabled(name.isEmpty || imageData == nil)
                                 }
                             }
@@ -160,7 +155,6 @@ struct EditRecipeView: View {
                                             Label("Delete", systemImage: "trash")
                                         }
                                         .tint(.red)
-                                        .buttonStyle(.glassProminent)
                                     }
                                 } else {
                                     ToolbarItem(placement: .topBarTrailing) {
@@ -170,8 +164,6 @@ struct EditRecipeView: View {
                                             Label("Delete", systemImage: "trash")
                                         }
                                         .tint(.red)
-                                        .buttonStyle(.borderedProminent)
-                                        .buttonBorderShape(.circle)
                                     }
                                 }
                             }
@@ -184,7 +176,6 @@ struct EditRecipeView: View {
                                 }
                             }
                         }
-                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                         .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
                             Button("Cancel", role: .cancel) { }
                             Button("Delete Recipe", role: .destructive) {
@@ -194,6 +185,9 @@ struct EditRecipeView: View {
                     }
                     .coordinateSpace(name: "Scroll")
                 }
+                .navigationTitle(recipe != nil ? "Edit recipe" : "Create recipe")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackgroundVisibility(.visible, for: .navigationBar)
                 .ignoresSafeArea(.container, edges: .top)
                 .background {
                     if let imageData, let uiImage = UIImage(data: imageData) {

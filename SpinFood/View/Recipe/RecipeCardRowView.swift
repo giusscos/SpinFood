@@ -17,47 +17,51 @@ struct RecipeCardRowView: View {
     var body: some View {
         if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
             let image = Image(uiImage: uiImage)
-
-            VStack(spacing: 0) {
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: size.width * 0.9, height: size.height * 0.8)
-                    .mask(
-                        Rectangle()
-                            .fill(
-                                .linearGradient(colors: [
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(1),
-                                    .black.opacity(0.7),
-                                    .black.opacity(0.3),
-                                    .black.opacity(0),
-                                ], startPoint: .top, endPoint: .bottom)
-                            )
-                    )
-                    .background {
-                        if !hideTitle {
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: size.width * 1.3, height: size.height * 1.3)
-                                .blur(radius: 64)
-                                .offset(y: size.height * 0.125)
-                                .scaleEffect(x: -1, y: 1)
-                        }
-                    }
-                
-                Spacer()
+        
+            VStack {
+                GeometryReader { geometry in
+                    let itemSize = geometry.size
+                    
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: itemSize.height * 0.9)
+                        .mask(
+                            Rectangle()
+                                .fill(
+                                    .linearGradient(colors: [
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(1),
+                                        .black.opacity(0.7),
+                                        .black.opacity(0.3),
+                                        .black.opacity(0),
+                                    ], startPoint: .top, endPoint: .bottom)
+                                )
+                        )
+                    
+                    Spacer()
+                }
             }
-            .frame(width: size.width * 0.9, height: size.height * 0.9)
+            .frame(height: size.height * 0.7)
+            .background {
+                if !hideTitle {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: size.width * 1.3, height: size.height * 1.3)
+                        .blur(radius: 64)
+                        .offset(y: size.height * 0.125)
+                        .scaleEffect(x: -1, y: 1)
+                }
+            }
             .overlay (alignment: .bottom) {
                 if !hideTitle {
                     Text(recipe.name)
@@ -66,8 +70,6 @@ struct RecipeCardRowView: View {
                         .padding()
                 }
             }
-            .clipped()
-            .clipShape(.rect(cornerRadius: 32))
         }
     }
 }

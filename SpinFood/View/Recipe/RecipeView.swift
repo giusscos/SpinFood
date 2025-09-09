@@ -11,6 +11,7 @@ import SwiftData
 enum ActiveRecipeSheet: Identifiable {
     case create
     case edit(RecipeModel)
+    case createFood
     
     var id: String {
         switch self {
@@ -18,6 +19,8 @@ enum ActiveRecipeSheet: Identifiable {
             return "createRecipe"
         case .edit(let recipe):
             return "editRecipe-\(recipe.id)"
+            case .createFood:
+                return "createFood"
         }
     }
 }
@@ -136,37 +139,68 @@ struct RecipeView: View {
             let size = geometry.size
             
             VStack {
-                ScrollView (.horizontal, showsIndicators: false) {
-                    if !filteredRecipes.isEmpty {
-                        HStack(spacing: 16) {
-                            ForEach(filteredRecipes) { recipe in
-                                Group {
-                                    NavigationLink {
-                                        RecipeDetailsView(recipe: recipe)
-                                            .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                List {
+                    if filteredRecipes.isEmpty {
+                        if foods.isEmpty {
+                            Section {
+                                VStack {
+                                    Text("No ingredient found 😕")
+                                        .font(.headline)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    Text("Insert ingredient to start create recipes")
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    Button {
+                                        activeRecipeSheet = .createFood
                                     } label: {
-                                        RecipeCardRowView(recipe: recipe, size: size)
+                                        Text("Add")
                                     }
-                                    .buttonStyle(.plain)
-                                    .matchedTransitionSource(id: recipe.id, in: namespace)
+                                    .tint(.accent)
+                                    .buttonStyle(.bordered)
+                                    .buttonBorderShape(.capsule)
                                 }
-                                .scrollTransition { content, phase in
-                                    content
-                                        .rotationEffect(phase.isIdentity ? .degrees(0) : .degrees(-8))
-                                        .scaleEffect(phase.isIdentity ? 1 : 0.7)
-                                        .blur(radius: phase.isIdentity ? 0 : 12)
+                            }
+                        } else if recipes.isEmpty {
+                            Section {
+                                VStack {
+                                    Text("No recipe found 😕")
+                                        .font(.headline)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    Text("Insert recipe to start track your eating habits")
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                    
+                                    Button {
+                                        activeRecipeSheet = .create
+                                    } label: {
+                                        Text("Add")
+                                    }
+                                    .tint(.accent)
+                                    .buttonStyle(.bordered)
+                                    .buttonBorderShape(.capsule)
                                 }
                             }
                         }
-                        .padding()
-                        .scrollTargetLayout()
-                    } else if filteredRecipes.isEmpty {
-                        ContentUnavailableView("No recipes found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
                     } else {
-                        ContentUnavailableView("No recipe found", systemImage: "exclamationmark", description: Text("You can add your first recipe by clicking on the 'Plus' button"))
+                        ForEach(filteredRecipes) { recipe in
+                            Section {
+                                NavigationLink {
+                                    RecipeDetailsView(recipe: recipe)
+                                        .navigationTransition(.zoom(sourceID: recipe.id, in: namespace))
+                                } label: {
+                                    RecipeCardRowView(recipe: recipe, size: size)
+                                        .matchedTransitionSource(id: recipe.id, in: namespace)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                        }
                     }
                 }
-                .scrollTargetBehavior(.viewAligned)
             }
             .navigationTitle("Recipes")
             .toolbar {
@@ -240,6 +274,8 @@ struct RecipeView: View {
                     case .edit(let value):
                         EditRecipeView(recipe: value)
                             .interactiveDismissDisabled()
+                    case .createFood:
+                        EditFoodView()
                 }
             })
         }

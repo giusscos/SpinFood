@@ -147,9 +147,43 @@ struct FoodView: View {
                 }
             }
             else if !searchText.isEmpty && filteredFood.isEmpty {
-                ContentUnavailableView("No food found", systemImage: "magnifyingglass", description: Text("Try searching with different keywords"))
+                VStack {
+                    Text("No ingredient found 😕")
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Insert ingredient to start create recipes")
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button {
+                        activeSheet = .create
+                    } label: {
+                        Text("Add")
+                    }
+                    .tint(.accent)
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                }
             } else {
-                ContentUnavailableView("No food found", systemImage: "exclamationmark", description: Text("You can add your first food by clicking on the Add button"))
+                VStack {
+                    Text("No ingredient found 😕")
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Insert ingredient to start create recipes")
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button {
+                        activeSheet = .create
+                    } label: {
+                        Text("Add")
+                    }
+                    .tint(.accent)
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                }
             }
         }
         .searchable(text: $searchText, prompt: "Search food")

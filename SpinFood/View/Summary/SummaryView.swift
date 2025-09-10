@@ -9,8 +9,23 @@ import SwiftUI
 import SwiftData
 
 struct SummaryView: View {
+    enum ActiveSheet: Identifiable {
+        case createRecipe
+        case createFood
+        
+        var id: String {
+            switch self {
+                case .createRecipe:
+                    return "createRecipe"
+                case .createFood:
+                    return "createFood"
+            }
+        }
+    }
+    
     @State private var showStoreView: Bool = false
     @State private var showPaywall: Bool = false
+    @State private var activeSheet: ActiveSheet?
     
     @Query var recipes: [RecipeModel]
     
@@ -56,7 +71,7 @@ struct SummaryView: View {
                             .multilineTextAlignment(.center)
                         
                         Button {
-                            
+                            activeSheet = .createFood
                         } label: {
                             Text("Add")
                         }
@@ -64,6 +79,7 @@ struct SummaryView: View {
                         .buttonStyle(.bordered)
                         .buttonBorderShape(.capsule)
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
                 } else if recipes.isEmpty {
                     VStack {
                         Text("No recipe found 😕")
@@ -75,7 +91,7 @@ struct SummaryView: View {
                             .multilineTextAlignment(.center)
                         
                         Button {
-                            
+                            activeSheet = .createRecipe
                         } label: {
                             Text("Add")
                         }
@@ -83,6 +99,7 @@ struct SummaryView: View {
                         .buttonStyle(.bordered)
                         .buttonBorderShape(.capsule)
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
                 } else {
                     VStack {
                         Text("No eat or refill data found 😕")
@@ -93,6 +110,7 @@ struct SummaryView: View {
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
             } else {
                 TotalRecipeCookedWidgetView(totalRecipeCooked: totalRecipeCooked, cookedRecipes: cookedRecipes)
@@ -103,6 +121,14 @@ struct SummaryView: View {
             }
         }
         .navigationTitle("Summary")
+        .sheet(item: $activeSheet, content: { sheet in
+            switch sheet {
+                case .createFood:
+                    EditFoodView()
+                case .createRecipe:
+                    EditRecipeView()
+            }
+        })
     }
 }
 

@@ -146,7 +146,7 @@ struct FoodView: View {
                         }
                 }
             }
-            else if !searchText.isEmpty && filteredFood.isEmpty {
+            else if !searchText.isEmpty || filteredFood.isEmpty {
                 VStack {
                     Text("No ingredient found 😕")
                         .font(.headline)
@@ -165,25 +165,7 @@ struct FoodView: View {
                     .buttonStyle(.bordered)
                     .buttonBorderShape(.capsule)
                 }
-            } else {
-                VStack {
-                    Text("No ingredient found 😕")
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                    
-                    Text("Insert ingredient to start create recipes")
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                    
-                    Button {
-                        activeSheet = .create
-                    } label: {
-                        Text("Add")
-                    }
-                    .tint(.accent)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                }
+                .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .searchable(text: $searchText, prompt: "Search food")

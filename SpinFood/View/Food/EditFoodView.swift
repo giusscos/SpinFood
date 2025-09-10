@@ -84,6 +84,7 @@ struct EditFoodView: View {
                     } label: {
                         Text("Save")
                     }
+                    .disabled(name.isEmpty)
                 })
             }
             .onAppear() {

@@ -161,6 +161,7 @@ struct RecipeView: View {
                                     .buttonStyle(.bordered)
                                     .buttonBorderShape(.capsule)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .center)
                             }
                         } else if recipes.isEmpty {
                             Section {
@@ -182,6 +183,7 @@ struct RecipeView: View {
                                     .buttonStyle(.bordered)
                                     .buttonBorderShape(.capsule)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .center)
                             }
                         }
                     } else {

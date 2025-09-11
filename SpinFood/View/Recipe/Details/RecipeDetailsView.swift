@@ -9,14 +9,11 @@ import SwiftUI
 import SwiftData
 
 enum ActiveRecipeDetailSheet: Identifiable {
-    case edit(RecipeModel)
     case confirmEat
     case cookNow([StepRecipe])
     
     var id: String {
         switch self {
-            case .edit(let recipe):
-                return "editRecipe-\(recipe.id)"
             case .confirmEat:
                 return "confirmEat"
             case .cookNow(let steps):
@@ -32,8 +29,12 @@ struct RecipeDetailsView: View {
     @Query var food: [FoodModel]
     
     @State private var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
-        
+    
+    @State private var showDeleteConfirmation: Bool = false
+    
     var recipe: RecipeModel
+        
+    var onEdit: () -> Void = {}
     
     var missingIngredients: [RecipeFoodModel] {
         guard let ingredients = recipe.ingredients else { return [] }
@@ -97,22 +98,17 @@ struct RecipeDetailsView: View {
                             }
                             .frame(height: height + safeArea.top)
                             
-                            VStack {
-                                VStack(spacing: 24) {
-                                    Text(recipe.name)
-                                        .font(.title)
-                                        .fontWeight(.semibold)
-                                        .multilineTextAlignment(.center)
-                                    
-                                    if recipe.descriptionRecipe != "" {
-                                        Text(recipe.descriptionRecipe)
-                                            .multilineTextAlignment(.leading)
-                                            .font(.body)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                    }
+                            VStack(alignment: .leading) {
+                                Text(recipe.name)
+                                    .font(.headline)
+                                
+                                if recipe.descriptionRecipe != "" {
+                                    Text(recipe.descriptionRecipe)
                                 }
                             }
-                            .padding()
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
                             
                             RecipeDetailsIngredientView(recipe: recipe, missingIngredients: missingIngredients)
                             
@@ -142,37 +138,90 @@ struct RecipeDetailsView: View {
                 }
                 .fullScreenCover(item: $activeRecipeDetailSheet) { sheet in
                     switch sheet {
-                        case .edit(let recipe):
-                            EditRecipeView(recipe: recipe)
                         case .confirmEat:
                             RecipeConfirmEatView(recipe: recipe)
                         case .cookNow(let steps):
                             CookRecipeStepByStepView(recipe: recipe, steps: steps)
                     }
                 }
+                .navigationBarBackButtonHidden()
                 .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        if  #available(iOS 26, *) {
+                            Button(role: .cancel) {
+                                dismiss()
+                            } label: {
+                                Label("Back", systemImage: "chevron.left")
+                            }
+                        } else {
+                            Button(role: .cancel) {
+                                dismiss()
+                            } label: {
+                                Label("Back", systemImage: "chevron.left.circle.fill")
+                                    .symbolRenderingMode(.palette)
+                                    .foregroundStyle(.background, .gray)
+                            }
+                        }
+                    }
+                    
                     ToolbarItem(placement: .topBarTrailing) {
                         if  #available(iOS 26, *) {
                             Button {
-                                activeRecipeDetailSheet = .edit(recipe)
+                                handleEditButton()
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
                         } else {
                             Button {
-                                activeRecipeDetailSheet = .edit(recipe)
+                                handleEditButton()
                             } label: {
-                                Label("Edit", systemImage: "pencil")
+                                Label("Edit", systemImage: "pencil.circle.fill")
+                                    .symbolRenderingMode(.palette)
+                                    .foregroundStyle(.background, .accent)
                             }
-                            .tint(.accent)
-                            .buttonStyle(.borderedProminent)
-                            .buttonBorderShape(.circle)
+                        }
+                    }
+                    
+                    if #available(iOS 26, *) {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button (role: .destructive) {
+                                showDeleteConfirmation = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            .tint(.red)
+                        }
+                    } else {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button (role: .destructive) {
+                                showDeleteConfirmation = true
+                            } label: {
+                                Label("Delete", systemImage: "trash.circle.fill")
+                                    .symbolRenderingMode(.palette)
+                                    .foregroundStyle(.background, .red)
+                            }
                         }
                     }
                 }
+                .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete Recipe", role: .destructive) {
+                        deleteRecipe()
+                    }
+                })
             }
         }
+    }
+    
+    func deleteRecipe() {
+        modelContext.delete(recipe)
+        
+        dismiss()
+    }
+    
+    func handleEditButton() {
+        onEdit()
     }
 }
 
@@ -180,113 +229,4 @@ struct RecipeDetailsView: View {
     RecipeDetailsView(recipe: RecipeModel(name: "Carbonara"))
 }
 
-struct RecipeDetailsCookButtonView: View {
-    var recipe: RecipeModel
-    var hasAllIngredients: Bool
-    
-    @Binding var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
-    
-    var body: some View {
-        if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-            Button {
-                if hasAllIngredients {
-                    if let steps = recipe.steps, !steps.isEmpty {
-                        return activeRecipeDetailSheet = .cookNow(steps)
-                    } else if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-                        return activeRecipeDetailSheet = .confirmEat
-                    }
-                }
-            } label: {
-                Text("Cook")
-                    .font(.headline)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .disabled(!hasAllIngredients)
-            .padding()
-        }
-    }
-}
 
-struct RecipeDetailsStepView: View {
-    var recipe: RecipeModel
-    
-    var body: some View {
-        if let steps = recipe.steps, !steps.isEmpty {
-            VStack (alignment: .leading) {
-                HStack (alignment: .lastTextBaseline, spacing: 4) {
-                    Group {
-                        Text(steps.count == 1 ? "Step" : "Steps")
-                        +
-                        Text(":")
-                    }
-                    
-                    Text(recipe.duration.formatted)
-                        .foregroundStyle(.secondary)
-                }
-                .font(.headline)
-                
-                ForEach(steps) { step in
-                    VStack(alignment: .leading, spacing: 8) {
-                        if let imageData = step.image, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
-                                .clipShape(.rect(cornerRadius: 20))
-                        }
-                        
-                        Text(step.text)
-                            .foregroundColor(.primary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.vertical, 4)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-            .padding()
-        }
-    }
-}
-
-struct RecipeDetailsIngredientView: View {
-    var recipe: RecipeModel
-    var missingIngredients: [RecipeFoodModel]
-    
-    var body: some View {
-        if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-            VStack (alignment: .leading) {
-                Text(ingredients.count == 1 ? "Ingredient" : "Ingredients")
-                    .font(.headline)
-                
-                VStack {
-                    ForEach(ingredients) { value in
-                        if let ingredient = value.ingredient {
-                            let missingIngredient = missingIngredients.contains(where: { $0.id == value.id })
-                            HStack (alignment: .lastTextBaseline) {
-                                Text(ingredient.name)
-                                    .font(.headline)
-                                    .lineLimit(1)
-                                
-                                Spacer()
-                                
-                                Text(value.quantityNeeded, format: .number)
-                                    .font(.headline)
-                                    .foregroundStyle(missingIngredient ? .red : .primary)
-                                +
-                                Text(ingredient.unit.abbreviation)
-                                    .font(.headline)
-                                    .foregroundStyle(missingIngredient ? .red : .secondary)
-                            }
-                            .lineLimit(1)
-                        }
-                    }
-                }
-                .padding(.vertical)
-            }
-            .padding()
-        }
-    }
-}

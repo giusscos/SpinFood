@@ -43,6 +43,8 @@ struct EditRecipeView: View {
     
     var recipe: RecipeModel?
     
+    var onDelete: () -> Void = {}
+    
     @State private var name: String = ""
     @State private var descriptionRecipe: String = ""
     @State private var duration: TimeInterval = 300.0
@@ -59,9 +61,11 @@ struct EditRecipeView: View {
     
     @State private var showPhotoPicker: Bool = false
     
-    @State private var showDeleteConfirmation: Bool = false
-    
     @FocusState private var focusedField: EditRecipeField?
+    
+    var canSaveRecipe: Bool {
+        !name.isEmpty && imageData != nil && !ingredients.isEmpty && !steps.isEmpty
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -88,13 +92,13 @@ struct EditRecipeView: View {
                                 TextEditor(text: $descriptionRecipe)
                                     .textEditorStyle(.plain)
                                     .autocorrectionDisabled()
-                                    .padding(.horizontal, 6)
+                                    .offset(x: -6)
                                     .padding(.vertical, 4)
                                     .overlay(alignment: .topLeading, content: {
                                         if descriptionRecipe.isEmpty {
                                             Text("Add a description")
                                                 .foregroundColor(.secondary)
-                                                .padding(.horizontal, 10)
+                                                .offset(x: -2)
                                                 .padding(.vertical, 12)
                                         }
                                     })
@@ -121,10 +125,20 @@ struct EditRecipeView: View {
                         .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
-                                Button(role: .cancel) {
-                                    dismiss()
-                                } label: {
-                                    Label("Cancel", systemImage: "xmark")
+                                if #available(iOS 26, *) {
+                                    Button(role: .cancel) {
+                                        dismiss()
+                                    } label: {
+                                        Label("Cancel", systemImage: "xmark")
+                                    }
+                                } else {
+                                    Button(role: .cancel) {
+                                        dismiss()
+                                    } label: {
+                                        Label("Cancel", systemImage: "xmark.circle.fill")
+                                            .symbolRenderingMode(.palette)
+                                            .foregroundStyle(.background, .gray)
+                                    }
                                 }
                             }
                             
@@ -135,37 +149,16 @@ struct EditRecipeView: View {
                                     } label: {
                                         Label("Save", systemImage: "checkmark")
                                     }
-                                    .disabled(name.isEmpty || imageData == nil)
+                                    .disabled(!canSaveRecipe)
                                 } else {
                                     Button {
                                         saveRecipe()
                                     } label: {
-                                        Label("Save", systemImage: "checkmark")
+                                        Label("Save", systemImage: "checkmark.circle.fill")
+                                            .symbolRenderingMode(.palette)
+                                            .foregroundStyle(.background, !canSaveRecipe ? .gray : .accent)
                                     }
-                                    .tint(.accent)
-                                    .disabled(name.isEmpty || imageData == nil)
-                                }
-                            }
-                            
-                            if let _ = recipe {
-                                if #available(iOS 26, *) {
-                                    ToolbarItem(placement: .topBarTrailing) {
-                                        Button (role: .destructive) {
-                                            showDeleteConfirmation = true
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                        .tint(.red)
-                                    }
-                                } else {
-                                    ToolbarItem(placement: .topBarTrailing) {
-                                        Button (role: .destructive) {
-                                            showDeleteConfirmation = true
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                        .tint(.red)
-                                    }
+                                    .disabled(!canSaveRecipe)
                                 }
                             }
                             
@@ -177,18 +170,11 @@ struct EditRecipeView: View {
                                 }
                             }
                         }
-                        .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation, actions: {
-                            Button("Cancel", role: .cancel) { }
-                            Button("Delete Recipe", role: .destructive) {
-                                deleteRecipe()
-                            }
-                        })
+                        
                     }
                     .coordinateSpace(name: "Scroll")
                 }
-                .navigationTitle(recipe != nil ? "Edit recipe" : "Create recipe")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+                .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
                 .ignoresSafeArea(.container, edges: .top)
                 .background {
                     if let imageData, let uiImage = UIImage(data: imageData) {
@@ -232,7 +218,7 @@ struct EditRecipeView: View {
     }
     
     func saveRecipe() {
-        guard !name.isEmpty && imageData != nil else { return }
+        if !canSaveRecipe { return }
         
         if let recipe = recipe {
             recipe.name = name
@@ -255,14 +241,6 @@ struct EditRecipeView: View {
         }
         
         dismiss()
-    }
-    
-    func deleteRecipe() {
-        if let recipe = recipe {
-            modelContext.delete(recipe)
-            
-            dismiss()
-        }
     }
     
 #if canImport(UIKit)

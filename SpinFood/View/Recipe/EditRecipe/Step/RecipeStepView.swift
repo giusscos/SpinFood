@@ -22,10 +22,8 @@ struct RecipeStepView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(maxWidth: .infinity)
                     .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 400 : 220)
                     .clipShape(.rect(cornerRadius: 20))
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             Text(step.text)
@@ -38,7 +36,7 @@ struct RecipeStepView: View {
             textToBeEdited = step.text
             imageToBeEdited = step.image
         }
-        .swipeActions(edge: .trailing) {
+        .swipeActions {
             Button(role: .destructive) {
                 steps.removeAll(where: { $0.id == step.id })
             } label: {

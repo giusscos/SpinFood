@@ -73,8 +73,6 @@ struct RecipeView: View {
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
     
-    @State var store = Store()
-    
     @State private var activeRecipeSheet: ActiveRecipeSheet?
     @State private var sortOption: RecipeSortOption = .nameAsc
     @State private var filterOption: RecipeFilterOption = .all
@@ -128,10 +126,6 @@ struct RecipeView: View {
         }
         
         return result
-    }
-    
-    var hasActiveSubscription: Bool {
-        !store.purchasedSubscriptions.isEmpty || !store.purchasedProducts.isEmpty
     }
     
     var body: some View {
@@ -212,7 +206,7 @@ struct RecipeView: View {
                     } label: {
                         Label("Add", systemImage: "plus")
                     }
-                    .disabled(foods.isEmpty || (recipes.count == 2 && !hasActiveSubscription))
+                    .disabled(foods.isEmpty)
                 }
                 
                 if !recipes.isEmpty {

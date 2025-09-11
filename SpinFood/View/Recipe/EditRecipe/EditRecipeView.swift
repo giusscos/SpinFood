@@ -29,6 +29,12 @@ extension UIImage {
     }
 }
 
+enum EditRecipeField: Hashable {
+    case name
+    case recipeDescription
+    case step
+}
+
 struct EditRecipeView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
@@ -55,12 +61,7 @@ struct EditRecipeView: View {
     
     @State private var showDeleteConfirmation: Bool = false
     
-    enum Field: Hashable {
-        case name
-        case recipeDescription
-    }
-    
-    @FocusState private var focusedField: Field?
+    @FocusState private var focusedField: EditRecipeField?
     
     var body: some View {
         GeometryReader { geometry in
@@ -170,7 +171,7 @@ struct EditRecipeView: View {
                             
                             ToolbarItem(placement: .keyboard) {
                                 Button {
-                                    focusedField = .none
+                                    hideKeyboard()
                                 } label: {
                                     Label("Hide Keyboard", systemImage: "keyboard.chevron.compact.down")
                                 }
@@ -201,7 +202,7 @@ struct EditRecipeView: View {
                             .scaleEffect(x: -1, y: 1)
                             .ignoresSafeArea()
                     } else {
-                        LinearGradient(colors: [.purple, .indigo], startPoint: .topLeading, endPoint: .bottom)
+                        LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottom)
                             .ignoresSafeArea()
                     }
                 }
@@ -263,6 +264,12 @@ struct EditRecipeView: View {
             dismiss()
         }
     }
+    
+#if canImport(UIKit)
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+#endif
 }
 
 #Preview {

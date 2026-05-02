@@ -1,10 +1,3 @@
-//
-//  RecipeModel.swift
-//  SpinFood
-//
-//  Created by Giuseppe Cosenza on 10/12/24.
-//
-
 import Foundation
 import SwiftData
 
@@ -15,21 +8,38 @@ final class RecipeModel {
     var descriptionRecipe: String = ""
     @Attribute(.externalStorage) var image: Data?
     var duration: TimeInterval = 0.0
+    var servings: Int = 2
     var createdAt: Date = Date.now
     var rating: Int = 0
     var cookedAt: [Date] = []
-    
+
     @Relationship var ingredients: [RecipeFoodModel]? = []
-    
     @Relationship var steps: [StepRecipe]? = []
-    
+
     var lastStepIndex: Int = 0
-    
-    init (
+
+    var canCook: Bool {
+        guard let ingredients, !ingredients.isEmpty else { return false }
+        return ingredients.allSatisfy { recipeFood in
+            guard let ingredient = recipeFood.ingredient else { return false }
+            return ingredient.currentQuantity >= recipeFood.quantityNeeded
+        }
+    }
+
+    var missingIngredients: [RecipeFoodModel] {
+        guard let ingredients else { return [] }
+        return ingredients.filter { recipeFood in
+            guard let ingredient = recipeFood.ingredient else { return true }
+            return ingredient.currentQuantity < recipeFood.quantityNeeded
+        }
+    }
+
+    init(
         name: String,
         descriptionRecipe: String = "",
         image: Data? = nil,
         duration: TimeInterval = 0.0,
+        servings: Int = 2,
         ingredients: [RecipeFoodModel]? = nil,
         steps: [StepRecipe]? = nil
     ) {
@@ -37,6 +47,7 @@ final class RecipeModel {
         self.descriptionRecipe = descriptionRecipe
         self.image = image
         self.duration = duration
+        self.servings = servings
         self.ingredients = ingredients
         self.steps = steps
     }
@@ -48,7 +59,7 @@ class StepRecipe {
     var text: String = ""
     @Attribute(.externalStorage) var image: Data?
     var createdAt: Date = Date.now
-    
+
     @Relationship var recipes: RecipeModel? = nil
 
     init(text: String, image: Data? = nil) {

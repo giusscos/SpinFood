@@ -46,7 +46,7 @@ struct FoodConsumptionStatsView: View {
     @State private var selectedDataPoint: (date: Date, items: [ChartData])? = nil
     
     var consumedFood: [FoodModel] {
-        food.filter { ($0.consumptions?.count ?? 0) > 0 || $0.eatenAt.count > 0 }
+        food.filter { ($0.consumptions?.count ?? 0) > 0 }
     }
     
     var dateInterval: (start: Date, end: Date) {
@@ -274,9 +274,6 @@ struct FoodConsumptionStatsView: View {
                                 let totalQuantity = consumptions.reduce(Decimal(0)) { $0 + $1.quantity }
                                 Text("\(NSDecimalNumber(decimal: totalQuantity).doubleValue, specifier: "%.1f") \(food.unit.abbreviation)")
                                     .foregroundStyle(.secondary)
-                            } else {
-                                Text("\(food.eatenAt.count) \(food.unit.abbreviation)")
-                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -307,10 +304,6 @@ struct FoodConsumptionDetailView: View {
                             Text("\(NSDecimalNumber(decimal: consumption.quantity).doubleValue, specifier: "%.1f") \(consumption.unit.abbreviation)")
                                 .foregroundStyle(.secondary)
                         }
-                    }
-                } else if !food.eatenAt.isEmpty {
-                    ForEach(food.eatenAt.sorted(by: >), id: \.self) { date in
-                        Text(formatDateTime(date))
                     }
                 } else {
                     Text("No consumption recorded")

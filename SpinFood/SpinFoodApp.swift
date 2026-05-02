@@ -1,10 +1,3 @@
-//
-//  SpinFoodApp.swift
-//  SpinFood
-//
-//  Created by Giuseppe Cosenza on 10/12/24.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,9 +5,14 @@ import SwiftData
 struct SpinFoodApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            RecipeModel.self
+            RecipeModel.self,
+            StepRecipe.self,
+            FoodModel.self,
+            RecipeFoodModel.self,
+            FoodConsumptionModel.self,
+            FoodRefillModel.self,
         ])
-        
+
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {

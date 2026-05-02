@@ -82,28 +82,9 @@ struct RecipeView: View {
         case .all:
             break
         case .canCook:
-            result = result.filter { recipe in
-                guard let recipeIngredients = recipe.ingredients else { return false }
-                
-                return recipeIngredients.allSatisfy { recipeFood in
-                    guard let requiredIngredient = recipeFood.ingredient else { return false }
-                    guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return false }
-                    
-                    return inventoryItem.currentQuantity >= recipeFood.quantityNeeded
-                }
-            }
+            result = result.filter { $0.canCook }
         case .cantCook:
-            result = result.filter { recipe in
-                guard let recipeIngredients = recipe.ingredients else { return true }
-                if recipeIngredients.isEmpty { return false }
-                
-                return !recipeIngredients.allSatisfy { recipeFood in
-                    guard let requiredIngredient = recipeFood.ingredient else { return false }
-                    guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return false }
-                    
-                    return inventoryItem.currentQuantity >= recipeFood.quantityNeeded
-                }
-            }
+            result = result.filter { !$0.canCook && !($0.ingredients?.isEmpty ?? true) }
         }
         
         switch sortOption {
@@ -131,7 +112,7 @@ struct RecipeView: View {
                     if foods.isEmpty {
                         Section {
                             VStack {
-                                Text("No ingredient found 😕")
+                                Text("No ingredients found")
                                     .font(.headline)
                                     .multilineTextAlignment(.center)
                                 
@@ -153,7 +134,7 @@ struct RecipeView: View {
                     } else if recipes.isEmpty {
                         Section {
                             VStack {
-                                Text("No recipe found 😕")
+                                Text("No recipes found")
                                     .font(.headline)
                                     .multilineTextAlignment(.center)
                                 
@@ -175,15 +156,17 @@ struct RecipeView: View {
                     }
                 } else {
                     ForEach(filteredRecipes) { recipe in
-                        Section {
-                            RecipeRowView(recipe: recipe, activeRecipeSheet: $activeRecipeSheet)
+                        RecipeRowView(recipe: recipe, activeRecipeSheet: $activeRecipeSheet)
+                            .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             .swipeActions {
                                 Button(role: .destructive) {
                                     modelContext.delete(recipe)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
-                                
+
                                 Button {
                                     activeRecipeSheet = .edit(recipe)
                                 } label: {
@@ -191,10 +174,10 @@ struct RecipeView: View {
                                 }
                                 .tint(.blue)
                             }
-                        }
                     }
                 }
             }
+            .listStyle(.plain)
         }
         .navigationTitle("Recipes")
         .toolbarVisibility(.visible, for: .tabBar)

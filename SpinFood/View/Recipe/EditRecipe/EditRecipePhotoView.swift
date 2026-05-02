@@ -11,106 +11,82 @@ import PhotosUI
 struct EditRecipePhotoView: View {
     @Binding var imageItem: PhotosPickerItem?
     @Binding var imageData: Data?
-    
     @Binding var showPhotoPicker: Bool
-    
-    var safeArea: EdgeInsets
-    var size: CGSize
-    
+
     var body: some View {
-        let height = size.height * 0.45
-        
-        GeometryReader { geometry in
-            let size = geometry.size
-            let minY = geometry.frame(in: .named("Scroll")).minY
-            let progress = (minY > 0 ? minY : 0) / (height * 0.8)
-            
-            if let imageData, let uiImage = UIImage(data: imageData) {
-                let image = Image(uiImage: uiImage)
-                
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: size.width, height: size.height + (minY > 0 ? minY : 0))
-                    .clipped()
-                    .mask(
-                        ZStack (alignment: .bottom) {
-                            Rectangle()
-                                .fill(
-                                    .linearGradient(colors: [
-                                        .black.opacity(1),
-                                        .black.opacity(1),
-                                        .black.opacity(1),
-                                        .black.opacity(1),
-                                        .black.opacity(1),
-                                        .black.opacity(1),
-                                        .black.opacity(1),
-                                        .black.opacity(0.75 - progress),
-                                        .black.opacity(0.50 - progress),
-                                        .black.opacity(0.25 - progress),
-                                        .black.opacity(0 - progress),
-                                    ], startPoint: .top, endPoint: .bottom)
-                                )
+        ZStack(alignment: .bottom) {
+            // Photo or placeholder
+            Group {
+                if let imageData, let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 260, height: 220)
+                        .clipped()
+                } else {
+                    ZStack {
+                        Color.secondary.opacity(0.10)
+
+                        VStack(spacing: 12) {
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 36))
+                                .foregroundStyle(.secondary)
+
+                            Text("Add Photo")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
                         }
-                    )
-                    .overlay (alignment: .bottom, content: {
-                        Menu {
-                            Button {
-                                withAnimation {
-                                    self.imageData = nil
-                                    imageItem = nil
-                                }
-                            } label: {
-                                Label("Remove", systemImage: "xmark")
-                            }
-                            
-                            Button {
-                                showPhotoPicker = true
-                            } label: {
-                                Label("Update", systemImage: "photo")
-                            }
-                        } label: {
-                            Text("Edit background".capitalized)
-                                .font(.headline)
-                        }
-                        .foregroundStyle(.primary)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal)
-                        .background(.ultraThinMaterial)
-                        .clipShape(.capsule)
-                    })
-                    .offset(y: (minY > 0 ? -minY : 0))
-            } else {
-                HStack {
-                    Spacer()
-                    
+                    }
+                    .frame(width: 260, height: 220)
+                }
+            }
+            .padding(12)
+            .padding(.bottom, 52)
+            .background(.white)
+            .clipShape(.rect(cornerRadius: 2))
+            .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+            .rotationEffect(.degrees(-1.5))
+
+            // Edit button sits inside the white bottom strip
+            if imageData != nil {
+                Menu {
                     Button {
                         showPhotoPicker = true
                     } label: {
-                        VStack (spacing: 16) {
-                            Image(systemName: "photo")
-                                .font(.title)
-                                .padding()
-                                .background(.ultraThinMaterial)
-                                .clipShape(.circle)
-                            
-                            Text("Add Photo")
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal)
-                                .background(.ultraThinMaterial)
-                                .clipShape(.capsule)
-                        }
+                        Label("Update", systemImage: "photo")
                     }
-                    .buttonStyle(.plain)
-                    
-                    Spacer()
+
+                    Button(role: .destructive) {
+                        withAnimation {
+                            imageData = nil
+                            imageItem = nil
+                        }
+                    } label: {
+                        Label("Remove", systemImage: "xmark")
+                    }
+                } label: {
+                    Text("Edit photo")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(.black.opacity(0.06), in: .capsule)
                 }
-                .frame(height: size.height, alignment: .center)
+                .padding(.bottom, 14)
+            } else {
+                Button {
+                    showPhotoPicker = true
+                } label: {
+                    Text("Choose photo")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(.black.opacity(0.06), in: .capsule)
+                }
+                .padding(.bottom, 14)
             }
         }
-        .frame(height: height + safeArea.top)
     }
 }
 
@@ -118,9 +94,8 @@ struct EditRecipePhotoView: View {
     EditRecipePhotoView(
         imageItem: .constant(nil),
         imageData: .constant(nil),
-        showPhotoPicker: .constant(false),
-        safeArea: EdgeInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0)),
-        size: CGSize(width: 300, height: 200)
+        showPhotoPicker: .constant(false)
     )
+    .padding()
+    .background(Color(UIColor.systemGroupedBackground))
 }
-

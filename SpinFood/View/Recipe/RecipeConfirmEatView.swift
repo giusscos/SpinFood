@@ -19,9 +19,28 @@ struct RecipeConfirmEatView: View {
     var body: some View {
         NavigationStack {
             List {
+                if let imageData = recipe.image, let uiImage = UIImage(data: imageData) {
+                    Section {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxHeight: 200)
+                            .clipShape(.rect(cornerRadius: 12))
+                    }
+                    .listRowInsets(.init())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
                 Section {
-                    Text("You have all the ingredients. Do you want to cook \(recipe.name)?")
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Cooking \(recipe.name) will deduct the ingredients from your pantry.")
+                            .foregroundStyle(.secondary)
+
+                        Label("\(recipe.servings) \(recipe.servings == 1 ? "serving" : "servings")", systemImage: "person.2")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .listRowInsets(.init(top: 16, leading: 0, bottom: 16, trailing: 0))
                 .listRowSeparator(.hidden)
@@ -103,26 +122,39 @@ struct RecipeConfirmEatView: View {
                 inventoryItem.consumptions?.append(consumption)
             }
             
-            // Also keep track in the legacy property for backward compatibility
-            inventoryItem.eatenAt.append(Date.now)
         }
     }
 }
 
 struct IngredientRowView: View {
     let ingredient: RecipeFoodModel
-    
+
     var body: some View {
         if let item = ingredient.ingredient {
-            HStack {
-                Text(item.name)
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Text("- \("\(ingredient.quantityNeeded) \(item.unit.abbreviation)")")
-                    .font(.headline)
-                    .foregroundStyle(.red)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(item.name)
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(ingredient.quantityNeeded, format: .number)
+                        .font(.headline)
+                    +
+                    Text(" \(item.unit.abbreviation)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 4) {
+                    Image(systemName: item.category.icon)
+                    Text(item.currentQuantity, format: .number)
+                    Text(item.unit.abbreviation)
+                    Text("in pantry")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
+            .padding(.vertical, 2)
         }
     }
 }

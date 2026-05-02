@@ -48,7 +48,7 @@ struct CreateStepView: View {
                 Text(stepImageItem != nil ? "Update step photo" : "Add step photo")
                     .font(.headline)
             }
-                         .tint(.blue)
+                         .tint(.accent)
                          .buttonStyle(.borderedProminent)
                          .buttonBorderShape(.capsule)
             
@@ -80,7 +80,7 @@ struct CreateStepView: View {
                             .imageScale(.large)
                             .font(.title2)
                     }
-                    .tint(.blue)
+                    .tint(.accent)
                     .buttonStyle(.borderless)
                     .disabled(newStep.text.isEmpty)
                     .padding(4)

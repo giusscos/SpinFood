@@ -5,89 +5,94 @@
 //  Created by Giuseppe Cosenza on 24/07/25.
 //
 
-import Charts
 import SwiftData
 import SwiftUI
 
 struct TotalFoodRefilledWidgetView: View {
     @Namespace var namespace
-    
+
     @Query var foods: [FoodModel]
-    @Query var refills: [FoodRefillModel]
-    
+
     let foodRefillTransitionId: String = "foodRefillChart"
 
     var totalFoodRefilled: Int
-    
-    private func getMostRefilledFood() -> FoodModel? {
-        let foodWithQuantities = foods.map { food in
-            (
-                food: food,
-                totalGrams: food.totalRefilledQuantityInGrams
-            )
-        }
-        
-        return foodWithQuantities
-            .filter { $0.totalGrams > 0 }
-            .sorted { $0.totalGrams > $1.totalGrams }
-            .first?.food
+
+    var totalRefilledGrams: Double {
+        foods.reduce(0.0) { $0 + NSDecimalNumber(decimal: $1.totalRefilledQuantityInGrams).doubleValue }
     }
-    
-    private func getTotalRefilledQuantity(for food: FoodModel) -> Decimal {
-        (food.refills ?? []).reduce(Decimal(0)) { $0 + $1.quantity }
+
+    var formattedTotal: String {
+        if totalRefilledGrams >= 1000 {
+            return String(format: "%.1f kg", totalRefilledGrams / 1000)
+        } else {
+            return String(format: "%.0f g", totalRefilledGrams)
+        }
+    }
+
+    private func getMostRefilledFood() -> FoodModel? {
+        foods
+            .filter { NSDecimalNumber(decimal: $0.totalRefilledQuantityInGrams).doubleValue > 0 }
+            .sorted { $0.totalRefilledQuantityInGrams > $1.totalRefilledQuantityInGrams }
+            .first
     }
 
     var body: some View {
         if totalFoodRefilled > 0 {
-            Section {
-                NavigationLink {
-                    FoodRefillStatsView()
-                        .navigationTransition(.zoom(sourceID: foodRefillTransitionId, in: namespace))
-                } label: {
-                    HStack(alignment: .bottom) {
-                        VStack(alignment: .leading) {
-                            Text("Food refilled")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                            
-                            VStack(alignment: .leading) {
-                                if let mostRefilled = getMostRefilledFood() {
-                                    Text("\(NSDecimalNumber(decimal: getTotalRefilledQuantity(for: mostRefilled)).doubleValue, specifier: "%.1f") \(mostRefilled.unit.abbreviation)")
-                                        .font(.headline)
-                                        .foregroundStyle(.secondary)
-                                    
-                                    Text("\(mostRefilled.name)")
-                                        .font(.title3)
-                                        .lineLimit(1)
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                        }
-                        
-                        Spacer()
-                        
-                        VStack {
-                            Spacer()
-                            
-                            Chart {
-                                ForEach(refills) { refill in
-                                    if let foodName = refill.food?.name {
-                                        SectorMark(
-                                            angle: .value("Amount", NSDecimalNumber(decimal: refill.unit.convertToGrams(refill.quantity)).doubleValue),
-                                            innerRadius: .ratio(0.6)
-                                        )
-                                        .foregroundStyle(by: .value("Food", foodName))
-                                    }
-                                }
-                            }
-                            .chartLegend(.hidden)
-                            .chartYAxis(.hidden)
-                            .chartXAxis(.hidden)
-                        }
+            NavigationLink {
+                FoodRefillStatsView()
+                    .navigationTransition(.zoom(sourceID: foodRefillTransitionId, in: namespace))
+            } label: {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Food refilled")
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.8))
+
+                    Spacer()
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(formattedTotal)
+                            .font(.system(size: 64, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .minimumScaleFactor(0.5)
+                            .lineLimit(1)
+
+                        Text("total refilled")
+                            .font(.system(.subheadline, design: .rounded).weight(.medium))
+                            .foregroundStyle(.white.opacity(0.75))
                     }
-                    .matchedTransitionSource(id: foodRefillTransitionId, in: namespace)
+
+                    Spacer()
+
+                    if let mostRefilled = getMostRefilledFood() {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .font(.caption)
+
+                            Text("\(mostRefilled.name) · \(NSDecimalNumber(decimal: mostRefilled.totalRefilledQuantity).doubleValue, specifier: "%.1f") \(mostRefilled.unit.abbreviation)")
+                                .font(.system(.caption, design: .rounded))
+                                .lineLimit(1)
+                        }
+                        .foregroundStyle(.white.opacity(0.7))
+                    }
                 }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 260 : 220)
+                .background(
+                    LinearGradient(
+                        colors: [.blue, .indigo.opacity(0.8)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(.rect(cornerRadius: 4))
+                .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+                .rotationEffect(.degrees(-0.8))
+                .padding(.vertical, 24)
+                .padding(.horizontal, 20)
+                .matchedTransitionSource(id: foodRefillTransitionId, in: namespace)
             }
+            .buttonStyle(.plain)
         }
     }
 }

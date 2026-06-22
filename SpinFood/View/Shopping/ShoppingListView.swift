@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Models
+
 struct ShoppingItem: Identifiable, Hashable {
     var id: UUID
     var foodName: String
@@ -13,13 +15,41 @@ struct ShoppingItem: Identifiable, Hashable {
     static func == (lhs: ShoppingItem, rhs: ShoppingItem) -> Bool { lhs.id == rhs.id }
 }
 
+enum ShoppingSortOption: CaseIterable {
+    case name, quantityNeeded
+
+    var label: String {
+        switch self {
+        case .name:           return "Name A–Z"
+        case .quantityNeeded: return "Quantity Needed"
+        }
+    }
+}
+
+// MARK: - View
+
 struct ShoppingListView: View {
+    @Environment(Store.self) var store
+
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
 
     @State private var checkedItems: Set<UUID> = []
     @State private var selectedRecipes: Set<UUID> = []
     @State private var showRecipePicker: Bool = false
+    @State private var showPaywall: Bool = false
+    @State private var sortOption: ShoppingSortOption = .name
+    @State private var filterCategory: FoodCategory? = nil
+    @State private var foodsToRefill: [FoodModel] = []
+    @State private var showRefillSheet: Bool = false
+
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .secondarySystemBackground
+                : UIColor(red: 0.99, green: 0.98, blue: 0.96, alpha: 1)
+        })
+    }
 
     var recipesToConsider: [RecipeModel] {
         selectedRecipes.isEmpty
@@ -54,53 +84,159 @@ struct ShoppingListView: View {
             }
         }
 
-        return aggregated.values.sorted { $0.category.rawValue < $1.category.rawValue }
+        return aggregated.values.sorted { $0.foodName < $1.foodName }
     }
 
-    var groupedItems: [(FoodCategory, [ShoppingItem])] {
-        let groups = Dictionary(grouping: shoppingItems, by: \.category)
+    var displayedItems: [ShoppingItem] {
+        var items = shoppingItems
+
+        if let cat = filterCategory {
+            items = items.filter { $0.category == cat }
+        }
+
+        switch sortOption {
+        case .name:
+            items.sort { $0.foodName < $1.foodName }
+        case .quantityNeeded:
+            items.sort { $0.neededQuantity > $1.neededQuantity }
+        }
+
+        return items
+    }
+
+    var groupedDisplayedItems: [(FoodCategory, [ShoppingItem])] {
+        let groups = Dictionary(grouping: displayedItems, by: \.category)
         return groups.sorted { $0.key.rawValue < $1.key.rawValue }
     }
 
-    var uncheckedCount: Int { shoppingItems.filter { !checkedItems.contains($0.id) }.count }
+    var uncheckedCount: Int { displayedItems.filter { !checkedItems.contains($0.id) }.count }
+
+    var checkedFoodsForRefill: [FoodModel] {
+        foods.filter { checkedItems.contains($0.id) }
+    }
+
+    var allFoodsNeedingRefill: [FoodModel] {
+        foods.filter { $0.currentQuantity < $0.quantity }
+    }
 
     var body: some View {
         NavigationStack {
             Group {
-                if shoppingItems.isEmpty {
+                if displayedItems.isEmpty {
                     emptyState
                 } else {
                     shoppingList
                 }
             }
+            .background(paperBackground.ignoresSafeArea())
             .navigationTitle("Shopping List")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showRecipePicker = true
-                    } label: {
-                        Label("Filter recipes", systemImage: "slider.horizontal.3")
-                    }
-                }
-
                 if !checkedItems.isEmpty {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button("Clear checked") {
+                        Button("Clear") {
                             checkedItems.removeAll()
                         }
                         .foregroundStyle(.secondary)
                     }
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Menu {
+                            Picker("Sort by", selection: $sortOption) {
+                                ForEach(ShoppingSortOption.allCases, id: \.self) { opt in
+                                    Text(opt.label).tag(opt)
+                                }
+                            }
+                        } label: {
+                            Label("Sort", systemImage: "arrow.up.arrow.down")
+                        }
+
+                        Menu {
+                            Picker("Category", selection: $filterCategory) {
+                                Text("All Categories").tag(Optional<FoodCategory>.none)
+                                Divider()
+                                ForEach(FoodCategory.allCases, id: \.self) { cat in
+                                    Label(cat.rawValue, systemImage: cat.icon)
+                                        .tag(Optional(cat))
+                                }
+                            }
+                        } label: {
+                            Label(
+                                filterCategory.map { $0.rawValue } ?? "Category",
+                                systemImage: "line.3.horizontal.decrease.circle"
+                            )
+                        }
+
+                        Button {
+                            if store.hasActiveSubscription {
+                                showRecipePicker = true
+                            } else {
+                                showPaywall = true
+                            }
+                        } label: {
+                            Label(
+                                selectedRecipes.isEmpty ? "Filter by Recipe" : "\(selectedRecipes.count) Recipe\(selectedRecipes.count == 1 ? "" : "s") Selected",
+                                systemImage: store.hasActiveSubscription ? "fork.knife" : "lock.fill"
+                            )
+                        }
+
+                        Divider()
+
+                        Button {
+                            foodsToRefill = allFoodsNeedingRefill
+                            showRefillSheet = true
+                        } label: {
+                            Label("Refill All Food", systemImage: "bag.fill.badge.plus")
+                        }
+                        .disabled(allFoodsNeedingRefill.isEmpty)
+                    } label: {
+                        Label("Menu", systemImage: "ellipsis.circle")
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if !checkedItems.isEmpty {
+                    Button {
+                        foodsToRefill = checkedFoodsForRefill
+                        showRefillSheet = true
+                    } label: {
+                        Label(
+                            "Refill \(checkedItems.count) Selected",
+                            systemImage: "bag.fill.badge.plus"
+                        )
+                        .font(.system(.body, design: .rounded).weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .padding()
+                    .background(.bar)
+                }
             }
             .sheet(isPresented: $showRecipePicker) {
                 RecipePickerSheet(recipes: recipes, selectedRecipes: $selectedRecipes)
             }
+            .sheet(isPresented: $showRefillSheet, onDismiss: {
+                foodsToRefill = []
+            }) {
+                NavigationStack {
+                    FoodRefillView(food: foodsToRefill)
+                        .presentationDragIndicator(.visible)
+                }
+            }
+            .fullScreenCover(isPresented: $showPaywall) {
+                PaywallView()
+            }
         }
     }
 
+    // MARK: - Shopping list
+
     private var shoppingList: some View {
         List {
-            if !checkedItems.isEmpty || !selectedRecipes.isEmpty {
+            if !checkedItems.isEmpty || !selectedRecipes.isEmpty || filterCategory != nil {
                 Section {
                     HStack {
                         if !selectedRecipes.isEmpty {
@@ -108,18 +244,24 @@ struct ShoppingListView: View {
                                 "\(selectedRecipes.count) recipe\(selectedRecipes.count == 1 ? "" : "s") selected",
                                 systemImage: "fork.knife"
                             )
-                            .font(.caption)
+                            .font(.system(.caption, design: .rounded))
                             .foregroundStyle(Color.accentColor)
+                        }
+                        if let cat = filterCategory {
+                            Label(cat.rawValue, systemImage: cat.icon)
+                                .font(.system(.caption, design: .rounded))
+                                .foregroundStyle(categoryColor(for: cat))
                         }
                         Spacer()
                         Text("\(uncheckedCount) item\(uncheckedCount == 1 ? "" : "s") left")
-                            .font(.caption)
+                            .font(.system(.caption, design: .rounded))
                             .foregroundStyle(.secondary)
                     }
                 }
+                .listRowBackground(paperBackground)
             }
 
-            ForEach(groupedItems, id: \.0) { category, items in
+            ForEach(groupedDisplayedItems, id: \.0) { category, items in
                 Section {
                     ForEach(items) { item in
                         ShoppingItemRow(
@@ -127,12 +269,21 @@ struct ShoppingListView: View {
                             isChecked: checkedItems.contains(item.id),
                             onToggle: { toggleCheck(item) }
                         )
+                        .listRowBackground(paperBackground)
                     }
                 } header: {
-                    Label(category.rawValue, systemImage: category.icon)
+                    HStack(spacing: 4) {
+                        Image(systemName: category.icon)
+                        Text(category.rawValue)
+                    }
+                    .font(.system(.caption, design: .rounded).weight(.bold))
+                    .foregroundStyle(categoryColor(for: category))
+                    .textCase(nil)
                 }
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
     }
 
     private var emptyState: some View {
@@ -147,19 +298,20 @@ struct ShoppingListView: View {
             }
 
             Text("Nothing to buy!")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.system(.title2, design: .rounded).weight(.bold))
 
             Text(recipes.isEmpty
                     ? "Add recipes and link ingredients to generate your shopping list."
                     : "All your recipe ingredients are stocked up.")
-                .font(.subheadline)
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+
+    // MARK: - Helpers
 
     private func toggleCheck(_ item: ShoppingItem) {
         if checkedItems.contains(item.id) {
@@ -168,9 +320,24 @@ struct ShoppingListView: View {
             checkedItems.insert(item.id)
         }
     }
+
+    private func categoryColor(for category: FoodCategory) -> Color {
+        switch category {
+        case .produce:   return .green
+        case .dairy:     return .yellow
+        case .meat:      return .red
+        case .seafood:   return .blue
+        case .grains:    return .orange
+        case .pantry:    return .brown
+        case .frozen:    return .cyan
+        case .beverages: return .indigo
+        case .snacks:    return .purple
+        case .other:     return .gray
+        }
+    }
 }
 
-// MARK: - Row
+// MARK: - Shopping Item Row
 
 struct ShoppingItemRow: View {
     let item: ShoppingItem
@@ -203,13 +370,12 @@ struct ShoppingItemRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.foodName)
-                    .font(.body)
-                    .fontWeight(.medium)
+                    .font(.system(.body, design: .rounded).weight(.medium))
                     .strikethrough(isChecked)
                     .foregroundStyle(isChecked ? .secondary : .primary)
 
                 Text(item.recipes.prefix(2).joined(separator: ", "))
-                    .font(.caption)
+                    .font(.system(.caption, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -217,8 +383,7 @@ struct ShoppingItemRow: View {
             Spacer()
 
             Text("\(item.neededQuantity.formatted()) \(item.unit.abbreviation)")
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(isChecked ? Color.secondary : categoryColor)
         }
         .padding(.vertical, 2)
@@ -247,6 +412,7 @@ struct RecipePickerSheet: View {
                     } label: {
                         HStack {
                             Text(recipe.name)
+                                .font(.system(.body, design: .rounded))
                                 .foregroundStyle(.primary)
                             Spacer()
                             if selectedRecipes.contains(recipe.id) {

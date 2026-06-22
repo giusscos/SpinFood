@@ -28,6 +28,21 @@ enum FoodCategory: String, CaseIterable, Codable {
         }
     }
 
+    var defaultEmoji: String {
+        switch self {
+        case .produce:   return "🥦"
+        case .dairy:     return "🧀"
+        case .meat:      return "🥩"
+        case .seafood:   return "🐟"
+        case .grains:    return "🌾"
+        case .pantry:    return "🫙"
+        case .frozen:    return "🧊"
+        case .beverages: return "🥤"
+        case .snacks:    return "🍿"
+        case .other:     return "🍽️"
+        }
+    }
+
     var color: String {
         switch self {
         case .produce:    return "green"
@@ -48,6 +63,7 @@ enum FoodCategory: String, CaseIterable, Codable {
 final class FoodModel {
     var id: UUID = UUID()
     var name: String = ""
+    var emoji: String = ""
     var quantity: Decimal = 0.0
     var currentQuantity: Decimal = 0.0
     var unit: FoodUnit = FoodUnit.gram
@@ -101,6 +117,7 @@ final class FoodModel {
 
     init(
         name: String,
+        emoji: String = "",
         quantity: Decimal = 0.0,
         currentQuantity: Decimal = 0.0,
         unit: FoodUnit = .gram,
@@ -110,6 +127,7 @@ final class FoodModel {
     ) {
         self.id = UUID()
         self.name = name
+        self.emoji = emoji
         self.quantity = quantity
         self.currentQuantity = currentQuantity
         self.unit = unit

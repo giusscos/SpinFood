@@ -202,17 +202,16 @@ struct RecipeDetailsView: View {
                     }
                 }
 
-                if #available(iOS 26, *) {
-                    ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if #available(iOS 26, *) {
                         Button(role: .destructive) {
                             showDeleteConfirmation = true
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
                         .tint(.red)
-                    }
-                } else {
-                    ToolbarItem(placement: .topBarTrailing) {
+                        .buttonStyle(.glassProminent)
+                    } else {
                         Button(role: .destructive) {
                             showDeleteConfirmation = true
                         } label: {

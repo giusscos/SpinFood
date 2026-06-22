@@ -18,7 +18,11 @@ final class Store {
     var purchasedSubscriptions: [Product] = []
     private var subscriptionGroupStatus: RenewalState?
     var isLoading: Bool = true
-    
+
+    var hasActiveSubscription: Bool {
+        !purchasedSubscriptions.isEmpty || !purchasedProducts.isEmpty
+    }
+
 //    let productIds: [String] = ["f_099_1m_3d", "f_999_1y", "f_3999_1y_f", "f_399_1m_f"] // test
 //    let groupId: String = "FE73F688" // test
 //

@@ -2,6 +2,10 @@ import SwiftUI
 import SwiftData
 import StoreKit
 
+enum AppTab: Hashable {
+    case recipes, inventory, search
+}
+
 struct ContentView: View {
     @Environment(\.requestReview) var requestReview
 
@@ -9,12 +13,9 @@ struct ContentView: View {
 
     @State var store = Store()
     @State var isPresentingPaywall: Bool = false
+    @State private var navigator = AppNavigator()
 
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
-
-    var hasActiveSubscription: Bool {
-        !store.purchasedSubscriptions.isEmpty || !store.purchasedProducts.isEmpty
-    }
 
     var body: some View {
         if !onboardingCompleted {
@@ -22,39 +23,36 @@ struct ContentView: View {
         } else if store.isLoading {
             ProgressView()
         } else {
-            mainTabs
+            mainTabView
         }
     }
 
-    private var mainTabs: some View {
-        TabView {
-            Tab("Summary", systemImage: "sparkles.rectangle.stack.fill") {
-                NavigationStack {
-                    SummaryView()
-                }
+    private var mainTabView: some View {
+        TabView(selection: Binding(
+            get: { navigator.selectedTab },
+            set: { navigator.selectedTab = $0 }
+        )) {
+            Tab("Recipes", systemImage: "book.fill", value: AppTab.recipes) {
+                BookContainer()
             }
 
-            Tab("Recipes", systemImage: "fork.knife") {
-                NavigationStack {
-                    RecipeView()
-                }
-            }
-
-            Tab("Shopping", systemImage: "cart.fill") {
-                ShoppingListView()
-            }
-
-            Tab("Pantry", systemImage: "carrot.fill") {
+            Tab("Inventory", systemImage: "cabinet.fill", value: AppTab.inventory) {
                 NavigationStack {
                     FoodView()
                 }
             }
+
+            Tab(value: AppTab.search, role: .search) {
+                BookSearchView()
+            }
         }
+        .environment(store)
+        .environment(navigator)
         .onAppear {
-            if recipes.count == 2 && !hasActiveSubscription {
+            if recipes.count >= 3 && !store.hasActiveSubscription {
                 isPresentingPaywall = true
             }
-            if recipes.count > 2 {
+            if recipes.count >= 5 && store.hasActiveSubscription {
                 requestReview()
             }
         }

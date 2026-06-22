@@ -67,13 +67,17 @@ struct RecipeView: View {
     }
 
     @Environment(\.modelContext) var modelContext
-        
+    @Environment(Store.self) var store
+
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
-    
+
     @State private var activeRecipeSheet: ActiveRecipeSheet?
     @State private var sortOption: RecipeSortOption = .nameAsc
     @State private var filterOption: RecipeFilterOption = .all
+    @State private var showPaywall = false
+
+    static let freeRecipeLimit = 3
     
     var filteredRecipes: [RecipeModel] {
         var result = recipes
@@ -155,6 +159,35 @@ struct RecipeView: View {
                         }
                     }
                 } else {
+                    if !store.hasActiveSubscription {
+                        Section {
+                            Button {
+                                showPaywall = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: recipes.count >= Self.freeRecipeLimit ? "lock.fill" : "sparkle")
+                                        .foregroundStyle(recipes.count >= Self.freeRecipeLimit ? .orange : .secondary)
+                                    if recipes.count >= Self.freeRecipeLimit {
+                                        Text("Upgrade to add unlimited recipes")
+                                            .font(.system(.subheadline, design: .rounded).weight(.medium))
+                                            .foregroundStyle(.orange)
+                                    } else {
+                                        Text("\(Self.freeRecipeLimit - recipes.count) free recipe\(Self.freeRecipeLimit - recipes.count == 1 ? "" : "s") remaining")
+                                            .font(.system(.subheadline, design: .rounded))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .padding(.vertical, 2)
+                            }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+
                     ForEach(filteredRecipes) { recipe in
                         RecipeRowView(recipe: recipe, activeRecipeSheet: $activeRecipeSheet)
                             .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -184,7 +217,11 @@ struct RecipeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    activeRecipeSheet = .createRecipe
+                    if !store.hasActiveSubscription && recipes.count >= Self.freeRecipeLimit {
+                        showPaywall = true
+                    } else {
+                        activeRecipeSheet = .createRecipe
+                    }
                 } label: {
                     Label("Add", systemImage: "plus")
                 }
@@ -256,6 +293,9 @@ struct RecipeView: View {
                     EditFoodView()
             }
         })
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+        }
     }
 }
 

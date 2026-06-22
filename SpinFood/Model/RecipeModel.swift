@@ -11,6 +11,7 @@ final class RecipeModel {
     var servings: Int = 2
     var createdAt: Date = Date.now
     var rating: Int = 0
+    var order: Int = 0
     var cookedAt: [Date] = []
 
     @Relationship var ingredients: [RecipeFoodModel]? = []

@@ -13,16 +13,13 @@ private struct IngredientCardView: View {
 
     var body: some View {
         if let ingredient = value.ingredient {
+            let displayEmoji = ingredient.emoji.isEmpty ? ingredient.category.defaultEmoji : ingredient.emoji
             VStack(spacing: 6) {
-                ZStack {
-                    Circle()
-                        .fill(isMissing ? .red.opacity(0.15) : categoryColor(ingredient.category).opacity(0.15))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: ingredient.category.icon)
-                        .font(.body)
-                        .foregroundStyle(isMissing ? .red : categoryColor(ingredient.category))
-                }
+                Text(displayEmoji)
+                    .font(.system(size: 28))
+                    .frame(width: 44, height: 44)
+                    .background(isMissing ? .red.opacity(0.15) : categoryColor(ingredient.category).opacity(0.15))
+                    .clipShape(Circle())
 
                 Text(ingredient.name)
                     .font(.caption.weight(.medium))
@@ -34,7 +31,7 @@ private struct IngredientCardView: View {
                     .font(.caption2)
                     .foregroundStyle(isMissing ? .red.opacity(0.8) : .secondary)
             }
-            .frame(width: 88, height: 110)
+            .frame(maxWidth: .infinity)
             .padding(8)
             .background(.regularMaterial, in: .rect(cornerRadius: 12))
             .overlay(
@@ -64,7 +61,7 @@ struct RecipeDetailsIngredientView: View {
     var recipe: RecipeModel
     var missingIngredients: [RecipeFoodModel]
 
-    private let rows = Array(repeating: GridItem(.fixed(140), spacing: 10), count: 3)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
 
     var body: some View {
         if let ingredients = recipe.ingredients, !ingredients.isEmpty {
@@ -85,16 +82,13 @@ struct RecipeDetailsIngredientView: View {
                 }
                 .padding(.horizontal)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHGrid(rows: Array(repeating: GridItem(.fixed(140), spacing: 10), count: min(3, ingredients.count)), spacing: 10) {
-                        ForEach(ingredients) { value in
-                            let isMissing = missingIngredients.contains(where: { $0.id == value.id })
-                            IngredientCardView(value: value, isMissing: isMissing)
-                        }
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(ingredients.prefix(9)) { value in
+                        let isMissing = missingIngredients.contains(where: { $0.id == value.id })
+                        IngredientCardView(value: value, isMissing: isMissing)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 4)
                 }
+                .padding(.horizontal)
             }
             .padding(.vertical)
         }

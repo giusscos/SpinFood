@@ -8,28 +8,55 @@ struct OnboardingView: View {
     @State private var step: Int = 0
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color(.systemGroupedBackground).ignoresSafeArea()
 
-            switch step {
-            case 0:
-                OnboardingWelcomeView(onNext: advance)
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-            case 1:
-                OnboardingAddFoodView(onNext: advance, onSkip: completeOnboarding)
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-            case 2:
-                OnboardingAddRecipeView(onNext: completeOnboarding, onSkip: completeOnboarding)
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-            default:
-                EmptyView()
+            VStack(spacing: 0) {
+                stepIndicator
+                    .padding(.top, 20)
+                    .padding(.bottom, 8)
+
+                ZStack {
+                    switch step {
+                    case 0:
+                        OnboardingWelcomeView(onNext: advance)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
+                    case 1:
+                        OnboardingAddFoodView(onNext: advance, onSkip: completeOnboarding)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
+                    case 2:
+                        OnboardingAddRecipeView(onNext: completeOnboarding, onSkip: completeOnboarding)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
+                    default:
+                        EmptyView()
+                    }
+                }
             }
         }
         .animation(.easeInOut(duration: 0.35), value: step)
     }
 
-    private func advance() { step += 1 }
+    private var stepIndicator: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<3) { i in
+                Capsule()
+                    .fill(step == i ? Color.accentColor : Color.secondary.opacity(0.25))
+                    .frame(width: step == i ? 20 : 7, height: 7)
+                    .animation(.spring(duration: 0.4), value: step)
+            }
+        }
+    }
 
+    private func advance() { step += 1 }
     private func completeOnboarding() { onboardingCompleted = true }
 }
 
@@ -43,45 +70,53 @@ struct OnboardingWelcomeView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            VStack(spacing: 24) {
+            VStack(spacing: 28) {
                 ZStack {
                     Circle()
-                        .fill(Color.accentColor.opacity(0.15))
-                        .frame(width: 120, height: 120)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .frame(width: 130, height: 130)
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.07))
+                        .frame(width: 160, height: 160)
                     Image(systemName: "fork.knife.circle.fill")
-                        .font(.system(size: 64))
+                        .font(.system(size: 70))
                         .foregroundStyle(Color.accentColor)
                 }
-                .scaleEffect(appeared ? 1 : 0.5)
+                .scaleEffect(appeared ? 1 : 0.6)
                 .opacity(appeared ? 1 : 0)
 
                 VStack(spacing: 12) {
                     Text("Welcome to SpinFood")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
 
-                    Text("Track what's in your pantry, plan your meals, and never buy ingredients you already have.")
+                    Text("Track your pantry, plan your meals,\nand reduce food waste every day.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 8)
+                        .lineSpacing(3)
                 }
                 .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 20)
+                .offset(y: appeared ? 0 : 16)
             }
             .padding(.horizontal, 32)
 
             Spacer()
 
-            VStack(spacing: 16) {
-                OnboardingFeatureRow(icon: "leaf.fill", color: .green, title: "Reduce food waste", description: "Know what you have before buying more")
-                OnboardingFeatureRow(icon: "cart.fill", color: .blue, title: "Shop smarter", description: "Generate shopping lists from your recipes")
-                OnboardingFeatureRow(icon: "chart.bar.fill", color: .orange, title: "Track habits", description: "See what you consume and when")
+            VStack(spacing: 14) {
+                OnboardingFeatureRow(icon: "leaf.fill", color: .green,
+                    title: "Reduce food waste",
+                    description: "Know what you have before buying more")
+                OnboardingFeatureRow(icon: "cart.fill", color: .blue,
+                    title: "Shop smarter",
+                    description: "Generate shopping lists from your recipes")
+                OnboardingFeatureRow(icon: "chart.bar.fill", color: .orange,
+                    title: "Track habits",
+                    description: "See what you consume and when")
             }
             .padding(.horizontal, 24)
             .opacity(appeared ? 1 : 0)
-            .offset(y: appeared ? 0 : 30)
+            .offset(y: appeared ? 0 : 24)
 
             Spacer()
 
@@ -113,20 +148,19 @@ struct OnboardingFeatureRow: View {
     let description: String
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 11)
                     .fill(color.opacity(0.15))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 44, height: 44)
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 19))
                     .foregroundStyle(color)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(.subheadline.weight(.semibold))
                 Text(description)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -158,88 +192,99 @@ struct OnboardingAddFoodView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 28) {
                 VStack(spacing: 12) {
                     ZStack {
                         Circle()
-                            .fill(Color.green.opacity(0.15))
-                            .frame(width: 80, height: 80)
+                            .fill(Color.green.opacity(0.12))
+                            .frame(width: 90, height: 90)
                         Image(systemName: "carrot.fill")
-                            .font(.system(size: 40))
+                            .font(.system(size: 42))
                             .foregroundStyle(.green)
                     }
+                    .padding(.top, 8)
 
                     Text("Add your first food")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(.title2.bold())
 
-                    Text("Tell SpinFood what's in your pantry. You can add more later.")
+                    Text("Tell SpinFood what's in your pantry.\nYou can always add more later.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineSpacing(2)
                         .padding(.horizontal)
                 }
-                .padding(.top, 32)
 
-                GroupBox {
-                    VStack(spacing: 16) {
-                        TextField("e.g. Pasta, Tomatoes, Milk…", text: $name)
-                            .font(.body)
+                VStack(spacing: 0) {
+                    HStack {
+                        Image(systemName: "tag")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 20)
+                        TextField("Name (e.g. Pasta, Tomatoes…)", text: $name)
                             .focused($focusedField)
                             .autocorrectionDisabled()
-                            .submitLabel(.done)
+                            .submitLabel(.next)
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
 
-                        Divider()
+                    Divider().padding(.leading, 52)
 
+                    HStack {
+                        Image(systemName: "square.grid.2x2")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 20)
                         Picker("Category", selection: $category) {
                             ForEach(FoodCategory.allCases, id: \.self) { cat in
                                 Label(cat.rawValue, systemImage: cat.icon).tag(cat)
                             }
                         }
-
-                        Divider()
-
-                        HStack {
-                            Text("Quantity")
-                            Spacer()
-                            TextField("0", value: $quantity, format: .number)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 80)
-                            Picker("", selection: $unit) {
-                                ForEach(FoodUnit.allCases, id: \.self) { u in
-                                    Text(u.abbreviation).tag(u)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .labelsHidden()
-                        }
                     }
-                    .padding(4)
-                } label: {
-                    Text("Food details")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
+
+                    Divider().padding(.leading, 52)
+
+                    HStack {
+                        Image(systemName: "scalemass")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 20)
+                        Text("Quantity")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        TextField("0", value: $quantity, format: .number)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 70)
+                        Picker("", selection: $unit) {
+                            ForEach(FoodUnit.allCases, id: \.self) { u in
+                                Text(u.abbreviation).tag(u)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground))
                 }
+                .clipShape(RoundedRectangle(cornerRadius: 14))
                 .padding(.horizontal)
 
                 if isSaved {
-                    Label("Food saved!", systemImage: "checkmark.circle.fill")
+                    Label("Saved to your pantry!", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.subheadline.weight(.medium))
                         .transition(.scale.combined(with: .opacity))
                 }
 
-                VStack(spacing: 12) {
+                VStack(spacing: 10) {
                     Button(action: saveAndContinue) {
                         Text(isSaved ? "Continue" : "Save & Continue")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(canSave || isSaved ? Color.accentColor : Color.secondary.opacity(0.3))
+                            .background(canSave || isSaved ? Color.accentColor : Color.secondary.opacity(0.25))
                             .foregroundStyle(canSave || isSaved ? .white : .secondary)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
@@ -260,10 +305,10 @@ struct OnboardingAddFoodView: View {
     private func saveAndContinue() {
         if isSaved { onNext(); return }
 
-        let trimmedName = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmedName.isEmpty, let qty = quantity, qty > 0 else { return }
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let qty = quantity, qty > 0 else { return }
 
-        let food = FoodModel(name: trimmedName, quantity: qty, currentQuantity: qty, unit: unit, category: category)
+        let food = FoodModel(name: trimmed, quantity: qty, currentQuantity: qty, unit: unit, category: category)
         modelContext.insert(food)
         isSaved = true
         focusedField = false
@@ -284,59 +329,58 @@ struct OnboardingAddRecipeView: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 28) {
                 VStack(spacing: 12) {
                     ZStack {
                         Circle()
-                            .fill(Color.orange.opacity(0.15))
-                            .frame(width: 80, height: 80)
+                            .fill(Color.orange.opacity(0.12))
+                            .frame(width: 90, height: 90)
                         Image(systemName: "fork.knife")
-                            .font(.system(size: 40))
+                            .font(.system(size: 42))
                             .foregroundStyle(.orange)
                     }
+                    .padding(.top, 8)
 
                     Text("Name your first recipe")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(.title2.bold())
 
-                    Text("Name a dish you cook regularly. Add ingredients and steps later from the app.")
+                    Text("What dish do you cook most often?\nYou can add ingredients and steps later.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineSpacing(2)
                         .padding(.horizontal)
                 }
-                .padding(.top, 32)
 
-                GroupBox {
+                HStack {
+                    Image(systemName: "pencil")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
                     TextField("e.g. Spaghetti Bolognese…", text: $name)
                         .focused($focused)
                         .autocorrectionDisabled()
                         .submitLabel(.done)
-                        .padding(4)
-                } label: {
-                    Text("Recipe name")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
                 }
+                .padding()
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
                 .padding(.horizontal)
 
                 if isSaved {
-                    Label("Recipe saved!", systemImage: "checkmark.circle.fill")
+                    Label("Recipe added to your book!", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.subheadline.weight(.medium))
                         .transition(.scale.combined(with: .opacity))
                 }
 
-                VStack(spacing: 12) {
+                VStack(spacing: 10) {
                     Button(action: saveAndContinue) {
                         Text(isSaved ? "Finish Setup" : "Save & Finish")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(!name.trimmingCharacters(in: .whitespaces).isEmpty || isSaved ? Color.accentColor : Color.secondary.opacity(0.3))
+                            .background(!name.trimmingCharacters(in: .whitespaces).isEmpty || isSaved ? Color.accentColor : Color.secondary.opacity(0.25))
                             .foregroundStyle(!name.trimmingCharacters(in: .whitespaces).isEmpty || isSaved ? .white : .secondary)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
@@ -357,10 +401,10 @@ struct OnboardingAddRecipeView: View {
     private func saveAndContinue() {
         if isSaved { onNext(); return }
 
-        let trimmedName = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmedName.isEmpty else { return }
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
 
-        let recipe = RecipeModel(name: trimmedName)
+        let recipe = RecipeModel(name: trimmed)
         modelContext.insert(recipe)
         isSaved = true
         focused = false

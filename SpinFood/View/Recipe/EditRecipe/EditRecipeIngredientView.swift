@@ -42,10 +42,9 @@ struct EditRecipeIngredientView: View {
                             if let ingredient = recipeIngredient.ingredient {
                                 VStack(spacing: 0) {
                                     HStack(alignment: .center, spacing: 12) {
-                                        Image(systemName: ingredient.category.icon)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                            .frame(width: 24)
+                                        Text(ingredient.emoji.isEmpty ? ingredient.category.defaultEmoji : ingredient.emoji)
+                                            .font(.system(size: 20))
+                                            .frame(width: 28)
 
                                         Text(ingredient.name)
                                             .font(.body)
@@ -95,7 +94,7 @@ struct EditRecipeIngredientView: View {
                     HStack(spacing: 8) {
                         Picker("Select Ingredient", selection: $selectedFood) {
                             ForEach(foods) { value in
-                                Label(value.name, systemImage: value.category.icon)
+                                Text("\(value.emoji.isEmpty ? value.category.defaultEmoji : value.emoji) \(value.name)")
                                     .tag(value as FoodModel?)
                             }
                         }

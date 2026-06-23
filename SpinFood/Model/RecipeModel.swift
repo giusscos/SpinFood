@@ -60,11 +60,17 @@ class StepRecipe {
     var text: String = ""
     @Attribute(.externalStorage) var image: Data?
     var createdAt: Date = Date.now
+    var order: Int = 0
 
+    @Relationship(deleteRule: .cascade) var blocks: [StepBlock]? = []
     @Relationship var recipes: RecipeModel? = nil
 
     init(text: String, image: Data? = nil) {
         self.text = text
         self.image = image
+    }
+
+    var sortedBlocks: [StepBlock] {
+        (blocks ?? []).sorted { $0.order < $1.order }
     }
 }

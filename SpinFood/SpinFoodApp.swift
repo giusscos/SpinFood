@@ -7,6 +7,7 @@ struct SpinFoodApp: App {
         let schema = Schema([
             RecipeModel.self,
             StepRecipe.self,
+            StepBlock.self,
             FoodModel.self,
             RecipeFoodModel.self,
             FoodConsumptionModel.self,

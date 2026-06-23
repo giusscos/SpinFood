@@ -7,58 +7,43 @@
 
 import SwiftUI
 
-struct StepsSheetView: View {
-    @Environment(\.dismiss) var dismiss
+// MARK: - Shared step preview card (used in details + edit views)
 
-    var steps: [StepRecipe]
+struct StepPreviewCard: View {
+    var step: StepRecipe
+    var index: Int
+
+    private var previewText: String {
+        if let block = step.sortedBlocks.first(where: { $0.type == .text }) {
+            return block.textContent
+        }
+        return step.text
+    }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                        HStack(alignment: .top, spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(.accent)
-                                    .frame(width: 32, height: 32)
-
-                                Text("\(index + 1)")
-                                    .font(.callout.weight(.bold))
-                                    .foregroundStyle(.white)
-                            }
-                            .padding(.top, 2)
-
-                            VStack(alignment: .leading, spacing: 8) {
-                                if let imageData = step.image, let uiImage = UIImage(data: imageData) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 300 : 180)
-                                        .clipShape(.rect(cornerRadius: 12))
-                                }
-
-                                Text(step.text)
-                                    .font(.body)
-                                    .foregroundStyle(.primary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                }
-                .padding()
-            }
-            .navigationTitle("Method")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Step \(index)")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(previewText.isEmpty ? "Empty" : previewText)
+                .font(.caption)
+                .lineLimit(2)
+                .foregroundStyle(previewText.isEmpty ? .tertiary : .primary)
+            let count = step.sortedBlocks.count
+            if count > 0 {
+                Label("\(count) block\(count == 1 ? "" : "s")", systemImage: "square.stack")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .labelStyle(.titleAndIcon)
             }
         }
+        .frame(width: 110, alignment: .leading)
+        .padding(10)
+        .background(Color.secondary.opacity(0.07), in: .rect(cornerRadius: 10))
     }
 }
+
+// MARK: - Steps section in recipe details
 
 struct RecipeDetailsStepView: View {
     var recipe: RecipeModel
@@ -66,13 +51,12 @@ struct RecipeDetailsStepView: View {
 
     var body: some View {
         if let steps = recipe.steps, !steps.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("Method")
-                        .font(.title3.weight(.semibold))
-
+                    Label("Method", systemImage: "checklist")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
                     Spacer()
-
                     Text("\(steps.count) step\(steps.count == 1 ? "" : "s")")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -81,52 +65,34 @@ struct RecipeDetailsStepView: View {
                         .background(.secondary.opacity(0.12))
                         .clipShape(.capsule)
                 }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
 
-                // First step preview
-                if let firstStep = steps.first {
-                    HStack(alignment: .top, spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(.accent)
-                                .frame(width: 32, height: 32)
-
-                            Text("1")
-                                .font(.callout.weight(.bold))
-                                .foregroundStyle(.white)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                            StepPreviewCard(step: step, index: index + 1)
                         }
-                        .padding(.top, 2)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            if let imageData = firstStep.image, let uiImage = UIImage(data: imageData) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 220 : 140)
-                                    .clipShape(.rect(cornerRadius: 12))
-                            }
-
-                            Text(firstStep.text)
-                                .font(.body)
-                                .foregroundStyle(.primary)
-                                .lineLimit(3)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
                 }
+                .padding(.bottom, 10)
 
-                if steps.count > 1 {
-                    Button {
-                        activeRecipeDetailSheet = .steps(steps)
-                    } label: {
-                        Label("View all \(steps.count) steps", systemImage: "list.number")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .tint(.accent)
+                Button {
+                    activeRecipeDetailSheet = .steps(steps)
+                } label: {
+                    Label("View Steps", systemImage: "book.pages")
+                        .font(.subheadline.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(.secondary.opacity(0.08), in: .rect(cornerRadius: 10))
                 }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.primary)
+                .padding(.horizontal)
+                .padding(.bottom, 12)
             }
-            .padding()
         }
     }
 }

@@ -50,17 +50,14 @@ struct EditRecipeView: View {
     @State private var imageData: Data?
 
     @State private var steps: [StepRecipe] = []
-    @State private var newStep: StepRecipe = StepRecipe(text: "")
-    @State private var stepImageItem: PhotosPickerItem?
 
     @State private var showPhotoPicker: Bool = false
     @State private var servings: Int = 2
 
     @State private var showIngredientsSheet: Bool = false
-    @State private var showStepsSheet: Bool = false
+    @State private var showStepsBook: Bool = false
 
     @State private var editingIngredientIndex: Int? = nil
-    @State private var editingStep: StepRecipe? = nil
 
     private var editingIngredient: RecipeFoodModel? {
         guard let idx = editingIngredientIndex, idx < ingredients.count else { return nil }
@@ -179,48 +176,17 @@ struct EditRecipeView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showStepsSheet) {
-                NavigationStack {
-                    ScrollView {
-                        EditStepRecipeView(
-                            newStep: $newStep,
-                            stepImageItem: $stepImageItem
-                        )
-                    }
-                    .background(paperBackground.ignoresSafeArea())
-                    .navigationTitle(editingStep != nil ? "Edit Step" : "Add Step")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button("Cancel") {
-                                editingStep = nil
-                                newStep.text = ""
-                                newStep.image = nil
-                                stepImageItem = nil
-                                showStepsSheet = false
-                            }
-                        }
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button("Done") {
-                                if !newStep.text.isEmpty {
-                                    if let editing = editingStep,
-                                       let index = steps.firstIndex(where: { $0.id == editing.id }) {
-                                        steps[index].text = newStep.text
-                                        steps[index].image = newStep.image
-                                    } else {
-                                        steps.append(StepRecipe(text: newStep.text, image: newStep.image))
-                                    }
-                                    editingStep = nil
-                                    newStep.text = ""
-                                    newStep.image = nil
-                                    stepImageItem = nil
-                                }
-                                showStepsSheet = false
-                            }
-                            .fontWeight(.semibold)
-                        }
-                    }
-                }
+            .fullScreenCover(isPresented: $showStepsBook) {
+                StepBookCurlView(
+                    steps: steps,
+                    ingredients: ingredients,
+                    mode: .edit,
+                    onDismiss: { showStepsBook = false },
+                    onAddStep: { steps.append(StepRecipe(text: "")) },
+                    onDeleteStep: { step in steps.removeAll { $0.id == step.id } },
+                    onMoveSteps: { indexSet, dest in steps.move(fromOffsets: indexSet, toOffset: dest) }
+                )
+                .ignoresSafeArea()
             }
             .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             .toolbar {
@@ -388,10 +354,9 @@ struct EditRecipeView: View {
                         .clipShape(.capsule)
                 }
                 Button {
-                    editingStep = nil
-                    showStepsSheet = true
+                    showStepsBook = true
                 } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(systemName: steps.isEmpty ? "plus.circle.fill" : "book.pages")
                         .font(.title3)
                 }
                 .padding(.leading, 6)
@@ -400,41 +365,30 @@ struct EditRecipeView: View {
             .padding(.vertical, 12)
 
             if !steps.isEmpty {
-                VStack(spacing: 0) {
-                    ForEach(steps, id: \.id) { step in
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack {
-                                Spacer()
-                                Menu {
-                                    Button("Edit", systemImage: "pencil") {
-                                        editingStep = step
-                                        newStep.text = step.text
-                                        newStep.image = step.image
-                                        stepImageItem = nil
-                                        showStepsSheet = true
-                                    }
-                                    Button("Delete", systemImage: "trash", role: .destructive) {
-                                        withAnimation { steps.removeAll { $0.id == step.id } }
-                                    }
-                                } label: {
-                                    Image(systemName: "ellipsis")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                        .padding(8)
-                                }
-                            }
-                            .padding(.horizontal)
-
-                            StepEditCard(step: step, steps: $steps)
-                                .padding(.horizontal)
-                                .padding(.bottom, 16)
-                        }
-
-                        if step.id != steps.last?.id {
-                            Divider().padding(.horizontal)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                            StepPreviewCard(step: step, index: index + 1)
                         }
                     }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
                 }
+                .padding(.bottom, 10)
+
+                Button {
+                    showStepsBook = true
+                } label: {
+                    Label("Edit Steps", systemImage: "book.pages")
+                        .font(.subheadline.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(.secondary.opacity(0.08), in: .rect(cornerRadius: 10))
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.primary)
+                .padding(.horizontal)
+                .padding(.bottom, 12)
             }
         }
     }
@@ -472,6 +426,7 @@ struct EditRecipeView: View {
     }
 #endif
 }
+
 
 #Preview {
     EditRecipeView()

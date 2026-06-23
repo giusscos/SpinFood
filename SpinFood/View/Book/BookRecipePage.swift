@@ -32,10 +32,6 @@ struct BookRecipePage: View {
                             ingredientsSection(ingredients)
                             divider
                         }
-                        if let steps = recipe.steps, !steps.isEmpty {
-                            stepsSection(steps)
-                            divider
-                        }
                         cookSection
                         Spacer().frame(height: 48)
                     }
@@ -100,7 +96,13 @@ struct BookRecipePage: View {
                 case .cookNow(let steps):
                     CookRecipeStepByStepView(recipe: recipe, steps: steps)
                 case .steps(let steps):
-                    StepsSheetView(steps: steps)
+                    StepBookCurlView(
+                        steps: steps,
+                        ingredients: recipe.ingredients ?? [],
+                        mode: .view,
+                        onDismiss: { activeSheet = nil }
+                    )
+                    .ignoresSafeArea()
                 }
             }
         }
@@ -219,43 +221,6 @@ struct BookRecipePage: View {
         .padding(.horizontal, 32)
     }
 
-    // MARK: - Steps
-
-    private func stepsSection(_ steps: [StepRecipe]) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Steps")
-                .font(.system(.title3, design: .serif).weight(.semibold))
-
-            ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                HStack(alignment: .top, spacing: 14) {
-                    Text("\(index + 1)")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 24, height: 24)
-                        .background(Color.accentColor, in: Circle())
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(step.text)
-                            .font(.system(.body, design: .serif))
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        if let data = step.image, let uiImage = UIImage(data: data) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity, maxHeight: 140)
-                                .clipped()
-                                .padding(4)
-                                .background(.white)
-                                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
-                        }
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 32)
-    }
-
     // MARK: - Cook
 
     private var cookSection: some View {
@@ -279,6 +244,15 @@ struct BookRecipePage: View {
                                 in: RoundedRectangle(cornerRadius: 10)
                             )
                             .foregroundStyle(recipe.canCook ? .white : .secondary)
+                    }
+
+                    Button { activeSheet = .steps(steps) } label: {
+                        Label("View Steps", systemImage: "book.pages")
+                            .font(.system(.callout, design: .serif).weight(.medium))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                            .foregroundStyle(.primary)
                     }
                 }
 

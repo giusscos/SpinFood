@@ -147,8 +147,6 @@ struct RecipeDetailsView: View {
 
                     RecipeDetailsIngredientView(recipe: recipe, missingIngredients: recipe.missingIngredients)
 
-                    RecipeDetailsStepView(recipe: recipe, activeRecipeDetailSheet: $activeRecipeDetailSheet)
-
                     RecipeDetailsCookButtonView(recipe: recipe, hasAllIngredients: hasAllIngredients, activeRecipeDetailSheet: $activeRecipeDetailSheet)
                 }
             }
@@ -160,7 +158,13 @@ struct RecipeDetailsView: View {
                     case .cookNow(let steps):
                         CookRecipeStepByStepView(recipe: recipe, steps: steps)
                     case .steps(let steps):
-                        StepsSheetView(steps: steps)
+                        StepBookCurlView(
+                            steps: steps,
+                            ingredients: recipe.ingredients ?? [],
+                            mode: .view,
+                            onDismiss: { activeRecipeDetailSheet = nil }
+                        )
+                        .ignoresSafeArea()
                 }
             }
             .navigationBarBackButtonHidden()

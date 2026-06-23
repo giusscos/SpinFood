@@ -5,6 +5,7 @@ struct BookIndexPage: View {
     var onSelectRecipe: (RecipeModel) -> Void
     var onAdd: () -> Void
     var onSettings: () -> Void
+    var onEdit: (RecipeModel) -> Void = { _ in }
     var onDelete: (RecipeModel) -> Void = { _ in }
     var onMove: (IndexSet, Int) -> Void = { _, _ in }
 
@@ -104,6 +105,21 @@ struct BookIndexPage: View {
                 .listRowInsets(EdgeInsets())
                 .onTapGesture {
                     if !isEditing { onSelectRecipe(recipe) }
+                }
+                .contextMenu {
+                    Button {
+                        onEdit(recipe)
+                    } label: {
+                        Label("Edit Recipe", systemImage: "pencil")
+                    }
+                    Divider()
+                    Button(role: .destructive) {
+                        withAnimation {
+                            onDelete(recipe)
+                        }
+                    } label: {
+                        Label("Delete Recipe", systemImage: "trash")
+                    }
                 }
             }
             .onDelete { indexSet in

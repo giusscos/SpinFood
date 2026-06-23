@@ -9,140 +9,207 @@ import SwiftUI
 
 struct EditRecipeIngredientView: View {
     var foods: [FoodModel]
-
     @Binding var ingredients: [RecipeFoodModel]
-    @Binding var selectedFood: FoodModel?
-    @Binding var quantityNeeded: Decimal?
+    var editingIngredient: RecipeFoodModel? = nil
+    var onEditDone: (() -> Void)? = nil
+
+    @State private var selectedFood: FoodModel?
+    @State private var quantity: Decimal = 1
 
     var body: some View {
         if !foods.isEmpty {
             VStack(alignment: .leading, spacing: 16) {
-                // Section header
-                HStack {
-                    Text("Ingredients")
-                        .font(.title3.weight(.semibold))
-
-                    Spacer()
-
-                    if !ingredients.isEmpty {
-                        Text("\(ingredients.count) item\(ingredients.count == 1 ? "" : "s")")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(.secondary.opacity(0.12))
-                            .clipShape(.capsule)
-                    }
-                }
-
-                // Ingredient list
-                if !ingredients.isEmpty {
-                    VStack(spacing: 0) {
-                        ForEach(Array(ingredients.enumerated()), id: \.element.id) { index, recipeIngredient in
-                            if let ingredient = recipeIngredient.ingredient {
-                                VStack(spacing: 0) {
-                                    HStack(alignment: .center, spacing: 12) {
-                                        Text(ingredient.emoji.isEmpty ? ingredient.category.defaultEmoji : ingredient.emoji)
-                                            .font(.system(size: 20))
-                                            .frame(width: 28)
-
-                                        Text(ingredient.name)
-                                            .font(.body)
-                                            .lineLimit(1)
-
-                                        Spacer()
-
-                                        Text(recipeIngredient.quantityNeeded, format: .number)
-                                            .font(.body.weight(.semibold))
-                                        +
-                                        Text(" \(ingredient.unit.abbreviation)")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-
-                                        Button(role: .destructive) {
-                                            withAnimation {
-                                                ingredients.removeAll { $0.id == recipeIngredient.id }
-                                            }
-                                        } label: {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .symbolRenderingMode(.palette)
-                                                .imageScale(.medium)
-                                        }
-                                        .foregroundStyle(.white, .red)
-                                        .buttonStyle(.borderless)
-                                    }
-                                    .padding(.vertical, 10)
-
-                                    if index < ingredients.count - 1 {
-                                        Divider()
-                                            .padding(.leading, 36)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .background(.regularMaterial, in: .rect(cornerRadius: 12))
-                }
-
-                // Add ingredient row
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Add ingredient")
+                    Text(editingIngredient != nil ? "Edit Ingredient" : "Add Ingredient")
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
 
-                    HStack(spacing: 8) {
-                        Picker("Select Ingredient", selection: $selectedFood) {
-                            ForEach(foods) { value in
-                                Text("\(value.emoji.isEmpty ? value.category.defaultEmoji : value.emoji) \(value.name)")
-                                    .tag(value as FoodModel?)
-                            }
-                        }
-                        .tint(.primary)
-                        .labelsHidden()
-                        .pickerStyle(.menu)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(.regularMaterial, in: .rect(cornerRadius: 10))
+                    if let food = selectedFood {
+                        foodCard(food: food)
 
-                        if let selectedFood {
-                            HStack(spacing: 4) {
-                                TextField("Qty", value: $quantityNeeded, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .frame(width: 56)
-                                    .multilineTextAlignment(.trailing)
-
-                                Text(selectedFood.unit.abbreviation)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .background(.regularMaterial, in: .rect(cornerRadius: 10))
-                        }
+                        QuantityTickerPicker(value: $quantity, unit: food.unit)
+                            .padding(12)
+                            .background(.regularMaterial, in: .rect(cornerRadius: 12))
                     }
 
                     Button {
-                        guard let food = selectedFood, let qty = quantityNeeded, qty > 0 else { return }
-                        let newIngredient = RecipeFoodModel(ingredient: food, quantityNeeded: qty)
+                        guard let food = selectedFood, quantity > 0 else { return }
                         withAnimation {
-                            ingredients.append(newIngredient)
+                            if let editing = editingIngredient {
+                                editing.ingredient = food
+                                editing.quantityNeeded = quantity
+                                onEditDone?()
+                            } else {
+                                ingredients.append(RecipeFoodModel(ingredient: food, quantityNeeded: quantity))
+                            }
                         }
+                        quantity = 1
                         selectedFood = foods.first
-                        quantityNeeded = nil
                     } label: {
-                        Text("Add")
+                        Text(editingIngredient != nil ? "Update" : "Add")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                     }
                     .tint(.accent)
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.capsule)
-                    .disabled(quantityNeeded == nil || quantityNeeded == 0)
+                    .disabled(selectedFood == nil || quantity <= 0)
                 }
             }
             .padding()
+            .onAppear {
+                if let editing = editingIngredient {
+                    selectedFood = editing.ingredient
+                    quantity = editing.quantityNeeded
+                } else if selectedFood == nil {
+                    selectedFood = foods.first
+                }
+            }
+        }
+    }
+
+    private func foodCard(food: FoodModel) -> some View {
+        Menu {
+            ForEach(foods) { f in
+                Button {
+                    selectedFood = f
+                    quantity = 1
+                } label: {
+                    Text("\(f.emoji.isEmpty ? f.category.defaultEmoji : f.emoji) \(f.name)")
+                }
+            }
+        } label: {
+            HStack(spacing: 14) {
+                Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
+                    .font(.system(size: 36))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(food.name)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text(food.category.rawValue)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .background(.regularMaterial, in: .rect(cornerRadius: 12))
+        }
+    }
+
+}
+
+private struct QuantityTickerPicker: View {
+    @Binding var value: Decimal
+    let unit: FoodUnit
+    var minValue: Decimal = 0
+    var maxValue: Decimal = 9999
+
+    @State private var previousTicks: Int = 0
+    @GestureState private var dragOffset: CGFloat = 0
+
+    private let tickSpacing: CGFloat = 14
+    private let feedback = UISelectionFeedbackGenerator()
+
+    var tickStep: Decimal {
+        switch unit {
+        case .gram, .milliliter, .piece:
+            return 1
+        case .kilogram, .liter:
+            return Decimal(string: "0.1") ?? 1
+        case .tablespoon, .teaspoon:
+            return Decimal(string: "0.5") ?? 1
+        case .cup:
+            return Decimal(string: "0.25") ?? 1
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack(alignment: .lastTextBaseline, spacing: 3) {
+                Text(value, format: .number)
+                    .font(.system(.title2, design: .monospaced).bold())
+                    .contentTransition(.numericText())
+                    .animation(.snappy(duration: 0.1), value: value)
+                Text(unit.abbreviation)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
+            ZStack {
+                GeometryReader { geo in
+                    Canvas { ctx, size in
+                        let centerX = size.width / 2
+                        let halfTicks = Int(size.width / tickSpacing / 2) + 2
+                        let offset = dragOffset.truncatingRemainder(dividingBy: tickSpacing)
+
+                        for i in -halfTicks...halfTicks {
+                            let x = centerX + CGFloat(i) * tickSpacing + offset
+                            let d = abs(x - centerX)
+                            let tickH: CGFloat
+                            if d < tickSpacing * 0.5 {
+                                tickH = 28
+                            } else if d < tickSpacing * 1.5 {
+                                tickH = 18
+                            } else {
+                                tickH = 10
+                            }
+                            var path = Path()
+                            path.move(to: CGPoint(x: x, y: (size.height - tickH) / 2))
+                            path.addLine(to: CGPoint(x: x, y: (size.height + tickH) / 2))
+                            ctx.stroke(
+                                path,
+                                with: .color(.primary.opacity(0.35)),
+                                lineWidth: 1.5
+                            )
+                        }
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
+                }
+
+                Rectangle()
+                    .fill(Color.accentColor)
+                    .frame(width: 2, height: 28)
+            }
+            .frame(height: 40)
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: .black, location: 0.12),
+                        .init(color: .black, location: 0.88),
+                        .init(color: .clear, location: 1)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 1)
+                    .updating($dragOffset) { gesture, state, _ in
+                        state = gesture.translation.width
+                    }
+                    .onChanged { gesture in
+                        let ticks = Int(-gesture.translation.width / tickSpacing)
+                        let delta = ticks - previousTicks
+                        guard delta != 0 else { return }
+                        previousTicks = ticks
+                        let newValue = max(minValue, min(maxValue, value + Decimal(delta) * tickStep))
+                        guard newValue != value else { return }
+                        value = newValue
+                        feedback.selectionChanged()
+                    }
+                    .onEnded { _ in
+                        previousTicks = 0
+                    }
+            )
         }
     }
 }
@@ -150,8 +217,6 @@ struct EditRecipeIngredientView: View {
 #Preview {
     EditRecipeIngredientView(
         foods: [FoodModel(name: "Carrots")],
-        ingredients: .constant([RecipeFoodModel(ingredient: FoodModel(name: "Carrots"), quantityNeeded: 0.0)]),
-        selectedFood: .constant(nil),
-        quantityNeeded: .constant(0.0)
+        ingredients: .constant([])
     )
 }

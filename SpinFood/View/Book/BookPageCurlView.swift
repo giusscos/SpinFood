@@ -148,6 +148,7 @@ final class BookPageViewController: UIPageViewController {
             onSelectRecipe: onSelectRecipe,
             onAdd: onAdd,
             onSettings: onSettings,
+            onEdit: onEdit,
             onDelete: onDelete,
             onMove: onMove
         )))

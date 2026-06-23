@@ -13,7 +13,8 @@ struct CreateStepView: View {
     
     @Binding var newStep: StepRecipe
     @Binding var stepImageItem: PhotosPickerItem?
-    
+    @State private var showCamera = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let imageData = newStep.image, let uiImage = UIImage(data: imageData) {
@@ -42,15 +43,22 @@ struct CreateStepView: View {
                     }
             }
             
-            PhotosPicker(selection: $stepImageItem,
-                         matching: .images,
-                         photoLibrary: .shared()) {
-                Text(stepImageItem != nil ? "Update step photo" : "Add step photo")
+            Menu {
+                PhotosPicker(selection: $stepImageItem, matching: .images, photoLibrary: .shared()) {
+                    Label("Photo Library", systemImage: "photo.on.rectangle")
+                }
+                Button {
+                    showCamera = true
+                } label: {
+                    Label("Take Photo", systemImage: "camera")
+                }
+            } label: {
+                Text(newStep.image != nil ? "Update step photo" : "Add step photo")
                     .font(.headline)
             }
-                         .tint(.accent)
-                         .buttonStyle(.borderedProminent)
-                         .buttonBorderShape(.capsule)
+            .tint(.accent)
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
             
             TextEditor(text: $newStep.text)
                 .textEditorStyle(.plain)
@@ -91,8 +99,13 @@ struct CreateStepView: View {
                 .frame(minHeight: 48, maxHeight: 256)
         }
         .padding()
+        .sheet(isPresented: $showCamera) {
+            CameraImagePicker { data in
+                withAnimation { newStep.image = data }
+            }
+        }
     }
-    
+
     func save() {
         if newStep.text != "" {
             steps.append(StepRecipe(text: newStep.text, image: newStep.image))

@@ -14,7 +14,7 @@ struct EditRecipePhotoView: View {
     @Binding var showPhotoPicker: Bool
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 12) {
             // Photo or placeholder
             Group {
                 if let imageData, let uiImage = UIImage(data: imageData) {
@@ -25,16 +25,20 @@ struct EditRecipePhotoView: View {
                         .clipped()
                 } else {
                     ZStack {
-                        Color.secondary.opacity(0.10)
+                        LinearGradient(
+                            colors: [.orange.opacity(0.7), .red.opacity(0.5)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
 
                         VStack(spacing: 12) {
                             Image(systemName: "camera.fill")
                                 .font(.system(size: 36))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white.opacity(0.8))
 
                             Text("Add Photo")
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
+                                .font(.callout.weight(.medium))
+                                .foregroundStyle(.white.opacity(0.8))
                         }
                     }
                     .frame(width: 260, height: 220)
@@ -45,9 +49,7 @@ struct EditRecipePhotoView: View {
             .background(.white)
             .clipShape(.rect(cornerRadius: 2))
             .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
-            .rotationEffect(.degrees(-1.5))
 
-            // Edit button sits inside the white bottom strip
             if imageData != nil {
                 Menu {
                     Button {
@@ -65,26 +67,24 @@ struct EditRecipePhotoView: View {
                         Label("Remove", systemImage: "xmark")
                     }
                 } label: {
-                    Text("Edit photo")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .background(.black.opacity(0.06), in: .capsule)
+                    Label("Edit photo", systemImage: "pencil")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.accent, in: .capsule)
                 }
-                .padding(.bottom, 14)
             } else {
                 Button {
                     showPhotoPicker = true
                 } label: {
-                    Text("Choose photo")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .background(.black.opacity(0.06), in: .capsule)
+                    Label("Choose photo", systemImage: "camera.fill")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.accent, in: .capsule)
                 }
-                .padding(.bottom, 14)
             }
         }
     }

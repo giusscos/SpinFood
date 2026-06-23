@@ -267,7 +267,7 @@ struct BookRecipePage: View {
                     .frame(maxWidth: .infinity, alignment: .center)
             }
 
-            HStack(spacing: 12) {
+            VStack(spacing: 12) {
                 if let steps = recipe.steps, !steps.isEmpty {
                     Button { activeSheet = .cookNow(steps) } label: {
                         Label("Cook Step by Step", systemImage: "frying.pan")

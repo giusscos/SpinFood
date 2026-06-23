@@ -49,15 +49,23 @@ struct EditRecipeView: View {
     @State private var imageItem: PhotosPickerItem?
     @State private var imageData: Data?
 
-    @State private var selectedFood: FoodModel?
-    @State private var quantityNeeded: Decimal?
-
     @State private var steps: [StepRecipe] = []
     @State private var newStep: StepRecipe = StepRecipe(text: "")
     @State private var stepImageItem: PhotosPickerItem?
 
     @State private var showPhotoPicker: Bool = false
     @State private var servings: Int = 2
+
+    @State private var showIngredientsSheet: Bool = false
+    @State private var showStepsSheet: Bool = false
+
+    @State private var editingIngredientIndex: Int? = nil
+    @State private var editingStep: StepRecipe? = nil
+
+    private var editingIngredient: RecipeFoodModel? {
+        guard let idx = editingIngredientIndex, idx < ingredients.count else { return nil }
+        return ingredients[idx]
+    }
 
     @FocusState private var focusedField: EditRecipeField?
 
@@ -110,59 +118,110 @@ struct EditRecipeView: View {
                             .frame(minHeight: 60, maxHeight: 200)
                             .focused($focusedField, equals: .recipeDescription)
                             .onSubmit { focusedField = nil }
+
+                        Picker(selection: $servings) {
+                            ForEach(1...20, id: \.self) { n in
+                                Text("\(n) \(n == 1 ? "serving" : "servings")").tag(n)
+                            }
+                        } label: {
+                            Label("\(servings) \(servings == 1 ? "serving" : "servings")", systemImage: "person.2")
+                        }
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                        .padding(.top, 4)
                     }
                     .padding()
 
                     divider
 
-                    // Duration & Servings
-                    HStack(alignment: .top, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Duration", systemImage: "clock")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
+                    // Duration
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Duration", systemImage: "clock")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
 
-                            TimePickerView(duration: $duration)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Servings", systemImage: "person.2")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-
-                            Stepper("\(servings) \(servings == 1 ? "serving" : "servings")", value: $servings, in: 1...20)
-                                .labelsHidden()
-
-                            Text("\(servings) \(servings == 1 ? "serving" : "servings")")
-                                .font(.callout.weight(.semibold))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        TimePickerView(duration: $duration)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
 
                     divider
 
-                    EditRecipeIngredientView(
-                        foods: foods,
-                        ingredients: $ingredients,
-                        selectedFood: $selectedFood,
-                        quantityNeeded: $quantityNeeded
-                    )
+                    ingredientsSection
 
                     divider
 
-                    EditStepRecipeView(
-                        steps: $steps,
-                        newStep: $newStep,
-                        stepImageItem: $stepImageItem
-                    )
+                    stepsSection
 
                     Spacer(minLength: 40)
                 }
             }
             .background(paperBackground.ignoresSafeArea())
             .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
+            .sheet(isPresented: $showIngredientsSheet, onDismiss: { editingIngredientIndex = nil }) {
+                NavigationStack {
+                    ScrollView {
+                        EditRecipeIngredientView(
+                            foods: foods,
+                            ingredients: $ingredients,
+                            editingIngredient: editingIngredient,
+                            onEditDone: { editingIngredientIndex = nil }
+                        )
+                    }
+                    .background(paperBackground.ignoresSafeArea())
+                    .navigationTitle(editingIngredientIndex != nil ? "Edit Ingredient" : "Ingredients")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") { showIngredientsSheet = false }
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showStepsSheet) {
+                NavigationStack {
+                    ScrollView {
+                        EditStepRecipeView(
+                            newStep: $newStep,
+                            stepImageItem: $stepImageItem
+                        )
+                    }
+                    .background(paperBackground.ignoresSafeArea())
+                    .navigationTitle(editingStep != nil ? "Edit Step" : "Add Step")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Cancel") {
+                                editingStep = nil
+                                newStep.text = ""
+                                newStep.image = nil
+                                stepImageItem = nil
+                                showStepsSheet = false
+                            }
+                        }
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") {
+                                if !newStep.text.isEmpty {
+                                    if let editing = editingStep,
+                                       let index = steps.firstIndex(where: { $0.id == editing.id }) {
+                                        steps[index].text = newStep.text
+                                        steps[index].image = newStep.image
+                                    } else {
+                                        steps.append(StepRecipe(text: newStep.text, image: newStep.image))
+                                    }
+                                    editingStep = nil
+                                    newStep.text = ""
+                                    newStep.image = nil
+                                    stepImageItem = nil
+                                }
+                                showStepsSheet = false
+                            }
+                            .fontWeight(.semibold)
+                        }
+                    }
+                }
+            }
             .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -221,8 +280,6 @@ struct EditRecipeView: View {
                     ingredients = recipe.ingredients ?? []
                     steps = recipe.steps ?? []
                 }
-
-                selectedFood = foods.first
             }
             .task(id: imageItem) {
                 if let data = try? await imageItem?.loadTransferable(type: Data.self),
@@ -241,6 +298,145 @@ struct EditRecipeView: View {
             .fill(.secondary.opacity(0.25))
             .frame(height: 1)
             .padding(.horizontal)
+    }
+
+    private var ingredientsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Label("Ingredients", systemImage: "fork.knife")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if !ingredients.isEmpty {
+                    Text("\(ingredients.count) item\(ingredients.count == 1 ? "" : "s")")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.secondary.opacity(0.12))
+                        .clipShape(.capsule)
+                }
+                Button {
+                    editingIngredientIndex = nil
+                    showIngredientsSheet = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                }
+                .padding(.leading, 6)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+
+            if !ingredients.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(ingredients) { item in
+                        if let food = item.ingredient {
+                            HStack(spacing: 12) {
+                                Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
+                                    .font(.system(size: 24))
+                                Text(food.name)
+                                    .font(.subheadline.weight(.medium))
+                                    .lineLimit(1)
+                                Spacer()
+                                Text("\(item.quantityNeeded, format: .number) \(food.unit.abbreviation)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Menu {
+                                    Button("Edit", systemImage: "pencil") {
+                                        editingIngredientIndex = ingredients.firstIndex(where: { $0.id == item.id })
+                                        showIngredientsSheet = true
+                                    }
+                                    Button("Delete", systemImage: "trash", role: .destructive) {
+                                        withAnimation { ingredients.removeAll { $0.id == item.id } }
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                        .padding(8)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
+
+                            if item.id != ingredients.last?.id {
+                                Divider().padding(.horizontal)
+                            }
+                        }
+                    }
+                }
+                .padding(.bottom, 12)
+            }
+        }
+    }
+
+    private var stepsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Label("Steps", systemImage: "checklist")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if !steps.isEmpty {
+                    Text("\(steps.count) step\(steps.count == 1 ? "" : "s")")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.secondary.opacity(0.12))
+                        .clipShape(.capsule)
+                }
+                Button {
+                    editingStep = nil
+                    showStepsSheet = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                }
+                .padding(.leading, 6)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+
+            if !steps.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(steps, id: \.id) { step in
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                Spacer()
+                                Menu {
+                                    Button("Edit", systemImage: "pencil") {
+                                        editingStep = step
+                                        newStep.text = step.text
+                                        newStep.image = step.image
+                                        stepImageItem = nil
+                                        showStepsSheet = true
+                                    }
+                                    Button("Delete", systemImage: "trash", role: .destructive) {
+                                        withAnimation { steps.removeAll { $0.id == step.id } }
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                        .padding(8)
+                                }
+                            }
+                            .padding(.horizontal)
+
+                            StepEditCard(step: step, steps: $steps)
+                                .padding(.horizontal)
+                                .padding(.bottom, 16)
+                        }
+
+                        if step.id != steps.last?.id {
+                            Divider().padding(.horizontal)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     func saveRecipe() {

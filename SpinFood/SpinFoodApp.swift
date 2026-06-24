@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 @main
 struct SpinFoodApp: App {
@@ -22,6 +23,10 @@ struct SpinFoodApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+
+    init() {
+        try? Tips.configure()
+    }
 
     var body: some Scene {
         WindowGroup {

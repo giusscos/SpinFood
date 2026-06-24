@@ -34,7 +34,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ vc: BookPageViewController, context: Context) {
         let newIDs = recipes.map { $0.id }
-        if newIDs != vc.lastRecipeIDs {
+        if newIDs != vc.lastRecipeIDs || vc.pages.isEmpty {
             vc.rebuild(
                 recipes: recipes,
                 onAdd: onAdd,

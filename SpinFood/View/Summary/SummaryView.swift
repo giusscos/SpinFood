@@ -23,13 +23,20 @@ struct SummaryView: View {
 
     @Environment(Store.self) var store
 
-    @State private var showPaywall: Bool = false
     @State private var activeSheet: ActiveSheet?
 
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
     @Query var consumptions: [FoodConsumptionModel]
     @Query var refills: [FoodRefillModel]
+
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
 
     var cookedRecipes: [RecipeModel] {
         recipes.filter { $0.cookedAt.count > 0 }
@@ -50,9 +57,13 @@ struct SummaryView: View {
                 lockedContent
             }
         }
-        .navigationTitle("Summary")
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Summary")
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
         }
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
@@ -86,145 +97,124 @@ struct SummaryView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
     }
 
     @ViewBuilder
     private var emptyDataState: some View {
         if foods.isEmpty {
-            VStack(spacing: 12) {
-                Text("No ingredient found")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-
-                Text("Insert ingredient to start creating recipes")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-
-                Button { activeSheet = .createFood } label: { Text("Add") }
-                    .tint(.accent)
+            ContentUnavailableView {
+                Label("No Ingredients", systemImage: "cabinet")
+                    .font(.system(.title3, design: .serif))
+            } description: {
+                Text("Add your first ingredient to start creating recipes")
+                    .font(.system(.subheadline, design: .serif))
+            } actions: {
+                Button("Add Ingredient") { activeSheet = .createFood }
                     .buttonStyle(.bordered)
                     .buttonBorderShape(.capsule)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         } else if recipes.isEmpty {
-            VStack(spacing: 12) {
-                Text("No recipe found")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-
-                Text("Insert recipe to start tracking your eating habits")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-
-                Button { activeSheet = .createRecipe } label: { Text("Add") }
-                    .tint(.accent)
+            ContentUnavailableView {
+                Label("No Recipes", systemImage: "book")
+                    .font(.system(.title3, design: .serif))
+            } description: {
+                Text("Add a recipe to start tracking your cooking habits")
+                    .font(.system(.subheadline, design: .serif))
+            } actions: {
+                Button("Add Recipe") { activeSheet = .createRecipe }
                     .buttonStyle(.bordered)
                     .buttonBorderShape(.capsule)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         } else {
-            VStack(spacing: 8) {
-                Text("No activity data yet")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-
+            ContentUnavailableView {
+                Label("No Activity Yet", systemImage: "chart.bar.xaxis")
+                    .font(.system(.title3, design: .serif))
+            } description: {
                 Text("Cook a recipe or log a meal to start tracking your habits")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .font(.system(.subheadline, design: .serif))
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
     }
 
     // MARK: - Locked / upgrade content
 
     private var lockedContent: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 30) {
+                VStack(spacing: 8) {
+                    Text("Kitchen Stats")
+                        .font(.system(size: 28, weight: .bold, design: .serif))
+                        .tracking(3)
 
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.orange.opacity(0.15), .yellow.opacity(0.15)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 88, height: 88)
-
-                    Image(systemName: "chart.bar.xaxis.ascending")
-                        .font(.system(size: 40))
-                        .foregroundStyle(
-                            LinearGradient(colors: [.orange, .yellow], startPoint: .top, endPoint: .bottom)
-                        )
-                }
-
-                VStack(spacing: 6) {
-                    Text("Unlock Your Kitchen Insights")
-                        .font(.title3.bold())
-                        .multilineTextAlignment(.center)
-
-                    Text("See how much you cook, track what you eat,\nand reduce food waste with detailed stats.")
-                        .font(.subheadline)
+                    Text("Premium Feature")
+                        .font(.system(size: 11, weight: .regular, design: .serif))
                         .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                        .tracking(3)
+                        .textCase(.uppercase)
                 }
-            }
+                .padding(.top, 40)
 
-            VStack(alignment: .leading, spacing: 14) {
-                StatPreviewRow(icon: "flame.fill",               color: .orange, text: "Recipes cooked over time")
-                StatPreviewRow(icon: "fork.knife",               color: .green,  text: "Food consumption tracking")
-                StatPreviewRow(icon: "bag.fill",                 color: .blue,   text: "Pantry refill history")
-                StatPreviewRow(icon: "leaf.fill",                color: .teal,   text: "Food waste insights")
+                Image(systemName: "chart.bar.xaxis.ascending")
+                    .font(.system(size: 20))
+                    .foregroundStyle(.orange.opacity(0.85))
+
+                VStack(spacing: 24) {
+                    tocEntry(roman: "I",   title: "Recipes Cooked",      note: "Track every meal over time")
+                    tocDivider
+                    tocEntry(roman: "II",  title: "Food Consumption",    note: "Log what you eat")
+                    tocDivider
+                    tocEntry(roman: "III", title: "Pantry Refills",      note: "History of every restock")
+                    tocDivider
+                    tocEntry(roman: "IV",  title: "Food Waste Insights", note: "Reduce waste, save money")
+                }
+
+                Spacer(minLength: 60)
             }
-            .padding()
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
             .padding(.horizontal)
-
-            Button {
-                showPaywall = true
-            } label: {
-                Text("Upgrade to Pro")
-                    .font(.system(.body, design: .rounded).weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .padding(.horizontal)
-
-            Spacer()
         }
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
     }
-}
 
-struct StatPreviewRow: View {
-    let icon: String
-    let color: Color
-    let text: String
+    private func tocEntry(roman: String, title: String, note: String) -> some View {
+        HStack(alignment: .center, spacing: 0) {
+            Text(roman)
+                .font(.system(size: 11, weight: .light, design: .serif))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, alignment: .center)
 
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(color.opacity(0.15))
-                    .frame(width: 34, height: 34)
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(color)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(.body, design: .serif))
+
+                Text(note)
+                    .font(.system(.caption, design: .serif))
+                    .foregroundStyle(.secondary)
             }
 
-            Text(text)
-                .font(.system(.subheadline, design: .rounded))
+            Spacer(minLength: 4)
 
-            Spacer()
-
-            Image(systemName: "lock.fill")
-                .font(.caption)
+            Text(". . . . . . .")
+                .font(.system(size: 9, design: .serif))
                 .foregroundStyle(.tertiary)
+                .lineLimit(1)
+                .layoutPriority(-1)
         }
+        .padding(.vertical, 11)
+    }
+
+    private var tocDivider: some View {
+        Rectangle()
+            .fill(Color.secondary.opacity(0.1))
+            .frame(height: 0.5)
     }
 }
 

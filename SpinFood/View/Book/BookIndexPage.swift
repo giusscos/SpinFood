@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 struct BookIndexPage: View {
     let recipes: [RecipeModel]
@@ -8,6 +9,8 @@ struct BookIndexPage: View {
     var onEdit: (RecipeModel) -> Void = { _ in }
     var onDelete: (RecipeModel) -> Void = { _ in }
     var onMove: (IndexSet, Int) -> Void = { _, _ in }
+
+    private let addFirstRecipeTip = AddFirstRecipeTip()
 
     @State private var isEditing = false
 
@@ -42,6 +45,12 @@ struct BookIndexPage: View {
             }
             .navigationTitle("Index")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                AddFirstRecipeTip.hasRecipes = !recipes.isEmpty
+            }
+            .onChange(of: recipes.isEmpty) { _, isEmpty in
+                AddFirstRecipeTip.hasRecipes = !isEmpty
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if isEditing {
@@ -74,10 +83,14 @@ struct BookIndexPage: View {
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if !isEditing {
-                        Button(action: onAdd) {
+                        Button(action: {
+                            addFirstRecipeTip.invalidate(reason: .actionPerformed)
+                            onAdd()
+                        }) {
                             Image(systemName: "plus")
                         }
-                        
+                        .popoverTip(addFirstRecipeTip)
+
                         Button(action: onSettings) {
                             Image(systemName: "gear")
                         }

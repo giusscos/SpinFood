@@ -3,10 +3,12 @@ import SwiftData
 
 struct BookSearchView: View {
     @Environment(AppNavigator.self) var navigator
+    @Environment(Store.self) var store
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
 
     @State private var query = ""
+    @State private var showPaywall = false
 
     private var sortedRecipes: [RecipeModel] {
         recipes.sorted { $0.name < $1.name }
@@ -26,35 +28,99 @@ struct BookSearchView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                if !filteredRecipes.isEmpty {
-                    Section(query.isEmpty ? "All Recipes" : "Recipes") {
-                        ForEach(filteredRecipes) { recipe in
-                            Button { navigateToRecipe(recipe) } label: {
-                                recipeRow(recipe)
-                            }
-                        }
-                    }
-                }
-
-                if !filteredFoods.isEmpty {
-                    Section("Pantry") {
-                        ForEach(filteredFoods) { food in
-                            pantryRow(food)
-                        }
-                    }
-                }
-
-                if !query.isEmpty && filteredRecipes.isEmpty && filteredFoods.isEmpty {
-                    ContentUnavailableView.search(text: query)
+            Group {
+                if store.hasActiveSubscription {
+                    searchContent
+                } else {
+                    lockedContent
                 }
             }
-            .searchable(
-                text: $query,
-                placement: .navigationBarDrawer(displayMode: .always),
-                prompt: "Recipes or ingredients…"
-            )
             .navigationTitle("Search")
+            .fullScreenCover(isPresented: $showPaywall) {
+                PaywallView()
+            }
+        }
+    }
+
+    private var searchContent: some View {
+        List {
+            if !filteredRecipes.isEmpty {
+                Section(query.isEmpty ? "All Recipes" : "Recipes") {
+                    ForEach(filteredRecipes) { recipe in
+                        Button { navigateToRecipe(recipe) } label: {
+                            recipeRow(recipe)
+                        }
+                    }
+                }
+            }
+
+            if !filteredFoods.isEmpty {
+                Section("Pantry") {
+                    ForEach(filteredFoods) { food in
+                        pantryRow(food)
+                    }
+                }
+            }
+
+            if !query.isEmpty && filteredRecipes.isEmpty && filteredFoods.isEmpty {
+                ContentUnavailableView.search(text: query)
+            }
+        }
+        .searchable(
+            text: $query,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "Recipes or ingredients…"
+        )
+    }
+
+    private var lockedContent: some View {
+        VStack(spacing: 32) {
+            Spacer()
+
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(
+                            colors: [.orange.opacity(0.15), .yellow.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        .frame(width: 88, height: 88)
+
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 40))
+                        .foregroundStyle(LinearGradient(
+                            colors: [.orange, .yellow],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ))
+                }
+
+                VStack(spacing: 6) {
+                    Text("Search Your Recipe Book")
+                        .font(.title3.bold())
+                        .multilineTextAlignment(.center)
+
+                    Text("Instantly find any recipe or ingredient\nacross your entire collection.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+
+            Button {
+                showPaywall = true
+            } label: {
+                Text("Upgrade to Pro")
+                    .font(.system(.body, design: .rounded).weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .padding(.horizontal)
+
+            Spacer()
         }
     }
 

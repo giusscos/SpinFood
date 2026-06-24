@@ -3,7 +3,7 @@ import SwiftData
 import StoreKit
 
 enum AppTab: Hashable {
-    case recipes, inventory, search
+    case recipes, inventory, shopping, summary, search
 }
 
 struct ContentView: View {
@@ -15,12 +15,8 @@ struct ContentView: View {
     @State var isPresentingPaywall: Bool = false
     @State private var navigator = AppNavigator()
 
-    @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
-
     var body: some View {
-        if !onboardingCompleted {
-            OnboardingView()
-        } else if store.isLoading {
+        if store.isLoading {
             ProgressView()
         } else {
             mainTabView
@@ -28,6 +24,28 @@ struct ContentView: View {
     }
 
     private var mainTabView: some View {
+        Group {
+            if #available(iOS 26.1, *) {
+                coreTabView
+                    .tabViewBottomAccessory(isEnabled: !store.hasActiveSubscription && (navigator.selectedTab == .shopping || navigator.selectedTab == .summary)) {
+                        Button {
+                            isPresentingPaywall = true
+                        } label: {
+                            Text("Upgrade to Pro")
+                                .font(.system(.body, design: .serif).weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
+                    }
+            } else {
+                coreTabView
+            }
+        }
+    }
+
+    private var coreTabView: some View {
         TabView(selection: Binding(
             get: { navigator.selectedTab },
             set: { navigator.selectedTab = $0 }
@@ -39,6 +57,16 @@ struct ContentView: View {
             Tab("Inventory", systemImage: "cabinet.fill", value: AppTab.inventory) {
                 NavigationStack {
                     FoodView()
+                }
+            }
+
+            Tab("Shopping", systemImage: "cart.fill", value: AppTab.shopping) {
+                ShoppingListView()
+            }
+
+            Tab("Summary", systemImage: "chart.bar.xaxis.ascending", value: AppTab.summary) {
+                NavigationStack {
+                    SummaryView()
                 }
             }
 
@@ -58,6 +86,11 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: $isPresentingPaywall) {
             PaywallView()
+        }
+        .onChange(of: isPresentingPaywall) { _, isPresenting in
+            if !isPresenting {
+                Task { await store.updateCustomerProductStatus() }
+            }
         }
     }
 }

@@ -67,7 +67,22 @@ struct EditRecipeView: View {
     @FocusState private var focusedField: EditRecipeField?
 
     var canSaveRecipe: Bool {
-        !name.isEmpty && !ingredients.isEmpty && !steps.isEmpty
+        !name.isEmpty && !steps.isEmpty
+    }
+
+    private func categoryColor(_ category: FoodCategory) -> Color {
+        switch category {
+        case .produce: return .green
+        case .dairy: return .yellow
+        case .meat: return .red
+        case .seafood: return .blue
+        case .grains: return .orange
+        case .pantry: return .brown
+        case .frozen: return .cyan
+        case .beverages: return .indigo
+        case .snacks: return .purple
+        case .other: return .gray
+        }
     }
 
     private var paperBackground: Color {
@@ -295,19 +310,28 @@ struct EditRecipeView: View {
             .padding(.vertical, 12)
 
             if !ingredients.isEmpty {
-                VStack(spacing: 0) {
+                VStack(spacing: 8) {
                     ForEach(ingredients) { item in
                         if let food = item.ingredient {
                             HStack(spacing: 12) {
-                                Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
-                                    .font(.system(size: 24))
-                                Text(food.name)
-                                    .font(.subheadline.weight(.medium))
-                                    .lineLimit(1)
+                                let displayEmoji = food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji
+                                Text(displayEmoji)
+                                    .font(.system(size: 22))
+                                    .frame(width: 40, height: 40)
+                                    .background(categoryColor(food.category).opacity(0.15))
+                                    .clipShape(Circle())
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(food.name)
+                                        .font(.subheadline.weight(.medium))
+                                        .lineLimit(1)
+                                    Text("\(item.quantityNeeded, format: .number) \(food.unit.abbreviation)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
                                 Spacer()
-                                Text("\(item.quantityNeeded, format: .number) \(food.unit.abbreviation)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+
                                 Menu {
                                     Button("Edit", systemImage: "pencil") {
                                         editingIngredientIndex = ingredients.firstIndex(where: { $0.id == item.id })
@@ -323,15 +347,13 @@ struct EditRecipeView: View {
                                         .padding(8)
                                 }
                             }
-                            .padding(.horizontal)
-                            .padding(.vertical, 10)
-
-                            if item.id != ingredients.last?.id {
-                                Divider().padding(.horizontal)
-                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(.regularMaterial, in: .rect(cornerRadius: 12))
                         }
                     }
                 }
+                .padding(.horizontal)
                 .padding(.bottom, 12)
             }
         }

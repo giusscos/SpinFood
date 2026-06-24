@@ -36,6 +36,8 @@ struct TotalFoodRefilledWidgetView: View {
             .first
     }
 
+    private let postItColor = Color(red: 0.72, green: 0.89, blue: 1.0)
+
     var body: some View {
         if totalFoodRefilled > 0 {
             NavigationLink {
@@ -44,21 +46,21 @@ struct TotalFoodRefilledWidgetView: View {
             } label: {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Food refilled")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .font(.system(.subheadline, design: .serif).weight(.semibold))
+                        .foregroundStyle(.black.opacity(0.55))
 
                     Spacer()
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(formattedTotal)
-                            .font(.system(size: 64, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 64, weight: .bold, design: .serif))
+                            .foregroundStyle(.black.opacity(0.82))
                             .minimumScaleFactor(0.5)
                             .lineLimit(1)
 
                         Text("total refilled")
-                            .font(.system(.subheadline, design: .rounded).weight(.medium))
-                            .foregroundStyle(.white.opacity(0.75))
+                            .font(.system(.subheadline, design: .serif).weight(.medium))
+                            .foregroundStyle(.black.opacity(0.45))
                     }
 
                     Spacer()
@@ -69,26 +71,39 @@ struct TotalFoodRefilledWidgetView: View {
                                 .font(.caption)
 
                             Text("\(mostRefilled.name) · \(NSDecimalNumber(decimal: mostRefilled.totalRefilledQuantity).doubleValue, specifier: "%.1f") \(mostRefilled.unit.abbreviation)")
-                                .font(.system(.caption, design: .rounded))
+                                .font(.system(.caption, design: .serif))
                                 .lineLimit(1)
                         }
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(.black.opacity(0.38))
                     }
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 260 : 220)
-                .background(
-                    LinearGradient(
-                        colors: [.blue, .indigo.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(.rect(cornerRadius: 4))
+                .background {
+                    ZStack(alignment: .top) {
+                        postItColor
+                        VStack(spacing: 22) {
+                            ForEach(0..<8, id: \.self) { _ in
+                                Rectangle()
+                                    .fill(Color.black.opacity(0.055))
+                                    .frame(height: 1)
+                            }
+                        }
+                        .padding(.top, 48)
+                    }
+                }
+                .clipShape(.rect(cornerRadius: 3))
                 .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+                .overlay(alignment: .top) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(.white.opacity(0.6))
+                        .frame(width: 56, height: 16)
+                        .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                        .offset(y: -8)
+                }
                 .rotationEffect(.degrees(-0.8))
-                .padding(.vertical, 24)
+                .padding(.vertical, 28)
                 .padding(.horizontal, 20)
                 .matchedTransitionSource(id: foodRefillTransitionId, in: namespace)
             }

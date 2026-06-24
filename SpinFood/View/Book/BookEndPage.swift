@@ -7,7 +7,6 @@ struct BookEndPage: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.requestReview) private var requestReview
 
-    @State private var showOnboarding = false
     @State private var showPaywall = false
     @State private var isRestoring = false
     @State private var restoreError: String?
@@ -62,9 +61,6 @@ struct BookEndPage: View {
                         }
                     }
                 }
-            }
-            .fullScreenCover(isPresented: $showOnboarding) {
-                OnboardingView()
             }
             .fullScreenCover(isPresented: $showPaywall) {
                 PaywallView()
@@ -165,10 +161,6 @@ struct BookEndPage: View {
 
     private var generalSection: some View {
         VStack(spacing: 0) {
-            dividerLine
-            actionRow(icon: "hand.wave", label: "Watch Onboarding") {
-                showOnboarding = true
-            }
             dividerLine
             actionRow(icon: "star", label: "Rate SpinFood") {
                 requestReview()

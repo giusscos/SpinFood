@@ -2,119 +2,125 @@ import SwiftUI
 import StoreKit
 
 struct PaywallView: View {
+    @Environment(\.dismiss) private var dismiss
     @State var store = Store()
     @State private var showLifetimePlans = false
+
+    private var pageBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
 
     var body: some View {
         NavigationStack {
             SubscriptionStoreView(groupID: store.groupId) {
-                paywallContent
+                coverContent
             }
             .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)
             .subscriptionStoreButtonLabel(.multiline)
             .storeButton(.visible, for: .restorePurchases)
+            .containerBackground(pageBackground, for: .subscriptionStoreFullHeight)
+            .subscriptionStoreControlBackground(pageBackground)
+            .onInAppPurchaseCompletion { _, result in
+                if case .success = result {
+                    dismiss()
+                }
+            }
             .sheet(isPresented: $showLifetimePlans) {
-                PaywallLifetimeView()
+                PaywallLifetimeView(onPurchase: { dismiss() })
                     .presentationDetents([.medium])
             }
         }
+        .background(pageBackground.ignoresSafeArea())
     }
 
-    private var paywallContent: some View {
-        VStack(spacing: 24) {
-            heroSection
+    // MARK: - Book Cover
 
-            featuresGrid
+    private var coverContent: some View {
+        VStack(spacing: 30) {
+            // Title block
+            VStack(spacing: 8) {
+                Text("FOO")
+                    .font(.system(size: 34, weight: .bold, design: .serif))
+                    .tracking(5)
 
-            lifetimeButton
+                Text("Premium Edition")
+                    .font(.system(size: 11, weight: .regular, design: .serif))
+                    .foregroundStyle(.secondary)
+                    .tracking(3)
+                    .textCase(.uppercase)
+            }
+            .padding(.top)
+
+            Image(systemName: "fork.knife")
+                .font(.system(size: 20))
+                .foregroundStyle(.orange.opacity(0.85))
+
+            // Table of contents
+            VStack(spacing: 24) {
+                tocEntry(roman: "I",   title: "Unlimited Recipes",  note: "No caps, ever")
+                tocDivider
+                tocEntry(roman: "II",  title: "Recipe Search",      note: "Find anything instantly")
+                tocDivider
+                tocEntry(roman: "III", title: "Cooking Stats",      note: "Every meal charted")
+                tocDivider
+                tocEntry(roman: "IV",  title: "Shopping Lists",     note: "Auto-generated")
+            }
+
+            // Lifetime purchase link
+            Button {
+                showLifetimePlans = true
+            } label: {
+                Label("One-time purchase available", systemImage: "infinity")
+                    .font(.footnote)
+            }
+            .tint(.green)
 
             legalLinks
+                .padding(.vertical, 12)
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .background(pageBackground.ignoresSafeArea())
     }
 
-    // MARK: - Hero
+    // MARK: - Table of Contents Entry
 
-    private var heroSection: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(
-                        colors: [.indigo.opacity(0.15), .purple.opacity(0.15)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 96, height: 96)
-                Image(systemName: "fork.knife.circle.fill")
-                    .font(.system(size: 52))
-                    .foregroundStyle(LinearGradient(
-                        colors: [.indigo, .purple],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ))
-            }
+    private func tocEntry(roman: String, title: String, note: String) -> some View {
+        HStack(alignment: .center, spacing: 0) {
+            Text(roman)
+                .font(.system(size: 11, weight: .light, design: .serif))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, alignment: .center)
 
-            VStack(spacing: 6) {
-                Text("Cook Without Limits")
-                    .font(.title2.bold())
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(.body, design: .serif))
 
-                Text("Unlock the full SpinFood experience —\nunlimited recipes, smart tools, and rich stats.")
-                    .font(.subheadline)
+                Text(note)
+                    .font(.system(.caption, design: .serif))
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
             }
+
+            Spacer(minLength: 4)
+
+            Text(". . . . . . .")
+                .font(.system(size: 9, design: .serif))
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
+                .layoutPriority(-1)
         }
+        .padding(.vertical, 11)
     }
 
-    // MARK: - Feature Grid
+    // MARK: - Ornaments
 
-    private var featuresGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            ProFeatureCard(
-                icon: "infinity",
-                color: .indigo,
-                title: "Unlimited Recipes",
-                description: "No caps, ever"
-            )
-            ProFeatureCard(
-                icon: "chart.bar.xaxis.ascending",
-                color: .orange,
-                title: "Cooking Stats",
-                description: "Track every meal"
-            )
-            ProFeatureCard(
-                icon: "cart.fill",
-                color: .green,
-                title: "Smart Shopping",
-                description: "Instant refill lists"
-            )
-            ProFeatureCard(
-                icon: "leaf.fill",
-                color: .teal,
-                title: "Less Waste",
-                description: "Know what you use"
-            )
-        }
-    }
-
-    // MARK: - Lifetime Button
-
-    private var lifetimeButton: some View {
-        Button {
-            showLifetimePlans = true
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "infinity.circle.fill")
-                Text("One-time purchase available")
-                    .fontWeight(.semibold)
-            }
-            .font(.subheadline)
-        }
-        .tint(.orange)
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.capsule)
+    private var tocDivider: some View {
+        Rectangle()
+            .fill(Color.secondary.opacity(0.1))
+            .frame(height: 0.5)
     }
 
     // MARK: - Legal
@@ -123,16 +129,20 @@ struct PaywallView: View {
         HStack(spacing: 8) {
             Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
                 .foregroundColor(.secondary)
+                .buttonStyle(.plain)
+            
             Text("·")
                 .foregroundStyle(.tertiary)
+            
             Link("Privacy Policy", destination: URL(string: "https://giusscos.it/privacy")!)
                 .foregroundColor(.secondary)
+                .buttonStyle(.plain)
         }
-        .font(.caption)
+        .font(.system(.caption, design: .serif))
     }
 }
 
-// MARK: - Feature Card
+// MARK: - Feature Card (used in other contexts)
 
 struct ProFeatureCard: View {
     let icon: String

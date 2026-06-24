@@ -130,6 +130,8 @@ final class Store {
     
     @MainActor
     func updateCustomerProductStatus() async {
+        purchasedSubscriptions = []
+        purchasedProducts = []
         for await result in Transaction.currentEntitlements {
             do {
                 // Check whether the transaction is verified. If it isn't, catch `failedVerification` error.

@@ -25,21 +25,11 @@ struct EditRecipePhotoView: View {
                         .clipped()
                 } else {
                     ZStack {
-                        LinearGradient(
-                            colors: [.orange.opacity(0.7), .red.opacity(0.5)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        Color(UIColor.secondarySystemFill)
 
-                        VStack(spacing: 12) {
-                            Image(systemName: "camera.fill")
-                                .font(.system(size: 36))
-                                .foregroundStyle(.white.opacity(0.8))
-
-                            Text("Add Photo")
-                                .font(.callout.weight(.medium))
-                                .foregroundStyle(.white.opacity(0.8))
-                        }
+                        Image(systemName: "camera")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.secondary)
                     }
                     .frame(width: 260, height: 220)
                 }

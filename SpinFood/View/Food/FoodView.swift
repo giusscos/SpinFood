@@ -7,13 +7,17 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 
 enum ActiveFoodSheet: Identifiable {
+    case details(FoodModel)
     case edit(FoodModel)
     case create
 
     var id: String {
         switch self {
+        case .details(let food):
+            return "detailsFood-\(food.id)"
         case .edit(let food):
             return "editFood-\(food.id)"
         case .create:
@@ -58,6 +62,11 @@ struct FoodView: View {
     @Environment(\.modelContext) var modelContext
 
     @Query var food: [FoodModel]
+
+    private let addFirstIngredientTip = AddFirstIngredientTip()
+
+    @Namespace private var addFoodNamespace
+    @Namespace private var foodRowNamespace
 
     @State private var activeSheet: ActiveFoodSheet?
     @State private var searchText = ""
@@ -116,12 +125,13 @@ struct FoodView: View {
             if !filteredFood.isEmpty {
                 ForEach(filteredFood) { food in
                     FoodRowView(food: food)
+                        .matchedTransitionSource(id: food.id, in: foodRowNamespace)
                         .listRowInsets(.init(top: 4, leading: 16, bottom: 4, trailing: 16))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                         .onTapGesture {
                             if selectedItems.isEmpty {
-                                activeSheet = .edit(food)
+                                activeSheet = .details(food)
                             }
                         }
                         .swipeActions(edge: .trailing) {
@@ -140,27 +150,13 @@ struct FoodView: View {
                         }
                 }
             } else {
-                VStack(spacing: 8) {
-                    Text("No ingredient found")
-                        .font(.system(.headline, design: .rounded))
-                        .multilineTextAlignment(.center)
-
-                    Text("Insert ingredient to start creating recipes")
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-
-                    Button {
-                        activeSheet = .create
-                    } label: {
-                        Text("Add")
-                    }
-                    .tint(.accent)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .padding(.top, 4)
+                ContentUnavailableView {
+                    Label("No Ingredients", systemImage: "cabinet")
+                        .font(.system(.title3, design: .serif))
+                } description: {
+                    Text("Tap + to add your first ingredient")
+                        .font(.system(.subheadline, design: .serif))
                 }
-                .frame(maxWidth: .infinity, alignment: .center)
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }
@@ -169,16 +165,32 @@ struct FoodView: View {
         .scrollContentBackground(.hidden)
         .background(paperBackground.ignoresSafeArea())
         .searchable(text: $searchText, prompt: "Search pantry")
-        .navigationTitle("Pantry")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
             case .create:
                 EditFoodView()
+                    .navigationTransition(.zoom(sourceID: "addFood", in: addFoodNamespace))
+            case .details(let food):
+                FoodDetailsView(food: food)
+                    .navigationTransition(.zoom(sourceID: food.id, in: foodRowNamespace))
             case .edit(let food):
                 EditFoodView(food: food)
             }
         }
+        .onAppear {
+            AddFirstIngredientTip.hasIngredients = !food.isEmpty
+        }
+        .onChange(of: food.isEmpty) { _, isEmpty in
+            AddFirstIngredientTip.hasIngredients = !isEmpty
+        }
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Inventory")
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+
             if !food.isEmpty {
                 ToolbarItem(placement: .topBarLeading) {
                     EditButton()
@@ -187,10 +199,13 @@ struct FoodView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
+                    addFirstIngredientTip.invalidate(reason: .actionPerformed)
                     activeSheet = .create
                 } label: {
                     Label("Add", systemImage: "plus")
                 }
+                .matchedTransitionSource(id: "addFood", in: addFoodNamespace)
+                .popoverTip(addFirstIngredientTip)
             }
 
             if !food.isEmpty {

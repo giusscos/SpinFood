@@ -9,6 +9,7 @@ import StoreKit
 import SwiftUI
 
 struct PaywallLifetimeView: View {
+    var onPurchase: () -> Void = {}
     @State var storeKit = Store()
 
     var body: some View {
@@ -42,6 +43,11 @@ struct PaywallLifetimeView: View {
                 .productViewStyle(.compact)
                 .storeButton(.visible, for: .restorePurchases)
                 .storeButton(.hidden, for: .cancellation)
+                .onInAppPurchaseCompletion { _, result in
+                    if case .success = result {
+                        onPurchase()
+                    }
+                }
         }
         .presentationDragIndicator(.visible)
     }

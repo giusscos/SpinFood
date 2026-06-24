@@ -80,8 +80,12 @@ struct EditRecipeIngredientView: View {
             }
         } label: {
             HStack(spacing: 14) {
-                Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
-                    .font(.system(size: 36))
+                let displayEmoji = food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji
+                Text(displayEmoji)
+                    .font(.system(size: 28))
+                    .frame(width: 44, height: 44)
+                    .background(categoryColor(food.category).opacity(0.15))
+                    .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(food.name)
@@ -103,19 +107,28 @@ struct EditRecipeIngredientView: View {
         }
     }
 
+    private func categoryColor(_ category: FoodCategory) -> Color {
+        switch category {
+        case .produce: return .green
+        case .dairy: return .yellow
+        case .meat: return .red
+        case .seafood: return .blue
+        case .grains: return .orange
+        case .pantry: return .brown
+        case .frozen: return .cyan
+        case .beverages: return .indigo
+        case .snacks: return .purple
+        case .other: return .gray
+        }
+    }
+
 }
 
-private struct QuantityTickerPicker: View {
+struct QuantityTickerPicker: View {
     @Binding var value: Decimal
     let unit: FoodUnit
     var minValue: Decimal = 0
     var maxValue: Decimal = 9999
-
-    @State private var previousTicks: Int = 0
-    @GestureState private var dragOffset: CGFloat = 0
-
-    private let tickSpacing: CGFloat = 14
-    private let feedback = UISelectionFeedbackGenerator()
 
     var tickStep: Decimal {
         switch unit {
@@ -134,7 +147,7 @@ private struct QuantityTickerPicker: View {
         VStack(spacing: 10) {
             HStack(alignment: .lastTextBaseline, spacing: 3) {
                 Text(value, format: .number)
-                    .font(.system(.title2, design: .monospaced).bold())
+                    .font(.system(.title, design: .rounded).weight(.black))
                     .contentTransition(.numericText())
                     .animation(.snappy(duration: 0.1), value: value)
                 Text(unit.abbreviation)
@@ -142,41 +155,12 @@ private struct QuantityTickerPicker: View {
                     .foregroundStyle(.secondary)
             }
 
-            ZStack {
-                GeometryReader { geo in
-                    Canvas { ctx, size in
-                        let centerX = size.width / 2
-                        let halfTicks = Int(size.width / tickSpacing / 2) + 2
-                        let offset = dragOffset.truncatingRemainder(dividingBy: tickSpacing)
-
-                        for i in -halfTicks...halfTicks {
-                            let x = centerX + CGFloat(i) * tickSpacing + offset
-                            let d = abs(x - centerX)
-                            let tickH: CGFloat
-                            if d < tickSpacing * 0.5 {
-                                tickH = 28
-                            } else if d < tickSpacing * 1.5 {
-                                tickH = 18
-                            } else {
-                                tickH = 10
-                            }
-                            var path = Path()
-                            path.move(to: CGPoint(x: x, y: (size.height - tickH) / 2))
-                            path.addLine(to: CGPoint(x: x, y: (size.height + tickH) / 2))
-                            ctx.stroke(
-                                path,
-                                with: .color(.primary.opacity(0.35)),
-                                lineWidth: 1.5
-                            )
-                        }
-                    }
-                    .frame(width: geo.size.width, height: geo.size.height)
-                }
-
-                Rectangle()
-                    .fill(Color.accentColor)
-                    .frame(width: 2, height: 28)
-            }
+            TickRulerRepresentable(
+                value: $value,
+                minValue: minValue,
+                maxValue: maxValue,
+                tickStep: tickStep
+            )
             .frame(height: 40)
             .mask {
                 LinearGradient(
@@ -190,26 +174,162 @@ private struct QuantityTickerPicker: View {
                     endPoint: .trailing
                 )
             }
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 1)
-                    .updating($dragOffset) { gesture, state, _ in
-                        state = gesture.translation.width
-                    }
-                    .onChanged { gesture in
-                        let ticks = Int(-gesture.translation.width / tickSpacing)
-                        let delta = ticks - previousTicks
-                        guard delta != 0 else { return }
-                        previousTicks = ticks
-                        let newValue = max(minValue, min(maxValue, value + Decimal(delta) * tickStep))
-                        guard newValue != value else { return }
-                        value = newValue
-                        feedback.selectionChanged()
-                    }
-                    .onEnded { _ in
-                        previousTicks = 0
-                    }
-            )
+        }
+    }
+}
+
+// MARK: - UIViewRepresentable bridge
+
+private struct TickRulerRepresentable: UIViewRepresentable {
+    @Binding var value: Decimal
+    let minValue: Decimal
+    let maxValue: Decimal
+    let tickStep: Decimal
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(binding: $value)
+    }
+
+    func makeUIView(context: Context) -> TickRulerUIView {
+        let view = TickRulerUIView()
+        view.value = value
+        view.minValue = minValue
+        view.maxValue = maxValue
+        view.tickStep = tickStep
+        view.onValueChanged = { [weak coord = context.coordinator] newValue in
+            coord?.binding.wrappedValue = newValue
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: TickRulerUIView, context: Context) {
+        context.coordinator.binding = $value
+        uiView.minValue = minValue
+        uiView.maxValue = maxValue
+        uiView.tickStep = tickStep
+        if uiView.value != value {
+            uiView.value = value
+            uiView.setNeedsDisplay()
+        }
+    }
+
+    final class Coordinator {
+        var binding: Binding<Decimal>
+        init(binding: Binding<Decimal>) { self.binding = binding }
+    }
+}
+
+// MARK: - UIKit ruler view
+
+private final class TickRulerUIView: UIView {
+    var value: Decimal = 0
+    var minValue: Decimal = 0
+    var maxValue: Decimal = 9999
+    var tickStep: Decimal = 1
+    var onValueChanged: ((Decimal) -> Void)?
+
+    private let tickSpacing: CGFloat = 14
+    private let feedback = UISelectionFeedbackGenerator()
+
+    private var gestureStartValue: Decimal = 0
+    private var previousIntTicks: Int = 0
+    private var effectiveTranslation: CGFloat = 0
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    private func setup() {
+        backgroundColor = .clear
+        isOpaque = false
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        pan.maximumNumberOfTouches = 1
+        addGestureRecognizer(pan)
+    }
+
+    override func draw(_ rect: CGRect) {
+        guard let ctx = UIGraphicsGetCurrentContext() else { return }
+
+        let centerX = rect.width / 2
+        let halfTicks = Int(rect.width / tickSpacing / 2) + 2
+        let offset = effectiveTranslation.truncatingRemainder(dividingBy: tickSpacing)
+
+        ctx.setLineWidth(1.5)
+        ctx.setLineCap(.round)
+
+        for i in -halfTicks...halfTicks {
+            let x = centerX + CGFloat(i) * tickSpacing + offset
+            guard x >= 0 && x <= rect.width else { continue }
+            let d = abs(x - centerX)
+            let tickH: CGFloat = d < tickSpacing * 0.5 ? 28 : (d < tickSpacing * 1.5 ? 18 : 10)
+
+            ctx.setStrokeColor(UIColor.label.withAlphaComponent(0.35).cgColor)
+            ctx.beginPath()
+            ctx.move(to: CGPoint(x: x, y: (rect.height - tickH) / 2))
+            ctx.addLine(to: CGPoint(x: x, y: (rect.height + tickH) / 2))
+            ctx.strokePath()
+        }
+
+        // Fixed center accent marker
+        ctx.setFillColor(tintColor.cgColor)
+        ctx.fill(CGRect(x: centerX - 1, y: (rect.height - 28) / 2, width: 2, height: 28))
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            feedback.prepare()
+            gestureStartValue = value
+            previousIntTicks = 0
+            effectiveTranslation = 0
+
+        case .changed:
+            let raw = gesture.translation(in: self).x
+            // Positive raw = drag right = decreasing value
+            let rawTicksFloat = -raw / tickSpacing
+
+            let intTicks = Int(rawTicksFloat)
+            let desiredValue = gestureStartValue + Decimal(intTicks) * tickStep
+            let clampedValue = max(minValue, min(maxValue, desiredValue))
+
+            // Freeze ruler visually when pushing past a boundary
+            let isClampedLow = clampedValue <= minValue && rawTicksFloat < 0
+            let isClampedHigh = clampedValue >= maxValue && rawTicksFloat > 0
+
+            if isClampedLow || isClampedHigh {
+                let effectiveTicks = NSDecimalNumber(decimal: (clampedValue - gestureStartValue) / tickStep).doubleValue
+                effectiveTranslation = CGFloat(-effectiveTicks * Double(tickSpacing))
+            } else {
+                effectiveTranslation = raw
+            }
+
+            // Update value and fire haptics at full-tick boundaries
+            let tickDelta = intTicks - previousIntTicks
+            if tickDelta != 0 {
+                previousIntTicks = intTicks
+                if clampedValue != value {
+                    value = clampedValue
+                    feedback.selectionChanged()
+                    onValueChanged?(value)
+                }
+            }
+
+            setNeedsDisplay()
+
+        case .ended, .cancelled:
+            gestureStartValue = value
+            previousIntTicks = 0
+            effectiveTranslation = 0
+            setNeedsDisplay()
+
+        default:
+            break
         }
     }
 }

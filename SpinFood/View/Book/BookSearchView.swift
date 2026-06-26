@@ -36,6 +36,14 @@ struct BookSearchView: View {
                 }
             }
             .navigationTitle("Search")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: {
+                ToolbarItem(placement: .principal) {
+                    Text("Search")
+                        .font(.title.bold())
+                        .fontDesign(.serif)
+                }
+            })
             .fullScreenCover(isPresented: $showPaywall) {
                 PaywallView()
             }
@@ -63,7 +71,11 @@ struct BookSearchView: View {
             }
 
             if !query.isEmpty && filteredRecipes.isEmpty && filteredFoods.isEmpty {
-                ContentUnavailableView.search(text: query)
+                EmptyStateView(
+                    symbol: "magnifyingglass",
+                    title: "No Results for \"\(query)\"",
+                    subtitle: "Check the spelling or try a different search."
+                )
             }
         }
         .searchable(

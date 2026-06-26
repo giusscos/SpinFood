@@ -150,13 +150,11 @@ struct FoodView: View {
                         }
                 }
             } else {
-                ContentUnavailableView {
-                    Label("No Ingredients", systemImage: "cabinet")
-                        .font(.system(.title3, design: .serif))
-                } description: {
-                    Text("Tap + to add your first ingredient")
-                        .font(.system(.subheadline, design: .serif))
-                }
+                EmptyStateView(
+                    symbol: "cabinet",
+                    title: "No Ingredients",
+                    subtitle: "Tap + to add your first ingredient"
+                )
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }

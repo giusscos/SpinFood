@@ -9,21 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct SummaryView: View {
-    enum ActiveSheet: Identifiable {
-        case createRecipe
-        case createFood
-
-        var id: String {
-            switch self {
-            case .createRecipe: return "createRecipe"
-            case .createFood:   return "createFood"
-            }
-        }
-    }
-
     @Environment(Store.self) var store
-
-    @State private var activeSheet: ActiveSheet?
 
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
@@ -65,12 +51,6 @@ struct SummaryView: View {
                     .font(.system(.title3, design: .serif).weight(.semibold))
             }
         }
-        .sheet(item: $activeSheet) { sheet in
-            switch sheet {
-            case .createFood:   EditFoodView()
-            case .createRecipe: EditRecipeView()
-            }
-        }
     }
 
     // MARK: - Subscriber content
@@ -104,41 +84,27 @@ struct SummaryView: View {
     @ViewBuilder
     private var emptyDataState: some View {
         if foods.isEmpty {
-            ContentUnavailableView {
-                Label("No Ingredients", systemImage: "cabinet")
-                    .font(.system(.title3, design: .serif))
-            } description: {
-                Text("Add your first ingredient to start creating recipes")
-                    .font(.system(.subheadline, design: .serif))
-            } actions: {
-                Button("Add Ingredient") { activeSheet = .createFood }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-            }
+            EmptyStateView(
+                symbol: "cabinet",
+                title: "No Ingredients",
+                subtitle: "Add your first ingredient to start creating recipes"
+            )
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
         } else if recipes.isEmpty {
-            ContentUnavailableView {
-                Label("No Recipes", systemImage: "book")
-                    .font(.system(.title3, design: .serif))
-            } description: {
-                Text("Add a recipe to start tracking your cooking habits")
-                    .font(.system(.subheadline, design: .serif))
-            } actions: {
-                Button("Add Recipe") { activeSheet = .createRecipe }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-            }
+            EmptyStateView(
+                symbol: "book",
+                title: "No Recipes",
+                subtitle: "Add a recipe to start tracking your cooking habits"
+            )
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
         } else {
-            ContentUnavailableView {
-                Label("No Activity Yet", systemImage: "chart.bar.xaxis")
-                    .font(.system(.title3, design: .serif))
-            } description: {
-                Text("Cook a recipe or log a meal to start tracking your habits")
-                    .font(.system(.subheadline, design: .serif))
-            }
+            EmptyStateView(
+                symbol: "chart.bar.xaxis",
+                title: "No Activity Yet",
+                subtitle: "Cook a recipe or log a meal to start tracking your habits"
+            )
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
         }

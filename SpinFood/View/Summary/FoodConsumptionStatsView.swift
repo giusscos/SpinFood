@@ -203,14 +203,22 @@ struct FoodConsumptionStatsView: View {
         }
     }
     
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
+
     var body: some View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(dateRangeTitle)
-                        .font(.headline)
+                        .font(.system(.subheadline, design: .serif))
                         .foregroundStyle(.secondary)
-                    
+
                     Picker("Time Range", selection: $selectedRange.animation()) {
                         ForEach(DateRange.allCases) { range in
                             Text(range.rawValue)
@@ -220,12 +228,10 @@ struct FoodConsumptionStatsView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    
+
                     Chart {
                         ForEach(processedChartData) { item in
                             if item.name == "No Data" {
-                                // For placeholder data, don't actually show a bar
-                                // but include the date point so axis labels appear
                                 RectangleMark(
                                     x: .value("Date", item.date),
                                     y: .value("Quantity", 0),
@@ -259,61 +265,110 @@ struct FoodConsumptionStatsView: View {
                     processedChartData = prepareChartData()
                 }
             }
-            
-            Section("Consumed Food") {
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+
+            Section {
                 ForEach(sortedFood) { food in
                     NavigationLink {
                         FoodConsumptionDetailView(food: food)
                     } label: {
                         HStack {
+                            Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
+                                .font(.body)
+
                             Text(food.name)
-                                .font(.headline)
+                                .font(.system(.body, design: .serif))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
+
                             if let consumptions = food.consumptions, !consumptions.isEmpty {
                                 let totalQuantity = consumptions.reduce(Decimal(0)) { $0 + $1.quantity }
                                 Text("\(NSDecimalNumber(decimal: totalQuantity).doubleValue, specifier: "%.1f") \(food.unit.abbreviation)")
+                                    .font(.system(.subheadline, design: .serif))
                                     .foregroundStyle(.secondary)
                             }
                         }
                     }
+                    .listRowBackground(Color.clear)
                 }
+            } header: {
+                Text("Consumed Food")
+                    .font(.system(.caption, design: .serif).weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1)
             }
         }
-        .navigationTitle("Food Statistics")
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Food Statistics")
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+        }
     }
 }
 
 struct FoodConsumptionDetailView: View {
     var food: FoodModel
-    
+
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
+
     var sortedConsumptions: [FoodConsumptionModel] {
         (food.consumptions ?? []).sorted { $0.consumedAt > $1.consumedAt }
     }
-    
+
     var body: some View {
         List {
-            Section("Consumption History") {
+            Section {
                 if let consumptions = food.consumptions, !consumptions.isEmpty {
                     ForEach(sortedConsumptions) { consumption in
                         HStack {
                             Text(formatDateTime(consumption.consumedAt))
-                                .font(.headline)
+                                .font(.system(.body, design: .serif))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
+
                             Text("\(NSDecimalNumber(decimal: consumption.quantity).doubleValue, specifier: "%.1f") \(consumption.unit.abbreviation)")
+                                .font(.system(.subheadline, design: .serif))
                                 .foregroundStyle(.secondary)
                         }
+                        .listRowBackground(Color.clear)
                     }
                 } else {
                     Text("No consumption recorded")
+                        .font(.system(.body, design: .serif))
                         .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
                 }
+            } header: {
+                Text("Consumption History")
+                    .font(.system(.caption, design: .serif).weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1)
             }
         }
-        .navigationTitle(food.name)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(food.name)
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+        }
     }
-    
+
     private func formatDateTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

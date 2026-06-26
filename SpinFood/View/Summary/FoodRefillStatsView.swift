@@ -186,14 +186,22 @@ struct FoodRefillStatsView: View {
         }
     }
     
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
+
     var body: some View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(dateRangeTitle)
-                        .font(.headline)
+                        .font(.system(.subheadline, design: .serif))
                         .foregroundStyle(.secondary)
-                    
+
                     Picker("Time Range", selection: $selectedRange.animation()) {
                         ForEach(DateRange.allCases) { range in
                             Text(range.rawValue)
@@ -203,12 +211,10 @@ struct FoodRefillStatsView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    
+
                     Chart {
                         ForEach(processedChartData) { item in
                             if item.name == "No Data" {
-                                // For placeholder data, don't actually show a bar
-                                // but include the date point so axis labels appear
                                 RectangleMark(
                                     x: .value("Date", item.date),
                                     y: .value("Quantity", 0),
@@ -233,78 +239,119 @@ struct FoodRefillStatsView: View {
                 }
                 .padding(.vertical)
             }
-            
-            Section("Refilled Food") {
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+
+            Section {
                 ForEach(sortedFood) { food in
                     NavigationLink {
                         FoodRefillDetailView(food: food)
                     } label: {
                         HStack {
+                            Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
+                                .font(.body)
+
                             Text(food.name)
-                            Spacer()
+                                .font(.system(.body, design: .serif))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
                             if let refills = food.refills, !refills.isEmpty {
                                 let totalQuantity = refills.reduce(Decimal(0)) { $0 + $1.quantity }
                                 Text("\(NSDecimalNumber(decimal: totalQuantity).doubleValue, specifier: "%.1f") \(food.unit.abbreviation)")
+                                    .font(.system(.subheadline, design: .serif))
                                     .foregroundStyle(.secondary)
                             }
                         }
                     }
+                    .listRowBackground(Color.clear)
                 }
+            } header: {
+                Text("Refilled Food")
+                    .font(.system(.caption, design: .serif).weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1)
             }
         }
-        .navigationTitle("Refill Statistics")
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Refill Statistics")
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+        }
         .onAppear {
-            // Update chart data when view appears
             processedChartData = prepareChartData()
         }
         .onChange(of: selectedRange) { _, _ in
-            // Update data when selected range changes
             processedChartData = prepareChartData()
         }
         .onChange(of: referenceDate) { _, _ in
-            // Update data when reference date changes
             processedChartData = prepareChartData()
         }
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
     }
 }
 
 struct FoodRefillDetailView: View {
     var food: FoodModel
-    
+
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
+
     var sortedRefills: [FoodRefillModel] {
         (food.refills ?? []).sorted { $0.refilledAt > $1.refilledAt }
     }
-    
+
     var body: some View {
         List {
-            Section("Refill History") {
+            Section {
                 if let refills = food.refills, !refills.isEmpty {
                     ForEach(sortedRefills) { refill in
                         HStack {
                             Text(formatDateTime(refill.refilledAt))
-                                .font(.headline)
+                                .font(.system(.body, design: .serif))
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                            
                             Text("\(NSDecimalNumber(decimal: refill.quantity).doubleValue, specifier: "%.1f") \(refill.unit.abbreviation)")
+                                .font(.system(.subheadline, design: .serif))
                                 .foregroundStyle(.secondary)
                         }
+                        .listRowBackground(Color.clear)
                     }
                 } else {
                     Text("No refills recorded")
+                        .font(.system(.body, design: .serif))
                         .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
                 }
+            } header: {
+                Text("Refill History")
+                    .font(.system(.caption, design: .serif).weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1)
             }
         }
-        .navigationTitle(food.name)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(food.name)
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+        }
     }
-    
+
     private func formatDateTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

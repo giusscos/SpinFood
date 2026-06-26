@@ -39,7 +39,7 @@ struct StepBookCurlView: UIViewControllerRepresentable {
         context.coordinator.onPageChange = onPageChange
 
         let newIDs = steps.map { $0.id }
-        guard newIDs != vc.lastStepIDs || vc.currentMode != mode else { return }
+        guard newIDs != vc.lastStepIDs || vc.currentMode != mode || vc.pages.isEmpty else { return }
 
         let oldCount = vc.lastStepIDs.count
         let newCount = newIDs.count
@@ -233,46 +233,51 @@ private struct StepIndexPageView: View {
     })
 
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottom) {
-                pageColor.ignoresSafeArea()
-                DottedPaperBackground().ignoresSafeArea()
+        ZStack(alignment: .bottom) {
+            pageColor.ignoresSafeArea()
+            DottedPaperBackground().ignoresSafeArea()
 
-                if steps.isEmpty {
-                    emptyState
-                } else {
-                    stepList
+            if steps.isEmpty {
+                emptyState
+            } else {
+                stepList
+            }
+
+            if !isReordering {
+                Text("Index")
+                    .font(.system(.caption, design: .serif))
+                    .foregroundStyle(.tertiary)
+                    .padding(.bottom, 12)
+            }
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            pageToolbar
+        }
+    }
+
+    private var pageToolbar: some View {
+        ZStack {
+            VStack(spacing: 1) {
+                Text("Steps")
+                    .font(.title.weight(.bold))
+                    .fontDesign(.serif)
+                Text(steps.isEmpty ? "No steps" : "\(steps.count) step\(steps.count == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack {
+                if !steps.isEmpty {
+                    Button(isReordering ? "Done" : "Reorder") {
+                        withAnimation { isReordering.toggle() }
+                    }
+                    .font(.system(.body, design: .serif))
                 }
+
+                Spacer()
 
                 if !isReordering {
-                    Text("Index")
-                        .font(.system(.caption, design: .serif))
-                        .foregroundStyle(.tertiary)
-                        .padding(.bottom, 12)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    VStack(spacing: 1) {
-                        Text("Steps")
-                            .font(.title.weight(.bold))
-                            .fontDesign(.serif)
-                        Text(steps.isEmpty ? "No steps" : "\(steps.count) step\(steps.count == 1 ? "" : "s")")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                ToolbarItem(placement: .topBarLeading) {
-                    if !steps.isEmpty {
-                        Button(isReordering ? "Done" : "Reorder") {
-                            withAnimation { isReordering.toggle() }
-                        }
-                        .font(.system(.body, design: .serif))
-                    }
-                }
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    if !isReordering {
+                    HStack(spacing: 16) {
                         Button(action: onAdd) { Image(systemName: "plus") }
                         Button("Done", action: onDone)
                             .font(.system(.body, design: .serif).weight(.semibold))
@@ -280,6 +285,9 @@ private struct StepIndexPageView: View {
                 }
             }
         }
+        .padding(.horizontal, 16)
+        .frame(height: 44)
+        .background(pageColor)
     }
 
     private var stepList: some View {

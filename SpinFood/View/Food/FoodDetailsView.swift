@@ -80,21 +80,34 @@ struct FoodDetailsView: View {
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button(role: .destructive) {
-                        dismiss()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                            modelContext.delete(food)
-                        }
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-
                     Button {
                         showEdit = true
                     } label: {
                         Label("Edit", systemImage: "pencil")
                     }
                     .matchedTransitionSource(id: "editFood", in: editNamespace)
+                    
+                    if #available(iOS 26, *) {
+                        Button(role: .destructive) {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                modelContext.delete(food)
+                            }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        .tint(.red)
+                    } else {
+                        Button(role: .destructive) {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                modelContext.delete(food)
+                            }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        .tint(.red)
+                    }
                 }
             }
             .safeAreaInset(edge: .bottom) {

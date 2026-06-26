@@ -196,11 +196,7 @@ struct ShoppingListView: View {
 
     private var subscriberContent: some View {
         Group {
-            if displayedItems.isEmpty && suggestedItems.isEmpty {
-                emptyState
-            } else {
-                shoppingList
-            }
+            shoppingList
         }
         .toolbar {
             if !checkedItems.isEmpty {
@@ -372,6 +368,26 @@ struct ShoppingListView: View {
 
     private var shoppingList: some View {
         List {
+            if foods.isEmpty {
+                Section {
+                    EmptyStateView(
+                        symbol: "cabinet",
+                        title: "No Ingredients",
+                        subtitle: "Add ingredients and link them to recipes to generate your shopping list."
+                    )
+                    .listRowBackground(paperBackground)
+                }
+            } else if displayedItems.isEmpty {
+                Section {
+                    EmptyStateView(
+                        symbol: "checkmark.rectangle.stack.fill",
+                        title: "All Stocked Up",
+                        subtitle: "All your ingredients are well stocked."
+                    )
+                    .listRowBackground(paperBackground)
+                }
+            }
+
             if !checkedItems.isEmpty || !selectedRecipes.isEmpty || filterCategory != nil {
                 Section {
                     HStack {
@@ -439,21 +455,6 @@ struct ShoppingListView: View {
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-    }
-
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label(
-                foods.isEmpty ? "No Ingredients" : "All Stocked Up",
-                systemImage: foods.isEmpty ? "cabinet" : "cart.badge.checkmark"
-            )
-            .font(.system(.title3, design: .serif))
-        } description: {
-            Text(foods.isEmpty
-                ? "Add ingredients and link them to recipes to generate your shopping list."
-                : "All your ingredients are well stocked.")
-            .font(.system(.subheadline, design: .serif))
-        }
     }
 
     // MARK: - Helpers

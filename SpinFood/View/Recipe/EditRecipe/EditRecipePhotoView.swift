@@ -12,6 +12,13 @@ struct EditRecipePhotoView: View {
     @Binding var imageItem: PhotosPickerItem?
     @Binding var imageData: Data?
     @Binding var showPhotoPicker: Bool
+    @Binding var showCamera: Bool
+    var hasOriginalImage: Bool = false
+    var onRecrop: () -> Void = {}
+
+    private var cameraAvailable: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -35,17 +42,39 @@ struct EditRecipePhotoView: View {
                 }
             }
             .padding(12)
-            .padding(.bottom, 52)
             .background(.white)
             .clipShape(.rect(cornerRadius: 2))
             .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+            .overlay(alignment: .top) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(.white.opacity(0.6))
+                    .frame(width: 56, height: 16)
+                    .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                    .offset(y: -8)
+            }
 
             if imageData != nil {
                 Menu {
                     Button {
                         showPhotoPicker = true
                     } label: {
-                        Label("Update", systemImage: "photo")
+                        Label("Photo Library", systemImage: "photo.on.rectangle")
+                    }
+
+                    if cameraAvailable {
+                        Button {
+                            showCamera = true
+                        } label: {
+                            Label("Take Photo", systemImage: "camera")
+                        }
+                    }
+
+                    if hasOriginalImage {
+                        Button {
+                            onRecrop()
+                        } label: {
+                            Label("Adjust Crop", systemImage: "crop")
+                        }
                     }
 
                     Button(role: .destructive) {
@@ -65,8 +94,20 @@ struct EditRecipePhotoView: View {
                         .background(.accent, in: .capsule)
                 }
             } else {
-                Button {
-                    showPhotoPicker = true
+                Menu {
+                    Button {
+                        showPhotoPicker = true
+                    } label: {
+                        Label("Photo Library", systemImage: "photo.on.rectangle")
+                    }
+
+                    if cameraAvailable {
+                        Button {
+                            showCamera = true
+                        } label: {
+                            Label("Take Photo", systemImage: "camera")
+                        }
+                    }
                 } label: {
                     Label("Choose photo", systemImage: "camera.fill")
                         .font(.subheadline.weight(.medium))
@@ -84,7 +125,8 @@ struct EditRecipePhotoView: View {
     EditRecipePhotoView(
         imageItem: .constant(nil),
         imageData: .constant(nil),
-        showPhotoPicker: .constant(false)
+        showPhotoPicker: .constant(false),
+        showCamera: .constant(false)
     )
     .padding()
     .background(Color(UIColor.systemGroupedBackground))

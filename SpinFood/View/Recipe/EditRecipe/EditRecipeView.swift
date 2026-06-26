@@ -9,6 +9,213 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 
+struct CameraPicker: UIViewControllerRepresentable {
+    @Binding var imageToCrop: UIImage?
+    @Environment(\.dismiss) var dismiss
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPicker
+
+        init(_ parent: CameraPicker) { self.parent = parent }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.imageToCrop = image
+            }
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+
+struct CropImageView: View {
+    @Environment(\.dismiss) var dismiss
+
+    let image: UIImage
+    let onCrop: (Data?) -> Void
+
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+    @State private var containerSize: CGSize = .zero
+
+    private var cropSize: CGFloat {
+        min(containerSize.width, containerSize.height) - 48
+    }
+
+    // Minimum scale so the image always fully covers the crop square.
+    private var minScale: CGFloat {
+        guard containerSize.width > 0 else { return 1.0 }
+        let fitScale = min(containerSize.width / image.size.width,
+                           containerSize.height / image.size.height)
+        let dw = image.size.width * fitScale
+        let dh = image.size.height * fitScale
+        return max(1.0, max(cropSize / dw, cropSize / dh))
+    }
+
+    // Clamp offset so image edges never enter the crop square.
+    private func clampedOffset(_ proposed: CGSize) -> CGSize {
+        let fitScale = min(containerSize.width / image.size.width,
+                           containerSize.height / image.size.height)
+        let dw = image.size.width * fitScale * scale
+        let dh = image.size.height * fitScale * scale
+        let maxX = max(0, (dw - cropSize) / 2)
+        let maxY = max(0, (dh - cropSize) / 2)
+        return CGSize(
+            width:  min(maxX, max(-maxX, proposed.width)),
+            height: min(maxY, max(-maxY, proposed.height))
+        )
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black
+
+                GeometryReader { geo in
+                    ZStack {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .scaleEffect(scale)
+                            .offset(offset)
+                            .gesture(
+                                SimultaneousGesture(
+                                    MagnificationGesture()
+                                        .onChanged { value in
+                                            let delta = value / lastScale
+                                            lastScale = value
+                                            scale = max(minScale, scale * delta)
+                                            offset = clampedOffset(offset)
+                                        }
+                                        .onEnded { _ in
+                                            lastScale = 1.0
+                                            offset = clampedOffset(offset)
+                                            lastOffset = offset
+                                        },
+                                    DragGesture()
+                                        .onChanged { value in
+                                            let proposed = CGSize(
+                                                width: lastOffset.width + value.translation.width,
+                                                height: lastOffset.height + value.translation.height
+                                            )
+                                            offset = clampedOffset(proposed)
+                                        }
+                                        .onEnded { _ in lastOffset = offset }
+                                )
+                            )
+
+                        // Dimming overlay with cutout
+                        Rectangle()
+                            .fill(.black.opacity(0.55))
+                            .overlay {
+                                Rectangle()
+                                    .frame(width: cropSize, height: cropSize)
+                                    .blendMode(.destinationOut)
+                            }
+                            .compositingGroup()
+                            .allowsHitTesting(false)
+
+                        // Crop border + corners
+                        Canvas { ctx, size in
+                            let w = cropSize
+                            let h = cropSize
+                            let ox = (size.width - w) / 2
+                            let oy = (size.height - h) / 2
+                            let corner: CGFloat = 22
+
+                            var border = Path()
+                            border.addRect(CGRect(x: ox, y: oy, width: w, height: h))
+                            ctx.stroke(border, with: .color(.white.opacity(0.7)), lineWidth: 1)
+
+                            var c = Path()
+                            c.move(to: CGPoint(x: ox + corner, y: oy))
+                            c.addLine(to: CGPoint(x: ox, y: oy))
+                            c.addLine(to: CGPoint(x: ox, y: oy + corner))
+                            c.move(to: CGPoint(x: ox + w - corner, y: oy))
+                            c.addLine(to: CGPoint(x: ox + w, y: oy))
+                            c.addLine(to: CGPoint(x: ox + w, y: oy + corner))
+                            c.move(to: CGPoint(x: ox, y: oy + h - corner))
+                            c.addLine(to: CGPoint(x: ox, y: oy + h))
+                            c.addLine(to: CGPoint(x: ox + corner, y: oy + h))
+                            c.move(to: CGPoint(x: ox + w - corner, y: oy + h))
+                            c.addLine(to: CGPoint(x: ox + w, y: oy + h))
+                            c.addLine(to: CGPoint(x: ox + w, y: oy + h - corner))
+                            ctx.stroke(c, with: .color(.white), lineWidth: 3)
+                        }
+                        .allowsHitTesting(false)
+                    }
+                    .onAppear {
+                        let cs = geo.size
+                        containerSize = cs
+                        // Compute initial minScale from geo.size directly
+                        let fitScale = min(cs.width / image.size.width,
+                                           cs.height / image.size.height)
+                        let dw = image.size.width * fitScale
+                        let dh = image.size.height * fitScale
+                        let crop = min(cs.width, cs.height) - 48
+                        scale = max(1.0, max(crop / dw, crop / dh))
+                    }
+                    .onChange(of: geo.size) { _, size in containerSize = size }
+                }
+            }
+            .ignoresSafeArea()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("Crop Photo")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { performCrop() }
+                        .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+
+    private func performCrop() {
+        let size = CGSize(width: cropSize, height: cropSize)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let cropped = renderer.image { _ in
+            let fitScale = min(containerSize.width / image.size.width,
+                               containerSize.height / image.size.height)
+            let totalScale = fitScale * scale
+            let dw = image.size.width * totalScale
+            let dh = image.size.height * totalScale
+            let cx = containerSize.width / 2 + offset.width
+            let cy = containerSize.height / 2 + offset.height
+            let cropLeft = (containerSize.width - cropSize) / 2
+            let cropTop  = (containerSize.height - cropSize) / 2
+            let drawX = cx - dw / 2 - cropLeft
+            let drawY = cy - dh / 2 - cropTop
+            image.draw(in: CGRect(x: drawX, y: drawY, width: dw, height: dh))
+        }
+        onCrop(cropped.resizedAndCompressed())
+        dismiss()
+    }
+}
+
 extension UIImage {
     func resizedAndCompressed(maxDimension: CGFloat = 1024, compressionQuality: CGFloat = 0.7) -> Data? {
         let size = self.size
@@ -52,6 +259,11 @@ struct EditRecipeView: View {
     @State private var steps: [StepRecipe] = []
 
     @State private var showPhotoPicker: Bool = false
+    @State private var showCamera: Bool = false
+    @State private var imageToCrop: UIImage? = nil
+    @State private var originalImage: UIImage? = nil
+    @State private var cropSource: UIImage? = nil
+    @State private var showCrop: Bool = false
     @State private var servings: Int = 2
 
     @State private var showIngredientsSheet: Bool = false
@@ -100,7 +312,10 @@ struct EditRecipeView: View {
                     EditRecipePhotoView(
                         imageItem: $imageItem,
                         imageData: $imageData,
-                        showPhotoPicker: $showPhotoPicker
+                        showPhotoPicker: $showPhotoPicker,
+                        showCamera: $showCamera,
+                        hasOriginalImage: originalImage != nil,
+                        onRecrop: startRecrop
                     )
                     .padding(.top, 32)
                     .padding(.bottom, 16)
@@ -170,6 +385,29 @@ struct EditRecipeView: View {
             }
             .background(paperBackground.ignoresSafeArea())
             .photosPicker(isPresented: $showPhotoPicker, selection: $imageItem, matching: .images, photoLibrary: .shared())
+            .fullScreenCover(isPresented: $showCamera) {
+                CameraPicker(imageToCrop: $imageToCrop)
+                    .ignoresSafeArea()
+            }
+            .fullScreenCover(isPresented: $showCrop) {
+                if let src = cropSource {
+                    CropImageView(image: src) { data in
+                        withAnimation(.smooth) { imageData = data }
+                        imageToCrop = nil
+                        cropSource = nil
+                    }
+                }
+            }
+            .onChange(of: imageToCrop) { _, newImage in
+                if let img = newImage {
+                    originalImage = img
+                    cropSource = img
+                    showCrop = true
+                }
+            }
+            .onChange(of: imageData) { _, newData in
+                if newData == nil { originalImage = nil }
+            }
             .sheet(isPresented: $showIngredientsSheet, onDismiss: { editingIngredientIndex = nil }) {
                 NavigationStack {
                     ScrollView {
@@ -256,6 +494,9 @@ struct EditRecipeView: View {
                     name = recipe.name
                     descriptionRecipe = recipe.descriptionRecipe
                     imageData = recipe.image
+                    if let data = recipe.image, let uiImage = UIImage(data: data) {
+                        originalImage = uiImage
+                    }
                     duration = recipe.duration
                     servings = recipe.servings
                     ingredients = recipe.ingredients ?? []
@@ -264,14 +505,17 @@ struct EditRecipeView: View {
             }
             .task(id: imageItem) {
                 if let data = try? await imageItem?.loadTransferable(type: Data.self),
-                   let uiImage = UIImage(data: data),
-                   let compressedData = uiImage.resizedAndCompressed() {
-                    withAnimation(.smooth) {
-                        imageData = compressedData
-                    }
+                   let uiImage = UIImage(data: data) {
+                    imageToCrop = uiImage
                 }
             }
         }
+    }
+
+    private func startRecrop() {
+        guard let original = originalImage else { return }
+        cropSource = original
+        showCrop = true
     }
 
     private var divider: some View {

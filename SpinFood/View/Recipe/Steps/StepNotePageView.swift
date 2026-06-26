@@ -60,9 +60,9 @@ struct StepNotePageView: View {
                     Spacer(minLength: 80)
                 }
             }
-            .safeAreaInset(edge: .top, spacing: 0) {
-                pageToolbar
-            }
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            pageToolbar
         }
         .sheet(item: $editingBlock) { block in
             StepBlockEditorSheet(block: block, ingredients: ingredients, allSteps: allSteps)

@@ -50,6 +50,12 @@ struct ContentView: View {
             get: { navigator.selectedTab },
             set: { navigator.selectedTab = $0 }
         )) {
+            Tab("Summary", systemImage: "chart.bar.xaxis.ascending", value: AppTab.summary) {
+                NavigationStack {
+                    SummaryView()
+                }
+            }
+            
             Tab("Recipes", systemImage: "book.fill", value: AppTab.recipes) {
                 BookContainer()
             }
@@ -62,12 +68,6 @@ struct ContentView: View {
 
             Tab("Shopping", systemImage: "cart.fill", value: AppTab.shopping) {
                 ShoppingListView()
-            }
-
-            Tab("Summary", systemImage: "chart.bar.xaxis.ascending", value: AppTab.summary) {
-                NavigationStack {
-                    SummaryView()
-                }
             }
 
             Tab(value: AppTab.search, role: .search) {

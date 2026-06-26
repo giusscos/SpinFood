@@ -121,14 +121,22 @@ struct RecipeCookingStatsView: View {
         }
     }
     
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
+
     var body: some View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 16) {
-                        Text(dateRangeTitle)
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                    
+                    Text(dateRangeTitle)
+                        .font(.system(.subheadline, design: .serif))
+                        .foregroundStyle(.secondary)
+
                     Picker("Time Range", selection: $selectedRange.animation()) {
                         ForEach(DateRange.allCases) { range in
                             Text(range.rawValue)
@@ -138,70 +146,111 @@ struct RecipeCookingStatsView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    
+
                     Chart(chartDataPoints, id: \.date) { item in
                         BarMark(
                             x: .value("Date", item.date),
                             y: .value("Recipes", item.count)
                         )
+                        .foregroundStyle(Color.orange.opacity(0.85))
                         .cornerRadius(12)
                     }
                     .frame(height: 250)
                 }
                 .padding(.vertical)
             }
-            
-            Section("Recipes Cooked") {
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+
+            Section {
                 ForEach(sortedRecipes) { recipe in
                     NavigationLink {
                         RecipeCookingDetailView(recipe: recipe)
                     } label: {
                         HStack {
                             Text(recipe.name)
+                                .font(.system(.body, design: .serif))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
+
                             Text("\(recipe.cookedAt.count) times")
+                                .font(.system(.subheadline, design: .serif))
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .listRowBackground(Color.clear)
                 }
+            } header: {
+                Text("Recipes Cooked")
+                    .font(.system(.caption, design: .serif).weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1)
             }
         }
-        .navigationTitle("Cooking Statistics")
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Cooking Statistics")
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+        }
     }
 }
 
 struct RecipeCookingDetailView: View {
     var recipe: RecipeModel
-    
+
+    private var paperBackground: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? .systemBackground
+                : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+        })
+    }
+
     var sortedCookingDates: [Date] {
         recipe.cookedAt.sorted(by: >)
     }
-    
+
     var body: some View {
         List {
-            Section("Cooking History") {
+            Section {
                 if !sortedCookingDates.isEmpty {
                     ForEach(sortedCookingDates, id: \.self) { date in
                         Text(formatDateTime(date))
-                            .font(.headline)
+                            .font(.system(.body, design: .serif))
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .listRowBackground(Color.clear)
                     }
                 } else {
                     Text("No cooking recorded")
+                        .font(.system(.body, design: .serif))
                         .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
                 }
+            } header: {
+                Text("Cooking History")
+                    .font(.system(.caption, design: .serif).weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1)
             }
         }
-        .navigationTitle(recipe.name)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(paperBackground.ignoresSafeArea())
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(recipe.name)
+                    .font(.system(.title3, design: .serif).weight(.semibold))
+            }
+        }
     }
-    
+
     private func formatDateTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

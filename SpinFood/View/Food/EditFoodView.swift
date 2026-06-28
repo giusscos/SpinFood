@@ -312,46 +312,6 @@ struct EmojiPickerSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                         .padding(.top, 8)
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Custom emoji")
-                            .font(.system(.caption, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal)
-
-                        HStack {
-                            TextField("Type or paste an emoji…", text: $customInput)
-                                .font(.system(size: 24))
-                                .onChange(of: customInput) { _, newValue in
-                                    guard !newValue.isEmpty else { return }
-                                    let first = String(newValue.prefix(1))
-                                    if first != customInput { customInput = first }
-                                    selectedEmoji = first
-                                }
-
-                            if !customInput.isEmpty {
-                                Button {
-                                    customInput = ""
-                                    selectedEmoji = ""
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(Color.secondary.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .padding(.horizontal)
-
-                        if #available(iOS 26, *) {
-                            Text("Tip: Open the emoji keyboard to generate a custom Genmoji ✨")
-                                .font(.system(.caption2, design: .rounded))
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
-                        }
-                    }
-
                     ForEach(emojiGroups, id: \.0) { group, emojis in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(group)

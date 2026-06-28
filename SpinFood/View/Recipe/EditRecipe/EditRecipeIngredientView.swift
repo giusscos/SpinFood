@@ -235,6 +235,13 @@ private final class TickRulerUIView: UIView {
     private var previousIntTicks: Int = 0
     private var effectiveTranslation: CGFloat = 0
 
+    // Inertia scrolling after drag release
+    private var displayLink: CADisplayLink?
+    private var inertiaVelocity: CGFloat = 0
+    private var inertiaTotalOffset: CGFloat = 0
+    private var inertiaBaseValue: Decimal = 0
+    private var inertiaLastIntTicks: Int = 0
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -251,6 +258,68 @@ private final class TickRulerUIView: UIView {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
         pan.maximumNumberOfTouches = 1
         addGestureRecognizer(pan)
+        feedback.prepare()
+    }
+
+    override func willMove(toWindow newWindow: UIWindow?) {
+        super.willMove(toWindow: newWindow)
+        if newWindow == nil { stopInertia() }
+    }
+
+    private func startInertia(velocity: CGFloat) {
+        stopInertia()
+        guard abs(velocity) > 50 else {
+            effectiveTranslation = 0
+            setNeedsDisplay()
+            return
+        }
+        inertiaVelocity = velocity
+        inertiaTotalOffset = 0
+        inertiaBaseValue = value
+        inertiaLastIntTicks = 0
+        effectiveTranslation = 0
+        let proxy = InertiaProxy(self)
+        let link = CADisplayLink(target: proxy, selector: #selector(InertiaProxy.step))
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+    }
+
+    private func stopInertia() {
+        displayLink?.invalidate()
+        displayLink = nil
+    }
+
+    fileprivate func inertiaStep(_ link: CADisplayLink) {
+        let dt = CGFloat(min(link.targetTimestamp - link.timestamp, 1.0 / 30.0))
+        inertiaVelocity *= pow(0.95, dt * 60)
+        inertiaTotalOffset += inertiaVelocity * dt
+        effectiveTranslation = inertiaTotalOffset
+
+        let rawTicksFloat = -inertiaTotalOffset / tickSpacing
+        let intTicks = Int(rawTicksFloat)
+        let desiredValue = inertiaBaseValue + Decimal(intTicks) * tickStep
+        let clampedValue = max(minValue, min(maxValue, desiredValue))
+
+        if intTicks != inertiaLastIntTicks {
+            inertiaLastIntTicks = intTicks
+            if clampedValue != value {
+                value = clampedValue
+                feedback.selectionChanged()
+                feedback.prepare()
+                onValueChanged?(value)
+            }
+        }
+
+        let atBoundary = (clampedValue <= minValue && inertiaVelocity > 0) ||
+                         (clampedValue >= maxValue && inertiaVelocity < 0)
+
+        setNeedsDisplay()
+
+        if abs(inertiaVelocity) < 5.0 || atBoundary {
+            stopInertia()
+            effectiveTranslation = 0
+            setNeedsDisplay()
+        }
     }
 
     override func draw(_ rect: CGRect) {
@@ -259,31 +328,45 @@ private final class TickRulerUIView: UIView {
         let centerX = rect.width / 2
         let halfTicks = Int(rect.width / tickSpacing / 2) + 2
         let offset = effectiveTranslation.truncatingRemainder(dividingBy: tickSpacing)
+        // All ticks share a common baseline; only the top edge scales.
+        let baseline = rect.height - 4
 
-        ctx.setLineWidth(1.5)
+        // Pre-extract color components so each tick can linearly blend accent → base.
+        var ar: CGFloat = 0, ag: CGFloat = 0, ab: CGFloat = 0, aa: CGFloat = 0
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        tintColor.getRed(&ar, green: &ag, blue: &ab, alpha: &aa)
+        UIColor.label.withAlphaComponent(0.3).getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+
         ctx.setLineCap(.round)
 
         for i in -halfTicks...halfTicks {
             let x = centerX + CGFloat(i) * tickSpacing + offset
             guard x >= 0 && x <= rect.width else { continue }
             let d = abs(x - centerX)
-            let tickH: CGFloat = d < tickSpacing * 0.5 ? 28 : (d < tickSpacing * 1.5 ? 18 : 10)
 
-            ctx.setStrokeColor(UIColor.label.withAlphaComponent(0.35).cgColor)
+            // t = 0 at center (full accent, tallest) → 1 at 2.5 ticks away (base style)
+            let t = min(d / (tickSpacing * 2.5), 1.0)
+
+            let tickH    = 28 + (8   - 28)  * t   // 28 → 8
+            let lineWidth = 2 + (1.5 - 2)   * t   // 2  → 1.5
+            let color = UIColor(red:   ar + (br - ar) * t,
+                                green: ag + (bg - ag) * t,
+                                blue:  ab + (bb - ab) * t,
+                                alpha: aa + (ba - aa) * t)
+
+            ctx.setLineWidth(lineWidth)
+            ctx.setStrokeColor(color.cgColor)
             ctx.beginPath()
-            ctx.move(to: CGPoint(x: x, y: (rect.height - tickH) / 2))
-            ctx.addLine(to: CGPoint(x: x, y: (rect.height + tickH) / 2))
+            ctx.move(to: CGPoint(x: x, y: baseline - tickH))
+            ctx.addLine(to: CGPoint(x: x, y: baseline))
             ctx.strokePath()
         }
-
-        // Fixed center accent marker
-        ctx.setFillColor(tintColor.cgColor)
-        ctx.fill(CGRect(x: centerX - 1, y: (rect.height - 28) / 2, width: 2, height: 28))
     }
 
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
+            stopInertia()
             feedback.prepare()
             gestureStartValue = value
             previousIntTicks = 0
@@ -316,13 +399,21 @@ private final class TickRulerUIView: UIView {
                 if clampedValue != value {
                     value = clampedValue
                     feedback.selectionChanged()
+                    feedback.prepare()
                     onValueChanged?(value)
                 }
             }
 
             setNeedsDisplay()
 
-        case .ended, .cancelled:
+        case .ended:
+            let velocity = gesture.velocity(in: self).x
+            gestureStartValue = value
+            previousIntTicks = 0
+            startInertia(velocity: velocity)
+
+        case .cancelled:
+            stopInertia()
             gestureStartValue = value
             previousIntTicks = 0
             effectiveTranslation = 0
@@ -332,6 +423,13 @@ private final class TickRulerUIView: UIView {
             break
         }
     }
+}
+
+// Weak proxy breaks the CADisplayLink ↔ TickRulerUIView retain cycle.
+private final class InertiaProxy: NSObject {
+    private weak var ruler: TickRulerUIView?
+    init(_ ruler: TickRulerUIView) { self.ruler = ruler }
+    @objc func step(_ link: CADisplayLink) { ruler?.inertiaStep(link) }
 }
 
 #Preview {

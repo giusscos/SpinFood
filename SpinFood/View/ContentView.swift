@@ -23,11 +23,28 @@ struct ContentView: View {
         }
     }
 
+    @ViewBuilder
     private var mainTabView: some View {
-        Group {
-            if #available(iOS 26.1, *) {
-                coreTabView
-                    .tabViewBottomAccessory(isEnabled: !store.hasActiveSubscription && (navigator.selectedTab == .shopping || navigator.selectedTab == .summary)) {
+        if #available(iOS 26.1, *) {
+            let showRefill = navigator.checkedShoppingItemsCount > 0 && navigator.selectedTab == .shopping
+            let showUpgrade = !store.hasActiveSubscription && (navigator.selectedTab == .shopping || navigator.selectedTab == .summary)
+            coreTabView
+                .tabViewBottomAccessory(isEnabled: showRefill || showUpgrade) {
+                    if showRefill {
+                        Button {
+                            navigator.triggerShoppingRefill = true
+                        } label: {
+                            Label(
+                                "Refill \(navigator.checkedShoppingItemsCount) Selected",
+                                systemImage: "bag.fill.badge.plus"
+                            )
+                            .font(.system(.body, design: .rounded).weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
+                    } else {
                         Button {
                             isPresentingPaywall = true
                         } label: {
@@ -39,9 +56,9 @@ struct ContentView: View {
                         .buttonStyle(.borderedProminent)
                         .buttonBorderShape(.capsule)
                     }
-            } else {
-                coreTabView
-            }
+                }
+        } else {
+            coreTabView
         }
     }
 

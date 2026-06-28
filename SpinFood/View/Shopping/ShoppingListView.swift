@@ -30,6 +30,7 @@ enum ShoppingSortOption: CaseIterable {
 
 struct ShoppingListView: View {
     @Environment(Store.self) var store
+    @Environment(AppNavigator.self) var navigator
 
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
@@ -109,8 +110,6 @@ struct ShoppingListView: View {
         return groups.sorted { $0.key.rawValue < $1.key.rawValue }
     }
 
-    var uncheckedCount: Int { displayedItems.filter { !checkedItems.contains($0.id) }.count }
-
     var checkedFoodsForRefill: [FoodModel] {
         foods.filter { checkedItems.contains($0.id) }
     }
@@ -129,13 +128,14 @@ struct ShoppingListView: View {
             food.quantity > 0 &&
             food.stockPercentage <= 0.05
         }.map { food in
-            ShoppingItem(
+            let names = recipeNames(for: food)
+            return ShoppingItem(
                 id: food.id,
                 foodName: food.name,
                 category: food.category,
                 neededQuantity: food.quantity - food.currentQuantity,
                 unit: food.unit,
-                recipes: ["Low stock"]
+                recipes: names.isEmpty ? ["Low stock"] : names
             )
         }
     }
@@ -145,16 +145,22 @@ struct ShoppingListView: View {
     }
 
     var manualItems: [ShoppingItem] {
-        foods.filter { manuallyAdded.contains($0.id) }.map { food in
+        foods.filter { manuallyAdded.contains($0.id) && $0.currentQuantity < $0.quantity }.map { food in
             ShoppingItem(
                 id: food.id,
                 foodName: food.name,
                 category: food.category,
                 neededQuantity: food.quantity - food.currentQuantity,
                 unit: food.unit,
-                recipes: []
+                recipes: recipeNames(for: food)
             )
         }
+    }
+
+    private func recipeNames(for food: FoodModel) -> [String] {
+        recipes
+            .filter { recipe in recipe.ingredients?.contains { $0.ingredient?.id == food.id } ?? false }
+            .map { $0.name }
     }
 
     var allMainItems: [ShoppingItem] {
@@ -245,15 +251,6 @@ struct ShoppingListView: View {
                         )
                     }
 
-                    Divider()
-
-                    Button {
-                        foodsToRefill = allFoodsNeedingRefill
-                        showRefillSheet = true
-                    } label: {
-                        Label("Refill All Food", systemImage: "bag.fill.badge.plus")
-                    }
-                    .disabled(allFoodsNeedingRefill.isEmpty)
                 } label: {
                     Label("Menu", systemImage: "ellipsis")
                 }
@@ -261,29 +258,47 @@ struct ShoppingListView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if !checkedItems.isEmpty {
-                Button {
-                    foodsToRefill = checkedFoodsForRefill
-                    showRefillSheet = true
-                } label: {
-                    Label(
-                        "Refill \(checkedItems.count) Selected",
-                        systemImage: "bag.fill.badge.plus"
-                    )
-                    .font(.system(.body, design: .rounded).weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                if #unavailable(iOS 26) {
+                    Button {
+                        foodsToRefill = checkedFoodsForRefill
+                        showRefillSheet = true
+                    } label: {
+                        Label(
+                            "Refill \(checkedItems.count) Selected",
+                            systemImage: "bag.fill.badge.plus"
+                        )
+                        .font(.system(.body, design: .rounded).weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(.bar)
                 }
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.capsule)
-                .padding()
-                .background(.bar)
+            }
+        }
+        .onChange(of: checkedItems) { _, newValue in
+            navigator.checkedShoppingItemsCount = newValue.count
+        }
+        .onChange(of: navigator.triggerShoppingRefill) { _, trigger in
+            if trigger {
+                foodsToRefill = checkedFoodsForRefill
+                showRefillSheet = true
+                navigator.triggerShoppingRefill = false
             }
         }
         .sheet(isPresented: $showRecipePicker) {
             RecipePickerSheet(recipes: recipes, selectedRecipes: $selectedRecipes)
         }
         .sheet(isPresented: $showRefillSheet, onDismiss: {
+            let refilled = foodsToRefill
             foodsToRefill = []
+            for food in refilled where food.currentQuantity >= food.quantity {
+                checkedItems.remove(food.id)
+                manuallyAdded.remove(food.id)
+            }
         }) {
             NavigationStack {
                 FoodRefillView(food: foodsToRefill)
@@ -388,7 +403,7 @@ struct ShoppingListView: View {
                 }
             }
 
-            if !checkedItems.isEmpty || !selectedRecipes.isEmpty || filterCategory != nil {
+            if !selectedRecipes.isEmpty || filterCategory != nil {
                 Section {
                     HStack {
                         if !selectedRecipes.isEmpty {
@@ -404,34 +419,9 @@ struct ShoppingListView: View {
                                 .font(.system(.caption, design: .rounded))
                                 .foregroundStyle(categoryColor(for: cat))
                         }
-                        Spacer()
-                        Text("\(uncheckedCount) item\(uncheckedCount == 1 ? "" : "s") left")
-                            .font(.system(.caption, design: .rounded))
-                            .foregroundStyle(.secondary)
                     }
                 }
                 .listRowBackground(paperBackground)
-            }
-
-            ForEach(groupedDisplayedItems, id: \.0) { category, items in
-                Section {
-                    ForEach(items) { item in
-                        ShoppingItemRow(
-                            item: item,
-                            isChecked: checkedItems.contains(item.id),
-                            onToggle: { toggleCheck(item) }
-                        )
-                        .listRowBackground(paperBackground)
-                    }
-                } header: {
-                    HStack(spacing: 4) {
-                        Image(systemName: category.icon)
-                        Text(category.rawValue)
-                    }
-                    .font(.system(.caption, design: .rounded).weight(.bold))
-                    .foregroundStyle(categoryColor(for: category))
-                    .textCase(nil)
-                }
             }
 
             if !suggestedItems.isEmpty {
@@ -452,9 +442,49 @@ struct ShoppingListView: View {
                     .textCase(nil)
                 }
             }
+
+            ForEach(groupedDisplayedItems, id: \.0) { category, items in
+                Section {
+                    ForEach(items) { item in
+                        ShoppingItemRow(
+                            item: item,
+                            isChecked: checkedItems.contains(item.id),
+                            onToggle: { toggleCheck(item) }
+                        )
+                        .listRowBackground(paperBackground)
+                    }
+                } header: {
+                    let allChecked = items.allSatisfy { checkedItems.contains($0.id) }
+                    HStack {
+                        HStack(spacing: 4) {
+                            Image(systemName: category.icon)
+                            Text(category.rawValue)
+                        }
+                        .font(.system(.caption, design: .rounded).weight(.bold))
+                        .foregroundStyle(categoryColor(for: category))
+
+                        Spacer()
+
+                        Button {
+                            if allChecked {
+                                items.forEach { checkedItems.remove($0.id) }
+                            } else {
+                                items.forEach { checkedItems.insert($0.id) }
+                            }
+                        } label: {
+                            Text(allChecked ? "Deselect All" : "Select All")
+                                .font(.system(.caption2, design: .rounded).weight(.medium))
+                                .foregroundStyle(categoryColor(for: category))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .textCase(nil)
+                }
+            }
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
+        .contentMargins(.top, 4, for: .scrollContent)
     }
 
     // MARK: - Helpers
@@ -520,10 +550,12 @@ struct ShoppingItemRow: View {
                     .strikethrough(isChecked)
                     .foregroundStyle(isChecked ? .secondary : .primary)
 
-                Text(item.recipes.prefix(2).joined(separator: ", "))
-                    .font(.system(.caption, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                if !item.recipes.isEmpty {
+                    Text(item.recipes.prefix(2).joined(separator: ", "))
+                        .font(.system(.caption, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
 
             Spacer()

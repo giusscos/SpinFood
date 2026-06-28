@@ -32,11 +32,22 @@ struct RecipeConfirmEatView: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(maxHeight: 200)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 200)
+                            .clipped()
+                            .padding(12)
+                            .background(.white)
                             .clipShape(.rect(cornerRadius: 2))
-                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 3)
+                            .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+                            .overlay(alignment: .top) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(.white.opacity(0.6))
+                                    .frame(width: 56, height: 16)
+                                    .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                    .offset(y: -8)
+                            }
                             .rotationEffect(.degrees(-1))
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 16)
                     }
                     .listRowInsets(.init(top: 8, leading: 20, bottom: 8, trailing: 20))
                     .listRowBackground(Color.clear)
@@ -75,8 +86,14 @@ struct RecipeConfirmEatView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(paperBackground.ignoresSafeArea())
-            .navigationTitle("Ready to eat?")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Ready to eat?")
+                        .font(.system(.title3, design: .serif).weight(.semibold))
+                }
+
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
@@ -85,15 +102,20 @@ struct RecipeConfirmEatView: View {
                             .font(.system(.body, design: .rounded))
                     }
                 }
-                
-                ToolbarItem(placement: .topBarTrailing) {
+
+            }
+            .toolbar {
+                ToolbarItem(placement: .bottomBar) {
                     Button {
                         consumeFood()
                         dismiss()
                     } label: {
-                        Text("Confirm")
+                        Label("Confirm", systemImage: "fork.knife")
                             .font(.system(.body, design: .rounded).weight(.semibold))
+                            .labelStyle(.titleOnly)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                 }
             }
         }

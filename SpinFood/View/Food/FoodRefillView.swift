@@ -50,20 +50,18 @@ struct FoodRefillView: View {
                 }
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            Button {
-                refillAllFood()
-            } label: {
-                Label("Confirm Refill", systemImage: "bag.fill.badge.plus")
-                    .font(.system(.body, design: .rounded).weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+        .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+                Button {
+                    refillAllFood()
+                } label: {
+                    Label("Confirm", systemImage: "bag.fill.badge.plus")
+                        .font(.system(.body, design: .rounded).weight(.semibold))
+                        .labelStyle(.titleOnly)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .background(.bar)
         }
     }
 

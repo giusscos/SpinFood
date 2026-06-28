@@ -8,6 +8,8 @@ final class AppNavigator {
     var selectedTab: AppTab = .recipes
     var requestedBookPage: Int? = nil
     var currentBookPage: Int = 0
+    var checkedShoppingItemsCount: Int = 0
+    var triggerShoppingRefill: Bool = false
 }
 
 // MARK: - SwiftUI Representable

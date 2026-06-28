@@ -175,7 +175,7 @@ struct BookEndPage: View {
         VStack(spacing: 0) {
             dividerLine
             actionRow(icon: "lock.shield", label: "Privacy Policy", isExternal: true) {
-                openURL(URL(string: "https://giusscos.it/privacy")!)
+                openURL(URL(string: "https://foo-recipe.com/privacy")!)
             }
             dividerLine
             actionRow(icon: "doc.text", label: "Terms of Use", isExternal: true) {

@@ -134,7 +134,7 @@ struct PaywallView: View {
             Text("·")
                 .foregroundStyle(.tertiary)
             
-            Link("Privacy Policy", destination: URL(string: "https://giusscos.it/privacy")!)
+            Link("Privacy Policy", destination: URL(string: "https://foo-recipe.com/privacy")!)
                 .foregroundColor(.secondary)
                 .buttonStyle(.plain)
         }

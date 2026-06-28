@@ -123,22 +123,33 @@ struct BookRecipePage: View {
                     .padding(8)
                     .background(.white)
                     .shadow(color: .black.opacity(0.18), radius: 10, x: 1, y: 4)
+                    .overlay(alignment: .top) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(.white.opacity(0.6))
+                            .frame(width: 56, height: 16)
+                            .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                            .offset(y: -8)
+                    }
                     .rotationEffect(.degrees(-1.2))
             } else {
                 ZStack {
-                    LinearGradient(
-                        colors: [Color.orange.opacity(0.55), Color.red.opacity(0.4)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    Image(systemName: "fork.knife")
-                        .font(.system(size: 44))
-                        .foregroundStyle(.white.opacity(0.5))
+                    Color(UIColor.secondarySystemFill)
+
+                    Image(systemName: "camera")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.secondary)
                 }
                 .frame(width: 280, height: 200)
                 .padding(8)
                 .background(.white)
                 .shadow(color: .black.opacity(0.18), radius: 10, x: 1, y: 4)
+                .overlay(alignment: .top) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(.white.opacity(0.6))
+                        .frame(width: 56, height: 16)
+                        .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                        .offset(y: -8)
+                }
                 .rotationEffect(.degrees(-1.2))
             }
             Spacer()

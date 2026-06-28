@@ -41,6 +41,13 @@ private struct PolaroidImageView: View {
                 .background(.white)
                 .clipShape(.rect(cornerRadius: 2))
                 .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+                .overlay(alignment: .top) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(.white.opacity(0.6))
+                        .frame(width: 56, height: 16)
+                        .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                        .offset(y: -8)
+                }
                 .rotationEffect(.degrees(rotation))
         }
     }
@@ -78,14 +85,11 @@ struct RecipeDetailsView: View {
                             .padding(.bottom, 16)
                     } else {
                         ZStack {
-                            LinearGradient(
-                                colors: [.orange.opacity(0.7), .red.opacity(0.5)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            Image(systemName: "fork.knife")
-                                .font(.system(size: 48))
-                                .foregroundStyle(.white.opacity(0.5))
+                            Color(UIColor.secondarySystemFill)
+
+                            Image(systemName: "camera")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.secondary)
                         }
                         .frame(width: 260, height: 220)
                         .padding(12)
@@ -93,6 +97,13 @@ struct RecipeDetailsView: View {
                         .background(.white)
                         .clipShape(.rect(cornerRadius: 2))
                         .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 4)
+                        .overlay(alignment: .top) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(.white.opacity(0.6))
+                                .frame(width: 56, height: 16)
+                                .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 1)
+                                .offset(y: -8)
+                        }
                         .rotationEffect(.degrees(-1.5))
                         .padding(.top, 32)
                         .padding(.bottom, 16)

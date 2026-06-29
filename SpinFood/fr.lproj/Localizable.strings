@@ -1,0 +1,286 @@
+// MARK: - Navigation / Tabs
+"Inventory" = "Inventaire";
+"Summary" = "Résumé";
+"Shopping List" = "Liste de courses";
+"Search" = "Rechercher";
+
+// MARK: - Common Actions
+"Done" = "Terminé";
+"Cancel" = "Annuler";
+"Save" = "Enregistrer";
+"Edit" = "Modifier";
+"Delete" = "Supprimer";
+"Add" = "Ajouter";
+"Close" = "Fermer";
+"OK" = "OK";
+"Confirm" = "Confirmer";
+"Update" = "Mettre à jour";
+"Remove" = "Retirer";
+"Clear" = "Effacer";
+"Menu" = "Menu";
+"Hide Keyboard" = "Masquer le clavier";
+
+// MARK: - Book / Recipe Index
+"Index" = "Index";
+"No recipes yet" = "Pas encore de recettes";
+"Your recipe book is empty" = "Ton livre de recettes est vide";
+"Tap + to write your first recipe" = "Appuie sur + pour écrire ta première recette";
+"Edit Recipe" = "Modifier la recette";
+"Delete Recipe" = "Supprimer la recette";
+"recipe" = "recette";
+"recipes" = "recettes";
+
+// MARK: - Book Recipe Page
+"Ingredients" = "Ingrédients";
+"Serves" = "Portions";
+"serving" = "portion";
+"servings" = "portions";
+"TIME" = "TEMPS";
+"SERVES" = "PORTIONS";
+"RATING" = "NOTE";
+"Missing" = "Manquant";
+"ingredient" = "ingrédient";
+"Cook Step by Step" = "Cuisiner étape par étape";
+"View Steps" = "Voir les étapes";
+"Mark as Eaten" = "Marquer comme mangé";
+
+// MARK: - Book Search
+"All Recipes" = "Toutes les recettes";
+"Recipes" = "Recettes";
+"Pantry" = "Garde-manger";
+"No Results for" = "Aucun résultat pour";
+"Check the spelling or try a different search." = "Vérifie l'orthographe ou essaie une autre recherche.";
+"Recipes or ingredients…" = "Recettes ou ingrédients…";
+"Search Your Recipe Book" = "Recherche dans ton livre de recettes";
+"Instantly find any recipe or ingredient across your entire collection." = "Trouve instantanément n'importe quelle recette ou ingrédient dans toute ta collection.";
+"Out of stock" = "En rupture de stock";
+"Low" = "Faible";
+"Upgrade to Pro" = "Passer à Pro";
+
+// MARK: - Food / Inventory
+"All Food" = "Tous les aliments";
+"Low Stock" = "Stock faible";
+"Out of Stock" = "En rupture de stock";
+"No Ingredients" = "Aucun ingrédient";
+"Tap + to add your first ingredient" = "Appuie sur + pour ajouter ton premier ingrédient";
+"Sort by" = "Trier par";
+"Filter" = "Filtrer";
+"Delete selected" = "Supprimer la sélection";
+"Search pantry" = "Rechercher dans le garde-manger";
+"Low stock" = "Stock faible";
+"Name (A-Z)" = "Nom (A-Z)";
+"Name (Z-A)" = "Nom (Z-A)";
+"Quantity (Low-High)" = "Quantité (Croissant)";
+"Quantity (High-Low)" = "Quantité (Décroissant)";
+"Date (Oldest first)" = "Date (Plus ancienne d'abord)";
+"Date (Newest first)" = "Date (Plus récente d'abord)";
+
+// MARK: - Food Details
+"Expiry" = "Expiration";
+"Expired" = "Expiré";
+"Expiring soon" = "Expire bientôt";
+"days left" = "jours restants";
+"available" = "disponible";
+"How much did you eat?" = "Combien as-tu mangé ?";
+"Eat" = "Manger";
+"Refill" = "Réapprovisionner";
+"Log" = "Enregistrer";
+"Ready to refill?" = "Prêt à réapprovisionner ?";
+
+// MARK: - Edit Food
+"Emoji" = "Emoji";
+"Food emoji" = "Emoji d'aliment";
+"None selected" = "Aucun sélectionné";
+"Custom emoji set" = "Ensemble d'emojis personnalisé";
+"Food details" = "Détails de l'aliment";
+"Name" = "Nom";
+"Category" = "Catégorie";
+"Unit" = "Unité";
+"Stock quantity" = "Quantité en stock";
+"Current quantity" = "Quantité actuelle";
+"Expiry date" = "Date d'expiration";
+"Track expiry date" = "Suivre la date d'expiration";
+"Expires on" = "Expire le";
+"Edit Food" = "Modifier l'aliment";
+"Add Food" = "Ajouter un aliment";
+"Fruits" = "Fruits";
+"Vegetables" = "Légumes";
+"Meat & Fish" = "Viande et poisson";
+"Dairy & Grains" = "Produits laitiers et céréales";
+"Snacks & Pantry" = "Snacks et garde-manger";
+"Drinks" = "Boissons";
+"Choose Emoji" = "Choisir un emoji";
+
+// MARK: - Edit Recipe
+"Recipe name" = "Nom de la recette";
+"Add a description" = "Ajouter une description";
+"Duration" = "Durée";
+"item" = "élément";
+"items" = "éléments";
+"Edit Ingredients" = "Modifier les ingrédients";
+"Steps" = "Étapes";
+"step" = "étape";
+"steps" = "étapes";
+"Edit Steps" = "Modifier les étapes";
+"Crop Photo" = "Recadrer la photo";
+"Photo Library" = "Photothèque";
+"Take Photo" = "Prendre une photo";
+"Adjust Crop" = "Ajuster le recadrage";
+"Choose photo" = "Choisir une photo";
+"Edit photo" = "Modifier la photo";
+
+// MARK: - Edit Ingredient
+"Edit Ingredient" = "Modifier l'ingrédient";
+"Add Ingredient" = "Ajouter un ingrédient";
+
+// MARK: - Step Editor
+"Delete image" = "Supprimer l'image";
+"Update step photo" = "Mettre à jour la photo de l'étape";
+"Add step photo" = "Ajouter une photo à l'étape";
+"New step" = "Nouvelle étape";
+"Step to be edited" = "Étape à modifier";
+"Step description" = "Description de l'étape";
+"Add photo" = "Ajouter une photo";
+"Describe this step" = "Décris cette étape";
+"Step" = "Étape";
+"Empty" = "Vide";
+"block" = "bloc";
+"blocks" = "blocs";
+
+// MARK: - Step Block Editor
+"Text" = "Texte";
+"Bullet List" = "Liste à puces";
+"Image" = "Image";
+"Drawing" = "Dessin";
+"Timer" = "Minuteur";
+"Describe this step..." = "Décris cette étape...";
+"Bullets" = "Puces";
+"Checklist" = "Liste de contrôle";
+"Item" = "Élément";
+"Add item…" = "Ajouter un élément…";
+"Label (optional)" = "Étiquette (optionnelle)";
+"e.g. Simmer sauce, Rest dough" = "Ex. Faire mijoter la sauce, Laisser reposer la pâte";
+"Select an image" = "Sélectionner une image";
+"Library" = "Bibliothèque";
+"Camera" = "Appareil photo";
+"Draw anything for this step" = "Dessine quelque chose pour cette étape";
+"STEP" = "ÉTAPE";
+"Empty list" = "Liste vide";
+"No image" = "Aucune image";
+"Empty drawing" = "Dessin vide";
+"No ingredients selected" = "Aucun ingrédient sélectionné";
+"Tap a block below to add content" = "Appuie sur un bloc ci-dessous pour ajouter du contenu";
+"ADD CONTENT" = "AJOUTER DU CONTENU";
+"List" = "Liste";
+"Photo" = "Photo";
+"Draw" = "Dessiner";
+"Ingredient" = "Ingrédient";
+
+// MARK: - Confirm Eat
+"Ready to eat?" = "Prêt à manger ?";
+"Cooking" = "Cuisine";
+"will deduct the ingredients from your pantry." = "déduira les ingrédients de ton garde-manger.";
+"in pantry" = "dans le garde-manger";
+
+// MARK: - Shopping List
+"Filter by Recipe" = "Filtrer par recette";
+"Name A–Z" = "Nom A–Z";
+"Quantity Needed" = "Quantité nécessaire";
+"Selected" = "Sélectionné";
+"Add ingredients and link them to recipes to generate your shopping list." = "Ajoute des ingrédients et lie-les à des recettes pour générer ta liste de courses.";
+"All Stocked Up" = "Tout est en stock";
+"All your ingredients are well stocked." = "Tous tes ingrédients sont bien approvisionnés.";
+"selected" = "sélectionné";
+"Suggested" = "Suggéré";
+"Select All" = "Tout sélectionner";
+"Deselect All" = "Tout désélectionner";
+"Shopping Lists" = "Listes de courses";
+"Premium Feature" = "Fonctionnalité premium";
+"Auto-Generated List" = "Liste générée automatiquement";
+"From your recipe ingredients" = "Depuis les ingrédients de tes recettes";
+"Shop for specific meals" = "Faire les courses pour des repas spécifiques";
+"Smart Grouping" = "Regroupement intelligent";
+"Sorted by category" = "Trié par catégorie";
+"One-Tap Refill" = "Réapprovisionnement en un seul tap";
+"Restock with a single tap" = "Réapprovisionner en un seul tap";
+
+// MARK: - Summary
+"No Recipes" = "Aucune recette";
+"Add your first ingredient to start creating recipes" = "Ajoute ton premier ingrédient pour commencer à créer des recettes";
+"Add a recipe to start tracking your cooking habits" = "Ajoute une recette pour commencer à suivre tes habitudes culinaires";
+"No Activity Yet" = "Aucune activité pour l'instant";
+"Cook a recipe or log a meal to start tracking your habits" = "Cuisine une recette ou enregistre un repas pour commencer à suivre tes habitudes";
+"Kitchen Stats" = "Statistiques de cuisine";
+"Recipes Cooked" = "Recettes cuisinées";
+"Track every meal over time" = "Suivre chaque repas dans le temps";
+"Food Consumption" = "Consommation alimentaire";
+"Log what you eat" = "Enregistre ce que tu manges";
+"Pantry Refills" = "Réapprovisionnements du garde-manger";
+"History of every restock" = "Historique de chaque réapprovisionnement";
+"Food Waste Insights" = "Aperçu du gaspillage alimentaire";
+"Reduce waste, save money" = "Réduis les déchets, économise de l'argent";
+"Day" = "Jour";
+"Week" = "Semaine";
+"Month" = "Mois";
+"Year" = "Année";
+"No Data" = "Aucune donnée";
+"Grams" = "Grammes";
+"Consumed Food" = "Aliments consommés";
+"Food Statistics" = "Statistiques alimentaires";
+"Consumption History" = "Historique de consommation";
+"No consumption recorded" = "Aucune consommation enregistrée";
+"Refilled Food" = "Aliments réapprovisionnés";
+"Refill Statistics" = "Statistiques de réapprovisionnement";
+"Refill History" = "Historique de réapprovisionnement";
+"No refills recorded" = "Aucun réapprovisionnement enregistré";
+"No cooking recorded" = "Aucune cuisson enregistrée";
+"Cooking Statistics" = "Statistiques de cuisson";
+"Cooking History" = "Historique de cuisson";
+"Food eaten" = "Aliments mangés";
+"total eaten" = "total mangé";
+"Food refilled" = "Aliments réapprovisionnés";
+"total refilled" = "total réapprovisionné";
+"Recipes cooked" = "Recettes cuisinées";
+"times cooked" = "fois cuisiné";
+
+// MARK: - Time Picker
+"Hours" = "Heures";
+"Minutes" = "Minutes";
+"h" = "h";
+"m" = "m";
+
+// MARK: - App / Settings
+"Foo" = "Foo";
+"Your personal recipe book" = "Ton livre de recettes personnel";
+"PREMIUM" = "PREMIUM";
+"Restore Purchases" = "Restaurer les achats";
+"GENERAL" = "GÉNÉRAL";
+"Rate Foo" = "Noter Foo";
+"LEGAL" = "LÉGAL";
+"Privacy Policy" = "Politique de confidentialité";
+"Terms of Use" = "Conditions d'utilisation";
+"LOAD SAMPLE DATA" = "CHARGER DES DONNÉES D'EXEMPLE";
+"Made with ♥ by Giuseppe Cosenza" = "Fait avec ♥ par Giuseppe Cosenza";
+"Version" = "Version";
+"Restore Failed" = "Échec de la restauration";
+"DEBUG" = "DEBUG";
+
+// MARK: - Paywall
+"FOO" = "FOO";
+"Premium Edition" = "Édition premium";
+"Unlimited Recipes" = "Recettes illimitées";
+"No caps, ever" = "Aucune limite, jamais";
+"Recipe Search" = "Recherche de recettes";
+"Find anything instantly" = "Trouve n'importe quoi instantanément";
+"Cooking Stats" = "Statistiques de cuisine";
+"Every meal charted" = "Chaque repas enregistré";
+"Auto-generated" = "Généré automatiquement";
+"One-time purchase available" = "Achat unique disponible";
+"Lifetime Access" = "Accès à vie";
+"Pay once, cook forever. No recurring charges, ever." = "Paye une fois, cuisine pour toujours. Aucun frais récurrent, jamais.";
+
+// MARK: - Tips
+"Add your first ingredient" = "Ajoute ton premier ingrédient";
+"Tap + to stock your pantry. Ingredients can be added to any recipe." = "Appuie sur + pour approvisionner ton garde-manger. Les ingrédients peuvent être ajoutés à n'importe quelle recette.";
+"Create your first recipe" = "Crée ta première recette";
+"Tap + to write your first recipe and start building your cookbook." = "Appuie sur + pour écrire ta première recette et commencer à construire ton livre de cuisine.";

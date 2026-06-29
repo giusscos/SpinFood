@@ -9,9 +9,19 @@ struct BookEndPage: View {
     @Environment(\.requestReview) private var requestReview
     @Environment(\.modelContext) private var modelContext
 
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
+
     @State private var showPaywall = false
     @State private var isRestoring = false
     @State private var restoreError: String?
+
+    private let supportedLanguages: [(code: String, name: String)] = [
+        ("en", "English"),
+        ("de", "Deutsch"),
+        ("es", "Español"),
+        ("fr", "Français"),
+        ("it", "Italiano"),
+    ]
     
     private var pageBackground: Color {
         Color(UIColor { trait in
@@ -164,15 +174,42 @@ struct BookEndPage: View {
     }
     
     // MARK: - General
-    
+
     private var generalSection: some View {
         VStack(spacing: 0) {
+            dividerLine
+            languageRow
             dividerLine
             actionRow(icon: "star", label: "Rate Foo") {
                 requestReview()
             }
             dividerLine
         }
+    }
+
+    private var languageRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "globe")
+                .font(.system(size: 16))
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+
+            Text("Language")
+                .font(.system(.body, design: .serif))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Picker("", selection: $selectedLanguage) {
+                ForEach(supportedLanguages, id: \.code) { lang in
+                    Text(lang.name).tag(lang.code)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(.secondary)
+        }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 32)
     }
     
     // MARK: - Legal

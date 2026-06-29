@@ -33,12 +33,12 @@ enum FoodSortOption {
 
     var label: String {
         switch self {
-        case .nameAsc: return "Name (A-Z)"
-        case .nameDesc: return "Name (Z-A)"
-        case .quantityAsc: return "Quantity (Low-High)"
-        case .quantityDesc: return "Quantity (High-Low)"
-        case .dateAsc: return "Date (Oldest first)"
-        case .dateDesc: return "Date (Newest first)"
+        case .nameAsc: return String(localized: "Name (A-Z)")
+        case .nameDesc: return String(localized: "Name (Z-A)")
+        case .quantityAsc: return String(localized: "Quantity (Low-High)")
+        case .quantityDesc: return String(localized: "Quantity (High-Low)")
+        case .dateAsc: return String(localized: "Date (Oldest first)")
+        case .dateDesc: return String(localized: "Date (Newest first)")
         }
     }
 }
@@ -50,9 +50,9 @@ enum FoodFilterOption {
 
     var label: String {
         switch self {
-        case .all: return "All Food"
-        case .lowStock: return "Low Stock"
-        case .outOfStock: return "Out of Stock"
+        case .all: return String(localized: "All Food")
+        case .lowStock: return String(localized: "Low Stock")
+        case .outOfStock: return String(localized: "Out of Stock")
         }
     }
 }

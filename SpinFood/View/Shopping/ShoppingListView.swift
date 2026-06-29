@@ -20,8 +20,8 @@ enum ShoppingSortOption: CaseIterable {
 
     var label: String {
         switch self {
-        case .name:           return "Name A–Z"
-        case .quantityNeeded: return "Quantity Needed"
+        case .name:           return String(localized: "Name A–Z")
+        case .quantityNeeded: return String(localized: "Quantity Needed")
         }
     }
 }
@@ -346,7 +346,7 @@ struct ShoppingListView: View {
         .scrollContentBackground(.hidden)
     }
 
-    private func tocEntry(roman: String, title: String, note: String) -> some View {
+    private func tocEntry(roman: String, title: LocalizedStringKey, note: LocalizedStringKey) -> some View {
         HStack(alignment: .center, spacing: 0) {
             Text(roman)
                 .font(.system(size: 11, weight: .light, design: .serif))

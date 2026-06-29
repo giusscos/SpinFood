@@ -1,0 +1,287 @@
+// MARK: - Navigation / Tabs
+"Inventory" = "Inventory";
+"Summary" = "Summary";
+"Shopping List" = "Shopping List";
+"Search" = "Search";
+
+// MARK: - Common Actions
+"Done" = "Done";
+"Cancel" = "Cancel";
+"Save" = "Save";
+"Edit" = "Edit";
+"Delete" = "Delete";
+"Add" = "Add";
+"Close" = "Close";
+"OK" = "OK";
+"Confirm" = "Confirm";
+"Update" = "Update";
+"Remove" = "Remove";
+"Clear" = "Clear";
+"Menu" = "Menu";
+"Hide Keyboard" = "Hide Keyboard";
+
+// MARK: - Book / Recipe Index
+"Index" = "Index";
+"No recipes yet" = "No recipes yet";
+"Your recipe book is empty" = "Your recipe book is empty";
+"Tap + to write your first recipe" = "Tap + to write your first recipe";
+"Edit Recipe" = "Edit Recipe";
+"Delete Recipe" = "Delete Recipe";
+"recipe" = "recipe";
+"recipes" = "recipes";
+
+// MARK: - Book Recipe Page
+"Ingredients" = "Ingredients";
+"Serves" = "Serves";
+"serving" = "serving";
+"servings" = "servings";
+"TIME" = "TIME";
+"SERVES" = "SERVES";
+"RATING" = "RATING";
+"Missing" = "Missing";
+"ingredient" = "ingredient";
+"Cook Step by Step" = "Cook Step by Step";
+"View Steps" = "View Steps";
+"Mark as Eaten" = "Mark as Eaten";
+
+// MARK: - Book Search
+"All Recipes" = "All Recipes";
+"Recipes" = "Recipes";
+"Pantry" = "Pantry";
+"No Results for" = "No Results for";
+"Check the spelling or try a different search." = "Check the spelling or try a different search.";
+"Recipes or ingredients…" = "Recipes or ingredients…";
+"Search Your Recipe Book" = "Search Your Recipe Book";
+"Instantly find any recipe or ingredient across your entire collection." = "Instantly find any recipe or ingredient across your entire collection.";
+"Out of stock" = "Out of stock";
+"Low" = "Low";
+"Upgrade to Pro" = "Upgrade to Pro";
+
+// MARK: - Food / Inventory
+"All Food" = "All Food";
+"Low Stock" = "Low Stock";
+"Out of Stock" = "Out of Stock";
+"No Ingredients" = "No Ingredients";
+"Tap + to add your first ingredient" = "Tap + to add your first ingredient";
+"Sort by" = "Sort by";
+"Filter" = "Filter";
+"Delete selected" = "Delete selected";
+"Search pantry" = "Search pantry";
+"Low stock" = "Low stock";
+"Name (A-Z)" = "Name (A-Z)";
+"Name (Z-A)" = "Name (Z-A)";
+"Quantity (Low-High)" = "Quantity (Low-High)";
+"Quantity (High-Low)" = "Quantity (High-Low)";
+"Date (Oldest first)" = "Date (Oldest first)";
+"Date (Newest first)" = "Date (Newest first)";
+
+// MARK: - Food Details
+"Expiry" = "Expiry";
+"Expired" = "Expired";
+"Expiring soon" = "Expiring soon";
+"days left" = "days left";
+"available" = "available";
+"How much did you eat?" = "How much did you eat?";
+"Eat" = "Eat";
+"Refill" = "Refill";
+"Log" = "Log";
+"Ready to refill?" = "Ready to refill?";
+
+// MARK: - Edit Food
+"Emoji" = "Emoji";
+"Food emoji" = "Food emoji";
+"None selected" = "None selected";
+"Custom emoji set" = "Custom emoji set";
+"Food details" = "Food details";
+"Name" = "Name";
+"Category" = "Category";
+"Unit" = "Unit";
+"Stock quantity" = "Stock quantity";
+"Current quantity" = "Current quantity";
+"Expiry date" = "Expiry date";
+"Track expiry date" = "Track expiry date";
+"Expires on" = "Expires on";
+"Edit Food" = "Edit Food";
+"Add Food" = "Add Food";
+"Fruits" = "Fruits";
+"Vegetables" = "Vegetables";
+"Meat & Fish" = "Meat & Fish";
+"Dairy & Grains" = "Dairy & Grains";
+"Snacks & Pantry" = "Snacks & Pantry";
+"Drinks" = "Drinks";
+"Choose Emoji" = "Choose Emoji";
+
+// MARK: - Edit Recipe
+"Recipe name" = "Recipe name";
+"Add a description" = "Add a description";
+"Duration" = "Duration";
+"item" = "item";
+"items" = "items";
+"Edit Ingredients" = "Edit Ingredients";
+"Steps" = "Steps";
+"step" = "step";
+"steps" = "steps";
+"Edit Steps" = "Edit Steps";
+"Crop Photo" = "Crop Photo";
+"Photo Library" = "Photo Library";
+"Take Photo" = "Take Photo";
+"Adjust Crop" = "Adjust Crop";
+"Choose photo" = "Choose photo";
+"Edit photo" = "Edit photo";
+
+// MARK: - Edit Ingredient
+"Edit Ingredient" = "Edit Ingredient";
+"Add Ingredient" = "Add Ingredient";
+
+// MARK: - Step Editor
+"Delete image" = "Delete image";
+"Update step photo" = "Update step photo";
+"Add step photo" = "Add step photo";
+"New step" = "New step";
+"Step to be edited" = "Step to be edited";
+"Step description" = "Step description";
+"Add photo" = "Add photo";
+"Describe this step" = "Describe this step";
+"Step" = "Step";
+"Empty" = "Empty";
+"block" = "block";
+"blocks" = "blocks";
+
+// MARK: - Step Block Editor
+"Text" = "Text";
+"Bullet List" = "Bullet List";
+"Image" = "Image";
+"Drawing" = "Drawing";
+"Timer" = "Timer";
+"Describe this step..." = "Describe this step...";
+"Bullets" = "Bullets";
+"Checklist" = "Checklist";
+"Item" = "Item";
+"Add item…" = "Add item…";
+"Label (optional)" = "Label (optional)";
+"e.g. Simmer sauce, Rest dough" = "e.g. Simmer sauce, Rest dough";
+"Select an image" = "Select an image";
+"Library" = "Library";
+"Camera" = "Camera";
+"Draw anything for this step" = "Draw anything for this step";
+"STEP" = "STEP";
+"Empty list" = "Empty list";
+"No image" = "No image";
+"Empty drawing" = "Empty drawing";
+"No ingredients selected" = "No ingredients selected";
+"Tap a block below to add content" = "Tap a block below to add content";
+"ADD CONTENT" = "ADD CONTENT";
+"List" = "List";
+"Photo" = "Photo";
+"Draw" = "Draw";
+"Ingredient" = "Ingredient";
+
+// MARK: - Confirm Eat
+"Ready to eat?" = "Ready to eat?";
+"Cooking" = "Cooking";
+"will deduct the ingredients from your pantry." = "will deduct the ingredients from your pantry.";
+"in pantry" = "in pantry";
+
+// MARK: - Shopping List
+"Clear" = "Clear";
+"Filter by Recipe" = "Filter by Recipe";
+"Name A–Z" = "Name A–Z";
+"Quantity Needed" = "Quantity Needed";
+"Selected" = "Selected";
+"Add ingredients and link them to recipes to generate your shopping list." = "Add ingredients and link them to recipes to generate your shopping list.";
+"All Stocked Up" = "All Stocked Up";
+"All your ingredients are well stocked." = "All your ingredients are well stocked.";
+"selected" = "selected";
+"Suggested" = "Suggested";
+"Select All" = "Select All";
+"Deselect All" = "Deselect All";
+"Shopping Lists" = "Shopping Lists";
+"Premium Feature" = "Premium Feature";
+"Auto-Generated List" = "Auto-Generated List";
+"From your recipe ingredients" = "From your recipe ingredients";
+"Shop for specific meals" = "Shop for specific meals";
+"Smart Grouping" = "Smart Grouping";
+"Sorted by category" = "Sorted by category";
+"One-Tap Refill" = "One-Tap Refill";
+"Restock with a single tap" = "Restock with a single tap";
+
+// MARK: - Summary
+"No Recipes" = "No Recipes";
+"Add your first ingredient to start creating recipes" = "Add your first ingredient to start creating recipes";
+"Add a recipe to start tracking your cooking habits" = "Add a recipe to start tracking your cooking habits";
+"No Activity Yet" = "No Activity Yet";
+"Cook a recipe or log a meal to start tracking your habits" = "Cook a recipe or log a meal to start tracking your habits";
+"Kitchen Stats" = "Kitchen Stats";
+"Recipes Cooked" = "Recipes Cooked";
+"Track every meal over time" = "Track every meal over time";
+"Food Consumption" = "Food Consumption";
+"Log what you eat" = "Log what you eat";
+"Pantry Refills" = "Pantry Refills";
+"History of every restock" = "History of every restock";
+"Food Waste Insights" = "Food Waste Insights";
+"Reduce waste, save money" = "Reduce waste, save money";
+"Day" = "Day";
+"Week" = "Week";
+"Month" = "Month";
+"Year" = "Year";
+"No Data" = "No Data";
+"Grams" = "Grams";
+"Consumed Food" = "Consumed Food";
+"Food Statistics" = "Food Statistics";
+"Consumption History" = "Consumption History";
+"No consumption recorded" = "No consumption recorded";
+"Refilled Food" = "Refilled Food";
+"Refill Statistics" = "Refill Statistics";
+"Refill History" = "Refill History";
+"No refills recorded" = "No refills recorded";
+"No cooking recorded" = "No cooking recorded";
+"Cooking Statistics" = "Cooking Statistics";
+"Cooking History" = "Cooking History";
+"Food eaten" = "Food eaten";
+"total eaten" = "total eaten";
+"Food refilled" = "Food refilled";
+"total refilled" = "total refilled";
+"Recipes cooked" = "Recipes cooked";
+"times cooked" = "times cooked";
+
+// MARK: - Time Picker
+"Hours" = "Hours";
+"Minutes" = "Minutes";
+"h" = "h";
+"m" = "m";
+
+// MARK: - App / Settings
+"Foo" = "Foo";
+"Your personal recipe book" = "Your personal recipe book";
+"PREMIUM" = "PREMIUM";
+"Restore Purchases" = "Restore Purchases";
+"GENERAL" = "GENERAL";
+"Rate Foo" = "Rate Foo";
+"LEGAL" = "LEGAL";
+"Privacy Policy" = "Privacy Policy";
+"Terms of Use" = "Terms of Use";
+"LOAD SAMPLE DATA" = "LOAD SAMPLE DATA";
+"Made with ♥ by Giuseppe Cosenza" = "Made with ♥ by Giuseppe Cosenza";
+"Version" = "Version";
+"Restore Failed" = "Restore Failed";
+"DEBUG" = "DEBUG";
+
+// MARK: - Paywall
+"FOO" = "FOO";
+"Premium Edition" = "Premium Edition";
+"Unlimited Recipes" = "Unlimited Recipes";
+"No caps, ever" = "No caps, ever";
+"Recipe Search" = "Recipe Search";
+"Find anything instantly" = "Find anything instantly";
+"Cooking Stats" = "Cooking Stats";
+"Every meal charted" = "Every meal charted";
+"Auto-generated" = "Auto-generated";
+"One-time purchase available" = "One-time purchase available";
+"Lifetime Access" = "Lifetime Access";
+"Pay once, cook forever. No recurring charges, ever." = "Pay once, cook forever. No recurring charges, ever.";
+
+// MARK: - Tips
+"Add your first ingredient" = "Add your first ingredient";
+"Tap + to stock your pantry. Ingredients can be added to any recipe." = "Tap + to stock your pantry. Ingredients can be added to any recipe.";
+"Create your first recipe" = "Create your first recipe";
+"Tap + to write your first recipe and start building your cookbook." = "Tap + to write your first recipe and start building your cookbook.";

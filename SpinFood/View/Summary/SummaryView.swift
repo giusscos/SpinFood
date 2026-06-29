@@ -150,7 +150,7 @@ struct SummaryView: View {
         .background(paperBackground.ignoresSafeArea())
     }
 
-    private func tocEntry(roman: String, title: String, note: String) -> some View {
+    private func tocEntry(roman: String, title: LocalizedStringKey, note: LocalizedStringKey) -> some View {
         HStack(alignment: .center, spacing: 0) {
             Text(roman)
                 .font(.system(size: 11, weight: .light, design: .serif))

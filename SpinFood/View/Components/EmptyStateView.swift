@@ -2,8 +2,8 @@ import SwiftUI
 
 struct EmptyStateView: View {
     let symbol: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     var symbolColor: Color = .secondary
 
     var body: some View {

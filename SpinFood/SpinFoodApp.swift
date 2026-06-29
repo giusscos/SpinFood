@@ -4,6 +4,8 @@ import TipKit
 
 @main
 struct SpinFoodApp: App {
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             RecipeModel.self,
@@ -31,6 +33,7 @@ struct SpinFoodApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.locale, Locale(identifier: selectedLanguage))
                 .onAppear {
                     UITextField.appearance().clearButtonMode = .whileEditing
                 }

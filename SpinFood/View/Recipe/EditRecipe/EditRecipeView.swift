@@ -321,7 +321,7 @@ struct EditRecipeView: View {
                     .padding(.bottom, 16)
 
                     // Title & description
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 24) {
                         TextField("Recipe name", text: $name)
                             .autocorrectionDisabled()
                             .font(.largeTitle.bold())
@@ -346,16 +346,20 @@ struct EditRecipeView: View {
                             .focused($focusedField, equals: .recipeDescription)
                             .onSubmit { focusedField = nil }
 
-                        Picker(selection: $servings) {
-                            ForEach(1...20, id: \.self) { n in
-                                Text("\(n) \(n == 1 ? "serving" : "servings")").tag(n)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Serves", systemImage: "person.3.fill")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            
+                            Picker(selection: $servings) {
+                                ForEach(1...20, id: \.self) { n in
+                                    Text("\(n) \(n == 1 ? "serving" : "servings")").tag(n)
+                                }
+                            } label: {
+                                Label("\(servings) \(servings == 1 ? "serving" : "servings")", systemImage: "person.2")
                             }
-                        } label: {
-                            Label("\(servings) \(servings == 1 ? "serving" : "servings")", systemImage: "person.2")
+                            .pickerStyle(.menu)
                         }
-                        .pickerStyle(.menu)
-                        .fixedSize()
-                        .padding(.top, 4)
                     }
                     .padding()
 

@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Shared step preview card (used in details + edit views)
-
 struct StepPreviewCard: View {
     var step: StepRecipe
     var index: Int
@@ -41,62 +39,4 @@ struct StepPreviewCard: View {
         .padding(10)
         .background(Color.secondary.opacity(0.07), in: .rect(cornerRadius: 10))
     }
-}
-
-// MARK: - Steps section in recipe details
-
-struct RecipeDetailsStepView: View {
-    var recipe: RecipeModel
-    @Binding var activeRecipeDetailSheet: ActiveRecipeDetailSheet?
-
-    var body: some View {
-        if let steps = recipe.steps, !steps.isEmpty {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Label("Method", systemImage: "checklist")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text("\(steps.count) step\(steps.count == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.secondary.opacity(0.12))
-                        .clipShape(.capsule)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                            StepPreviewCard(step: step, index: index + 1)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 4)
-                }
-                .padding(.bottom, 10)
-
-                Button {
-                    activeRecipeDetailSheet = .steps(steps)
-                } label: {
-                    Label("View Steps", systemImage: "book.pages")
-                        .font(.subheadline.weight(.medium))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(.secondary.opacity(0.08), in: .rect(cornerRadius: 10))
-                }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.primary)
-                .padding(.horizontal)
-                .padding(.bottom, 12)
-            }
-        }
-    }
-}
-
-#Preview {
-    RecipeDetailsStepView(recipe: RecipeModel(name: "Carbonara"), activeRecipeDetailSheet: .constant(nil))
 }

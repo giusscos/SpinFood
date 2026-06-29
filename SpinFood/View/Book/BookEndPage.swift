@@ -1,33 +1,35 @@
 import SwiftUI
 import StoreKit
+import SwiftData
 
 struct BookEndPage: View {
     var onBack: () -> Void
 
     @Environment(\.openURL) private var openURL
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.modelContext) private var modelContext
 
     @State private var showPaywall = false
     @State private var isRestoring = false
     @State private var restoreError: String?
-
+    
     private var pageBackground: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
-                ? .systemBackground
-                : UIColor(red: 0.96, green: 0.93, blue: 0.87, alpha: 1)
+            ? .systemBackground
+            : UIColor(red: 0.96, green: 0.93, blue: 0.87, alpha: 1)
         })
     }
-
+    
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
-
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 pageBackground.ignoresSafeArea()
-
+                
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
                         headerSection
@@ -37,12 +39,16 @@ struct BookEndPage: View {
                         generalSection
                         sectionHeader("LEGAL")
                         legalSection
+                        #if DEBUG
+                        sectionHeader("DEBUG")
+                        debugSection
+                        #endif
                         divider
                         creditsSection
                         Spacer().frame(height: 48)
                     }
                 }
-
+                
                 Text("· · ·")
                     .font(.system(.caption, design: .serif))
                     .foregroundStyle(.tertiary)
@@ -75,20 +81,20 @@ struct BookEndPage: View {
             }
         }
     }
-
+    
     // MARK: - Header
-
+    
     private var headerSection: some View {
         VStack(spacing: 16) {
             Image(systemName: "fork.knife.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(.orange)
                 .padding(.top, 48)
-
+            
             VStack(spacing: 6) {
-                Text("SpinFood")
+                Text("Foo")
                     .font(.system(size: 30, weight: .bold, design: .serif))
-
+                
                 Text("Your personal recipe book")
                     .font(.system(.subheadline, design: .serif))
                     .foregroundStyle(.secondary)
@@ -99,9 +105,9 @@ struct BookEndPage: View {
         .padding(.bottom, 28)
         .padding(.horizontal, 32)
     }
-
+    
     // MARK: - Section Header
-
+    
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.system(size: 10, weight: .semibold, design: .serif))
@@ -111,9 +117,9 @@ struct BookEndPage: View {
             .padding(.top, 20)
             .padding(.bottom, 6)
     }
-
+    
     // MARK: - Premium
-
+    
     private var premiumSection: some View {
         VStack(spacing: 0) {
             dividerLine
@@ -136,13 +142,13 @@ struct BookEndPage: View {
                                 .frame(width: 24)
                         }
                     }
-
+                    
                     Text("Restore Purchases")
                         .font(.system(.body, design: .serif))
                         .foregroundStyle(.primary)
-
+                    
                     Spacer()
-
+                    
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .light))
                         .foregroundStyle(.quaternary)
@@ -156,26 +162,26 @@ struct BookEndPage: View {
             dividerLine
         }
     }
-
+    
     // MARK: - General
-
+    
     private var generalSection: some View {
         VStack(spacing: 0) {
             dividerLine
-            actionRow(icon: "star", label: "Rate SpinFood") {
+            actionRow(icon: "star", label: "Rate Foo") {
                 requestReview()
             }
             dividerLine
         }
     }
-
+    
     // MARK: - Legal
-
+    
     private var legalSection: some View {
         VStack(spacing: 0) {
             dividerLine
             actionRow(icon: "lock.shield", label: "Privacy Policy", isExternal: true) {
-                openURL(URL(string: "https://foo-recipe.com/privacy")!)
+                openURL(URL(string: "https://foo-recipes.com/privacy")!)
             }
             dividerLine
             actionRow(icon: "doc.text", label: "Terms of Use", isExternal: true) {
@@ -184,16 +190,16 @@ struct BookEndPage: View {
             dividerLine
         }
     }
-
+    
     // MARK: - Credits
-
+    
     private var creditsSection: some View {
         VStack(spacing: 8) {
             Text("Made with ♥ by Giuseppe Cosenza")
                 .font(.system(.callout, design: .serif))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-
+            
             Text("Version \(appVersion)")
                 .font(.system(.caption, design: .serif))
                 .foregroundStyle(.tertiary)
@@ -202,9 +208,23 @@ struct BookEndPage: View {
         .padding(.vertical, 24)
         .padding(.horizontal, 32)
     }
+    
+    // MARK: - Debug
+
+    #if DEBUG
+    private var debugSection: some View {
+        VStack(spacing: 0) {
+            dividerLine
+            actionRow(icon: "wand.and.stars", label: "Load Sample Data") {
+                MockData.insertSampleData(into: modelContext)
+            }
+            dividerLine
+        }
+    }
+    #endif
 
     // MARK: - Helpers
-
+    
     private func actionRow(icon: String, label: String, isExternal: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
@@ -212,13 +232,13 @@ struct BookEndPage: View {
                     .font(.system(size: 16))
                     .foregroundStyle(.secondary)
                     .frame(width: 24)
-
+                
                 Text(label)
                     .font(.system(.body, design: .serif))
                     .foregroundStyle(.primary)
-
+                
                 Spacer()
-
+                
                 Image(systemName: isExternal ? "arrow.up.right" : "chevron.right")
                     .font(.system(size: isExternal ? 12 : 11, weight: .light))
                     .foregroundStyle(.quaternary)
@@ -229,7 +249,7 @@ struct BookEndPage: View {
         .buttonStyle(.plain)
         .padding(.horizontal, 32)
     }
-
+    
     private var divider: some View {
         Rectangle()
             .fill(Color.secondary.opacity(0.18))
@@ -237,7 +257,7 @@ struct BookEndPage: View {
             .padding(.horizontal, 32)
             .padding(.vertical, 20)
     }
-
+    
     private var dividerLine: some View {
         Rectangle()
             .fill(Color.secondary.opacity(0.12))
@@ -245,7 +265,7 @@ struct BookEndPage: View {
             .padding(.leading, 72)
             .padding(.trailing, 32)
     }
-
+    
     private func restorePurchases() async {
         isRestoring = true
         defer { isRestoring = false }

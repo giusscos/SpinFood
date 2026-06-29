@@ -126,7 +126,7 @@ struct BookSearchView: View {
                 Text("Upgrade to Pro")
                     .font(.system(.body, design: .rounded).weight(.semibold))
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .padding(.vertical, 8)
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)

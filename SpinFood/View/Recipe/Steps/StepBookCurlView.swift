@@ -113,6 +113,8 @@ final class StepBookPageViewController: UIPageViewController {
     var currentMode: StepBookMode = .edit
     weak var coordinator: StepBookCoordinator?
     let modelContext: ModelContext
+    private var indexPageHostingVC: UIHostingController<StepIndexPageView>?
+    private var indexPageNavVC: UINavigationController?
 
     static let pageBackground = UIColor { trait in
         trait.userInterfaceStyle == .dark
@@ -147,40 +149,48 @@ final class StepBookPageViewController: UIPageViewController {
         var newPages: [UIViewController] = []
 
         if mode == .edit {
-            newPages.append(makeHostingVC(
-                StepIndexPageView(
-                    steps: steps,
-                    onDone: { onDismiss?() },
-                    onAdd: { onAddStep?() },
-                    onDelete: { step in onDeleteStep?(step) },
-                    onMove: { set, dest in onMoveSteps?(set, dest) },
-                    onSelectStep: { [weak self] step in
-                        guard let self,
-                              let i = steps.firstIndex(where: { $0.id == step.id }) else { return }
-                        navigateTo(page: i + 1)
-                    }
-                )
-            ))
+            let indexView = StepIndexPageView(
+                steps: steps,
+                onDone: { onDismiss?() },
+                onAdd: { onAddStep?() },
+                onDelete: { step in onDeleteStep?(step) },
+                onMove: { set, dest in onMoveSteps?(set, dest) },
+                onSelectStep: { [weak self] step in
+                    guard let self,
+                          let i = steps.firstIndex(where: { $0.id == step.id }) else { return }
+                    navigateTo(page: i + 1)
+                }
+            )
+            if let existingHVC = indexPageHostingVC, let existingNav = indexPageNavVC {
+                existingHVC.rootView = indexView
+                newPages.append(existingNav)
+            } else {
+                let hvc = UIHostingController(rootView: indexView)
+                hvc.view.backgroundColor = Self.pageBackground
+                let nav = UINavigationController(rootViewController: hvc)
+                nav.view.backgroundColor = Self.pageBackground
+                configureNavBarAppearance(nav.navigationBar)
+                indexPageHostingVC = hvc
+                indexPageNavVC = nav
+                newPages.append(nav)
+            }
         }
 
         let total = steps.count
         for (i, step) in steps.enumerated() {
-            newPages.append(makeHostingVC(
-                StepNotePageView(
-                    step: step,
-                    stepNumber: i + 1,
-                    totalSteps: total,
-                    ingredients: ingredients,
-                    allSteps: steps,
-                    isEditing: mode == .edit,
-                    isCooking: mode == .cook || mode == .view,
-                    onBack: mode == .edit ? { [weak self] in self?.navigateTo(page: 0) } : nil,
-                    onDelete: mode == .edit ? { [weak self] in
-                        self?.navigateTo(page: 0)
-                        onDeleteStep?(step)
-                    } : nil,
-                    onClose: (mode == .cook || mode == .view) ? { onDismiss?() } : nil
-                )
+            newPages.append(makeStepNoteVC(
+                step: step,
+                stepNumber: i + 1,
+                totalSteps: total,
+                ingredients: ingredients,
+                allSteps: steps,
+                mode: mode,
+                onBack: mode == .edit ? { [weak self] in self?.navigateTo(page: 0) } : nil,
+                onDelete: mode == .edit ? { [weak self] in
+                    self?.navigateTo(page: 0)
+                    onDeleteStep?(step)
+                } : nil,
+                onClose: (mode == .cook || mode == .view) ? { onDismiss?() } : nil
             ))
         }
 
@@ -208,9 +218,135 @@ final class StepBookPageViewController: UIPageViewController {
     }
 
     private func makeHostingVC<V: View>(_ rootView: V) -> UIViewController {
-        let vc = UIHostingController(rootView: rootView.environment(\.modelContext, modelContext))
-        vc.view.backgroundColor = Self.pageBackground
-        return vc
+        let hvc = UIHostingController(rootView: rootView.environment(\.modelContext, modelContext))
+        hvc.view.backgroundColor = Self.pageBackground
+        let nav = UINavigationController(rootViewController: hvc)
+        nav.view.backgroundColor = Self.pageBackground
+        configureNavBarAppearance(nav.navigationBar)
+        return nav
+    }
+
+    private func makeStepNoteVC(
+        step: StepRecipe,
+        stepNumber: Int,
+        totalSteps: Int,
+        ingredients: [RecipeFoodModel],
+        allSteps: [StepRecipe],
+        mode: StepBookMode,
+        onBack: (() -> Void)?,
+        onDelete: (() -> Void)?,
+        onClose: (() -> Void)?
+    ) -> UIViewController {
+        let isEditing = mode == .edit
+        let isCooking = mode == .cook || mode == .view
+
+        let hvc = UIHostingController(
+            rootView: StepNotePageView(
+                step: step,
+                stepNumber: stepNumber,
+                totalSteps: totalSteps,
+                ingredients: ingredients,
+                allSteps: allSteps,
+                isEditing: isEditing,
+                isCooking: isCooking,
+                onBack: onBack,
+                onDelete: onDelete,
+                onClose: onClose
+            ).environment(\.modelContext, modelContext)
+        )
+        hvc.view.backgroundColor = Self.pageBackground
+
+        if isEditing {
+            // Back: "< Steps"
+            var cfg = UIButton.Configuration.plain()
+            cfg.image = UIImage(systemName: "chevron.left",
+                                withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+            cfg.title = "Steps"
+            cfg.imagePadding = 4
+            cfg.baseForegroundColor = .label
+            let backBtn = UIButton(configuration: cfg)
+            backBtn.addAction(UIAction { _ in onBack?() }, for: .touchUpInside)
+            hvc.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backBtn)
+
+            // Trash: circle, red - Liquid Glass prominent on iOS 26+, filled circle on older
+            if #available(iOS 26, *) {
+                let trashItem = UIBarButtonItem(
+                    image: UIImage(systemName: "trash"),
+                    primaryAction: UIAction { _ in onBack?(); onDelete?() }
+                )
+                trashItem.tintColor = .systemRed
+                trashItem.style = .prominent
+                hvc.navigationItem.rightBarButtonItem = trashItem
+            } else {
+                var trashCfg = UIButton.Configuration.borderedProminent()
+                trashCfg.image = UIImage(systemName: "trash")
+                trashCfg.baseBackgroundColor = .systemRed
+                trashCfg.baseForegroundColor = .white
+                trashCfg.cornerStyle = .capsule
+                let trashBtn = UIButton(configuration: trashCfg)
+                trashBtn.addAction(UIAction { _ in onBack?(); onDelete?() }, for: .touchUpInside)
+                hvc.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: trashBtn)
+            }
+
+        } else if isCooking {
+            // Close: "×"
+            let closeItem = UIBarButtonItem(
+                image: UIImage(systemName: "xmark"),
+                primaryAction: UIAction { _ in onClose?() }
+            )
+            closeItem.tintColor = .label
+            hvc.navigationItem.leftBarButtonItem = closeItem
+
+            // Step counter as title
+            let label = UILabel()
+            label.text = "\(stepNumber) / \(totalSteps)"
+            label.textColor = .secondaryLabel
+            if let serif = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .caption1).withDesign(.serif) {
+                label.font = UIFont(descriptor: serif, size: 0)
+            }
+            hvc.navigationItem.titleView = label
+        }
+
+        if #unavailable(iOS 26) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = Self.pageBackground
+            appearance.shadowColor = .clear
+            hvc.navigationItem.standardAppearance = appearance
+            hvc.navigationItem.scrollEdgeAppearance = appearance
+            hvc.navigationItem.compactAppearance = appearance
+        }
+
+        let nav = UINavigationController(rootViewController: hvc)
+        nav.view.backgroundColor = Self.pageBackground
+        configureNavBarAppearance(nav.navigationBar)
+        return nav
+    }
+
+    private func configureNavBarAppearance(_ bar: UINavigationBar) {
+        if #available(iOS 26, *) { return } // Liquid Glass by default
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = Self.pageBackground
+        appearance.shadowColor = .clear
+        bar.standardAppearance = appearance
+        bar.scrollEdgeAppearance = appearance
+        bar.compactAppearance = appearance
+    }
+}
+
+// MARK: - Toolbar background modifier (no-op on iOS 26 to keep Liquid Glass)
+
+private struct PageToolbarBackground: ViewModifier {
+    let color: Color
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content
+        } else {
+            content
+                .toolbarBackground(color, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+        }
     }
 }
 
@@ -250,44 +386,37 @@ private struct StepIndexPageView: View {
                     .padding(.bottom, 12)
             }
         }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            pageToolbar
-        }
-    }
-
-    private var pageToolbar: some View {
-        ZStack {
-            VStack(spacing: 1) {
-                Text("Steps")
-                    .font(.title.weight(.bold))
-                    .fontDesign(.serif)
-                Text(steps.isEmpty ? "No steps" : "\(steps.count) step\(steps.count == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        .navigationBarTitleDisplayMode(.inline)
+        .modifier(PageToolbarBackground(color: pageColor))
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 1) {
+                    Text("Steps")
+                        .font(.title.weight(.bold))
+                        .fontDesign(.serif)
+                    Text(steps.isEmpty ? "No steps" : "\(steps.count) step\(steps.count == 1 ? "" : "s")")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
-
-            HStack {
+            ToolbarItem(placement: .navigationBarLeading) {
                 if !steps.isEmpty {
                     Button(isReordering ? "Done" : "Reorder") {
                         withAnimation { isReordering.toggle() }
                     }
                     .font(.system(.body, design: .serif))
+                    .foregroundStyle(.primary)
                 }
-
-                Spacer()
-
+            }
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if !isReordering {
-                    HStack(spacing: 16) {
-                        Button(action: onAdd) { Image(systemName: "plus") }
-                        Button("Done", action: onDone)
-                            .font(.system(.body, design: .serif).weight(.semibold))
-                    }
+                    Button(action: onAdd) { Image(systemName: "plus") }
+                        .foregroundStyle(.primary)
+                    Button("Done", action: onDone)
+                        .font(.system(.body, design: .serif).weight(.semibold))
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .frame(height: 44)
-        .background(pageColor)
     }
 
     private var stepList: some View {
@@ -388,7 +517,7 @@ private struct StepCookDonePage: View {
                     Label("Finish Cooking", systemImage: "checkmark")
                         .font(.system(.callout, design: .serif).weight(.semibold))
                         .frame(minWidth: 200)
-                        .padding(.vertical, 14)
+                        .padding(.vertical, 8)
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.capsule)

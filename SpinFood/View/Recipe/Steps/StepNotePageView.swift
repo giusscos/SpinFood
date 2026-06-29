@@ -61,9 +61,6 @@ struct StepNotePageView: View {
                 }
             }
         }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            pageToolbar
-        }
         .sheet(item: $editingBlock) { block in
             StepBlockEditorSheet(block: block, ingredients: ingredients, allSteps: allSteps)
         }
@@ -82,67 +79,6 @@ struct StepNotePageView: View {
             pickedImageItem = nil
             pendingImageBlock = nil
         }
-    }
-
-    // MARK: - Page toolbar (replaces NavigationStack toolbar)
-
-    private var pageToolbar: some View {
-        HStack(spacing: 0) {
-            // Leading
-            Group {
-                if isEditing {
-                    Button {
-                        onBack?()
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 13, weight: .semibold))
-                            Text("Steps")
-                                .font(.system(.subheadline, design: .serif))
-                        }
-                    }
-                } else if isCooking {
-                    Button { onClose?() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .medium))
-                    }
-                } else {
-                    Color.clear
-                }
-            }
-            .frame(width: 80, alignment: .leading)
-
-            Spacer()
-
-            if isCooking {
-                Text("\(stepNumber) / \(totalSteps)")
-                    .font(.system(.caption, design: .serif))
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            // Trailing
-            Group {
-                if isEditing {
-                    Menu {
-                        Button("Delete Step", systemImage: "trash", role: .destructive) {
-                            onBack?()
-                            onDelete?()
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 16))
-                    }
-                } else {
-                    Color.clear
-                }
-            }
-            .frame(width: 80, alignment: .trailing)
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 44)
-        .background(paperColor)
     }
 
     // MARK: - Header

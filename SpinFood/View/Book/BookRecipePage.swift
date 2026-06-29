@@ -1,5 +1,22 @@
 import SwiftUI
 
+enum ActiveRecipeDetailSheet: Identifiable {
+    case confirmEat
+    case cookNow([StepRecipe])
+    case steps([StepRecipe])
+
+    var id: String {
+        switch self {
+        case .confirmEat:
+            return "confirmEat"
+        case .cookNow(let steps):
+            return "cookNow-\(steps.count)"
+        case .steps(let steps):
+            return "steps-\(steps.count)"
+        }
+    }
+}
+
 struct BookRecipePage: View {
     let recipe: RecipeModel
     let pageNumber: Int
@@ -84,7 +101,6 @@ struct BookRecipePage: View {
             }
             .confirmationDialog("Delete Recipe", isPresented: $showDeleteConfirmation) {
                 Button("Delete Recipe", role: .destructive) {
-                    onBack()
                     onDelete()
                 }
                 Button("Cancel", role: .cancel) { }

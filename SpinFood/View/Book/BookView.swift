@@ -2,6 +2,23 @@ import SwiftUI
 import SwiftData
 import StoreKit
 
+enum ActiveRecipeSheet: Identifiable {
+    case createRecipe
+    case edit(RecipeModel)
+    case createFood
+
+    var id: String {
+        switch self {
+        case .createRecipe:
+            return "createRecipe"
+        case .edit(let recipe):
+            return "editRecipe-\(recipe.id)"
+        case .createFood:
+            return "createFood"
+        }
+    }
+}
+
 struct BookContainer: View {
     @Environment(\.modelContext) var modelContext
     @Environment(Store.self) var store

@@ -33,6 +33,7 @@ struct PaywallView: View {
                 PaywallLifetimeView(onPurchase: { dismiss() })
                     .presentationDetents([.medium])
             }
+            .background(pageBackground.ignoresSafeArea())
         }
         .background(pageBackground.ignoresSafeArea())
     }
@@ -134,7 +135,7 @@ struct PaywallView: View {
             Text("·")
                 .foregroundStyle(.tertiary)
             
-            Link("Privacy Policy", destination: URL(string: "https://foo-recipe.com/privacy")!)
+            Link("Privacy Policy", destination: URL(string: "https://foo-recipes.com/privacy")!)
                 .foregroundColor(.secondary)
                 .buttonStyle(.plain)
         }

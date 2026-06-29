@@ -113,6 +113,7 @@ final class BookPageViewController: UIPageViewController {
     var currentPage: Int = 0
     var lastRecipeIDs: [UUID] = []
     weak var coordinator: BookPageCoordinator?
+    private var indexHostingVC: UIHostingController<BookIndexPage>?
 
     static let pageBackgroundColor = UIColor { trait in
         trait.userInterfaceStyle == .dark
@@ -141,11 +142,13 @@ final class BookPageViewController: UIPageViewController {
         onBack: @escaping () -> Void,
         onSettings: @escaping () -> Void
     ) {
+        let previousIDs = lastRecipeIDs
         lastRecipeIDs = recipes.map { $0.id }
+        let newIDSet = Set(lastRecipeIDs)
 
         var newPages: [UIViewController] = []
 
-        newPages.append(makeHostingVC(BookIndexPage(
+        let indexPage = BookIndexPage(
             recipes: recipes,
             onSelectRecipe: onSelectRecipe,
             onAdd: onAdd,
@@ -153,7 +156,16 @@ final class BookPageViewController: UIPageViewController {
             onEdit: onEdit,
             onDelete: onDelete,
             onMove: onMove
-        )))
+        )
+        if let existing = indexHostingVC {
+            existing.rootView = indexPage
+            newPages.append(existing)
+        } else {
+            let vc = UIHostingController(rootView: indexPage)
+            vc.view.backgroundColor = Self.pageBackgroundColor
+            indexHostingVC = vc
+            newPages.append(vc)
+        }
 
         for (i, recipe) in recipes.enumerated() {
             newPages.append(makeHostingVC(BookRecipePage(
@@ -171,7 +183,14 @@ final class BookPageViewController: UIPageViewController {
         dataSource = coordinator
         delegate = coordinator
 
-        let target = max(0, min(currentPage, pages.count - 1))
+        var target = max(0, min(currentPage, pages.count - 1))
+        // If the page we were on was a recipe that got deleted, go back to index
+        if currentPage > 0 && currentPage <= previousIDs.count {
+            let previousRecipeID = previousIDs[currentPage - 1]
+            if !newIDSet.contains(previousRecipeID) {
+                target = 0
+            }
+        }
         if let vc = pages[safeIndex: target] {
             setViewControllers([vc], direction: .forward, animated: false)
         }

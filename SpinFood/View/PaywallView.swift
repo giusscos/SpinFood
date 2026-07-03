@@ -3,8 +3,18 @@ import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
     @State var store = Store()
     @State private var showLifetimePlans = false
+
+    private var currentBundle: Bundle {
+        Bundle.main.path(forResource: selectedLanguage, ofType: "lproj")
+            .flatMap(Bundle.init(path:)) ?? .main
+    }
+
+    private func L(_ key: String) -> String {
+        currentBundle.localizedString(forKey: key, value: key, table: nil)
+    }
 
     private var pageBackground: Color {
         Color(UIColor { trait in
@@ -36,22 +46,22 @@ struct PaywallView: View {
                     // Table of contents
                     VStack(spacing: 24) {
                         VStack (spacing: 12) {
-                            tocEntry(roman: "I",   title: "Unlimited Recipes",  note: "No caps, ever")
+                            tocEntry(roman: "I",   title: L("Unlimited Recipes"),      note: L("No caps, ever"))
                             tocDivider
                         }
-                        
+
                         VStack (spacing: 12) {
-                            tocEntry(roman: "II",  title: "Recipe Search",      note: "Find anything instantly")
+                            tocEntry(roman: "II",  title: L("Recipe Search"),           note: L("Find anything instantly"))
                             tocDivider
                         }
-                        
+
                         VStack (spacing: 12) {
-                            tocEntry(roman: "III", title: "Cooking Stats",      note: "Every meal charted")
+                            tocEntry(roman: "III", title: L("Cooking Stats"),           note: L("Every meal charted"))
                             tocDivider
                         }
-                        
+
                         VStack (spacing: 12) {
-                            tocEntry(roman: "IV",  title: "Shopping Lists",     note: "Auto-generated")
+                            tocEntry(roman: "IV",  title: L("Shopping Lists"),          note: L("Auto-generated"))
                         }
                     }
 
@@ -59,7 +69,7 @@ struct PaywallView: View {
                     Button {
                         showLifetimePlans = true
                     } label: {
-                        Label("One-time purchase", systemImage: "infinity")
+                        Label(L("One-time purchase"), systemImage: "infinity")
                             .font(.footnote)
                     }
                     .tint(.green)
@@ -92,7 +102,7 @@ struct PaywallView: View {
 
     // MARK: - Table of Contents Entry
 
-    private func tocEntry(roman: String, title: LocalizedStringKey, note: LocalizedStringKey) -> some View {
+    private func tocEntry(roman: String, title: String, note: String) -> some View {
         HStack(alignment: .center, spacing: 0) {
             Text(roman)
                 .font(.system(size: 11, weight: .light, design: .serif))

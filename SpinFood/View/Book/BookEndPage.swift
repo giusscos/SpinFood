@@ -14,6 +14,7 @@ struct BookEndPage: View {
     @State private var showPaywall = false
     @State private var isRestoring = false
     @State private var restoreError: String?
+    @State private var showRestartAlert = false
 
     private let supportedLanguages: [(code: String, name: String)] = [
         ("en", "English"),
@@ -80,6 +81,7 @@ struct BookEndPage: View {
             }
             .fullScreenCover(isPresented: $showPaywall) {
                 PaywallView()
+                    .environment(\.locale, Locale(identifier: selectedLanguage))
             }
             .alert("Restore Failed", isPresented: Binding(
                 get: { restoreError != nil },
@@ -88,6 +90,11 @@ struct BookEndPage: View {
                 Button("OK", role: .cancel) { restoreError = nil }
             } message: {
                 if let msg = restoreError { Text(msg) }
+            }
+            .alert("Language Changed", isPresented: $showRestartAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Please restart Foo to fully apply the new language.")
             }
         }
     }
@@ -207,6 +214,10 @@ struct BookEndPage: View {
             }
             .pickerStyle(.menu)
             .tint(.secondary)
+            .onChange(of: selectedLanguage) { _, newValue in
+                UserDefaults.standard.set([newValue], forKey: "AppleLanguages")
+                showRestartAlert = true
+            }
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 32)

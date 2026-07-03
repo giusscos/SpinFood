@@ -11,6 +11,8 @@ struct ContentView: View {
 
     @Query var recipes: [RecipeModel]
 
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
+
     @State var store = Store()
     @State var isPresentingPaywall: Bool = false
     @State private var navigator = AppNavigator()
@@ -103,6 +105,7 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: $isPresentingPaywall) {
             PaywallView()
+                .environment(\.locale, Locale(identifier: selectedLanguage))
         }
         .onChange(of: isPresentingPaywall) { _, isPresenting in
             if !isPresenting {

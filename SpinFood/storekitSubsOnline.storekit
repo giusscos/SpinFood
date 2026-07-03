@@ -23,6 +23,26 @@
           "description" : "Lifetime unlimited access for your family",
           "displayName" : "Foo Family lifetime",
           "locale" : "en_US"
+        },
+        {
+          "description" : "Lebenslanger unbegrenzter Zugriff für deine Familie",
+          "displayName" : "Foo Familien-Lebenszeit",
+          "locale" : "de"
+        },
+        {
+          "description" : "Acceso ilimitado de por vida para tu familia",
+          "displayName" : "Foo Familia de por vida",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Accès illimité à vie pour votre famille",
+          "displayName" : "Foo Famille à vie",
+          "locale" : "fr"
+        },
+        {
+          "description" : "Accesso illimitato a vita per la tua famiglia",
+          "displayName" : "Foo Famiglia a vita",
+          "locale" : "it"
         }
       ],
       "productID" : "com.giusscos.fooFamilyLifetime",
@@ -38,6 +58,26 @@
           "description" : "Lifetime unlimited access",
           "displayName" : "Foo lifetime",
           "locale" : "en_US"
+        },
+        {
+          "description" : "Accès illimité à vie",
+          "displayName" : "Foo à vie",
+          "locale" : "fr"
+        },
+        {
+          "description" : "Accesso illimitato a vita",
+          "displayName" : "Foo a vita",
+          "locale" : "it"
+        },
+        {
+          "description" : "Lebenslanger unbegrenzter Zugriff",
+          "displayName" : "Foo Lebenszeit",
+          "locale" : "de"
+        },
+        {
+          "description" : "Acceso ilimitado de por vida",
+          "displayName" : "Foo de por vida",
+          "locale" : "es_ES"
         }
       ],
       "productID" : "com.giusscos.fooLifetime",
@@ -47,64 +87,65 @@
   ],
   "settings" : {
     "_applicationInternalID" : "6739758281",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
     "_developerTeamID" : "MA7MBQ947C",
+    "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 775431038.80869997,
+    "_lastSynchronizedDate" : 804778912.08647799,
     "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
     "_storeKitErrors" : [
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Load Products"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Purchase"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Verification"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "App Store Sync"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Subscription Status"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "App Transaction"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Manage Subscriptions Sheet"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Refund Request Sheet"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Offer Code Redeem Sheet"
       }
-    ]
+    ],
+    "_timeRate" : 0
   },
   "subscriptionGroups" : [
     {
       "id" : "21742027",
       "localizations" : [
-
+        {
+          "description" : "",
+          "displayName" : "Foo+",
+          "locale" : "en_US"
+        }
       ],
       "name" : "Foo+",
       "subscriptions" : [
@@ -112,24 +153,68 @@
           "adHocOffers" : [
 
           ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "29.99",
+              "displayPrice" : "29.99",
+              "internalID" : "6749210339_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
           "codeOffers" : [
 
           ],
           "displayPrice" : "29.99",
           "familyShareable" : true,
-          "groupNumber" : 4,
+          "groupNumber" : 3,
           "internalID" : "6749210339",
           "introductoryOffer" : {
-            "internalID" : "FAF1DAFC",
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "8852BDD9",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "8852BDD9",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Get unlimited family access for this year",
               "displayName" : "Foo+ Family",
               "locale" : "en_US"
+            },
+            {
+              "description" : "Accès d'un an par famille aux fonctionnalités pro",
+              "displayName" : "Foo+ Famille",
+              "locale" : "fr"
+            },
+            {
+              "description" : "Acceso de un año por familia a las funciones pro",
+              "displayName" : "Foo+ Familia",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Einjähriger Zugang zu den Pro-Funktionen pro Familie",
+              "displayName" : "Foo+ Familie",
+              "locale" : "de"
+            },
+            {
+              "description" : "One year family access to pro features",
+              "displayName" : "Foo+ Family",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Accesso di un anno per famiglia alle funzionalità pro",
+              "displayName" : "Foo+ Famiglia",
+              "locale" : "it"
             }
           ],
           "productID" : "f_fa_2999_1y_1w",
@@ -145,38 +230,14 @@
           "adHocOffers" : [
 
           ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "3.99",
-          "familyShareable" : true,
-          "groupNumber" : 3,
-          "internalID" : "6749210258",
-          "introductoryOffer" : {
-            "internalID" : "0C2E8EC3",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
-          "localizations" : [
+          "billingPlans" : [
             {
-              "description" : "Get unlimited family access for this month",
-              "displayName" : "Foo+ Family",
-              "locale" : "en_US"
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "1.99",
+              "displayPrice" : "1.99",
+              "internalID" : "6787084778_BILLED_UPFRONT",
+              "isEnabled" : true
             }
-          ],
-          "productID" : "f_fa_399_1m_3d",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Foo+ Family, 3.99, 1 month, 3 days free",
-          "subscriptionGroupID" : "21742027",
-          "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
-        },
-        {
-          "adHocOffers" : [
-
           ],
           "codeOffers" : [
 
@@ -184,23 +245,40 @@
           "displayPrice" : "1.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "6749210161",
-          "introductoryOffer" : {
-            "internalID" : "6F74CFF8",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
+          "internalID" : "6787084778",
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
-              "description" : "Get unlimited access for this month",
+              "description" : "Accesso di una settimana alle funzionalità pro",
+              "displayName" : "Foo+",
+              "locale" : "it"
+            },
+            {
+              "description" : "One week access to pro features",
               "displayName" : "Foo+",
               "locale" : "en_US"
+            },
+            {
+              "description" : "Acceso de una semana a funciones pro",
+              "displayName" : "Foo+",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Accès d'une semaine aux fonctionnalités pro",
+              "displayName" : "Foo+",
+              "locale" : "fr"
+            },
+            {
+              "description" : "Einwöchiger Zugriff auf Pro-Funktionen",
+              "displayName" : "Foo+",
+              "locale" : "de"
             }
           ],
-          "productID" : "f_199_1m_3d",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Foo+, 1.99, 1 month, 3 days free",
+          "productID" : "f_199_1w",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Foo+, 1.99, 1 week",
           "subscriptionGroupID" : "21742027",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -210,6 +288,15 @@
         {
           "adHocOffers" : [
 
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "9.99",
+              "displayPrice" : "9.99",
+              "internalID" : "6749210207_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
           ],
           "codeOffers" : [
 
@@ -219,16 +306,51 @@
           "groupNumber" : 2,
           "internalID" : "6749210207",
           "introductoryOffer" : {
-            "internalID" : "C8DA51BD",
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "77617508",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "77617508",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Get unlimited access for this year",
               "displayName" : "Foo+",
               "locale" : "en_US"
+            },
+            {
+              "description" : "One year access to pro features",
+              "displayName" : "Foo+",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Einjähriger Zugang auf Pro-Funktionen",
+              "displayName" : "Foo+",
+              "locale" : "ar"
+            },
+            {
+              "description" : "Accesso di un anno alle funzionalità pro",
+              "displayName" : "Foo+",
+              "locale" : "it"
+            },
+            {
+              "description" : "Acceso durante un año a funciones pro",
+              "displayName" : "Foo+",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Accès d'un an aux fonctionnalités pro",
+              "displayName" : "Foo+",
+              "locale" : "fr"
             }
           ],
           "productID" : "f_999_1y_1w",
@@ -245,13 +367,26 @@
     {
       "id" : "21611710",
       "localizations" : [
-
+        {
+          "description" : "",
+          "displayName" : "What's in the Fridge? Pro Access",
+          "locale" : "en_US"
+        }
       ],
       "name" : "Pro Access",
       "subscriptions" : [
         {
           "adHocOffers" : [
 
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "9.99",
+              "displayPrice" : "9.99",
+              "internalID" : "6739758309_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
           ],
           "codeOffers" : [
 
@@ -260,7 +395,9 @@
           "familyShareable" : false,
           "groupNumber" : 2,
           "internalID" : "6739758309",
-          "introductoryOffer" : null,
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
               "description" : "Recipe suggestions and more for 1 year",
@@ -281,6 +418,15 @@
           "adHocOffers" : [
 
           ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "0.99",
+              "displayPrice" : "0.99",
+              "internalID" : "6739757776_BILLED_UPFRONT",
+              "isEnabled" : true
+            }
+          ],
           "codeOffers" : [
 
           ],
@@ -288,7 +434,9 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6739757776",
-          "introductoryOffer" : null,
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
               "description" : "Recipe suggestions and more for 1 month",
@@ -309,7 +457,7 @@
     }
   ],
   "version" : {
-    "major" : 4,
+    "major" : 5,
     "minor" : 0
   }
 }

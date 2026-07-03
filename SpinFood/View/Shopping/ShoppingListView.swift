@@ -231,13 +231,13 @@ struct ShoppingListView: View {
                             Text("All Categories").tag(Optional<FoodCategory>.none)
                             Divider()
                             ForEach(FoodCategory.allCases, id: \.self) { cat in
-                                Label(cat.rawValue, systemImage: cat.icon)
+                                Label(cat.localizedName, systemImage: cat.icon)
                                     .tag(Optional(cat))
                             }
                         }
                     } label: {
                         Label(
-                            filterCategory.map { $0.rawValue } ?? "Category",
+                            filterCategory.map { $0.localizedName } ?? String(localized: "Category"),
                             systemImage: "line.3.horizontal.decrease.circle"
                         )
                     }
@@ -415,7 +415,7 @@ struct ShoppingListView: View {
                             .foregroundStyle(Color.accentColor)
                         }
                         if let cat = filterCategory {
-                            Label(cat.rawValue, systemImage: cat.icon)
+                            Label(cat.localizedName, systemImage: cat.icon)
                                 .font(.system(.caption, design: .rounded))
                                 .foregroundStyle(categoryColor(for: cat))
                         }
@@ -458,7 +458,7 @@ struct ShoppingListView: View {
                     HStack {
                         HStack(spacing: 4) {
                             Image(systemName: category.icon)
-                            Text(category.rawValue)
+                            Text(category.localizedName)
                         }
                         .font(.system(.caption, design: .rounded).weight(.bold))
                         .foregroundStyle(categoryColor(for: category))

@@ -28,6 +28,21 @@ enum FoodCategory: String, CaseIterable, Codable {
         }
     }
 
+    var localizedName: String {
+        switch self {
+        case .produce:   return String(localized: "Produce")
+        case .dairy:     return String(localized: "Dairy")
+        case .meat:      return String(localized: "Meat")
+        case .seafood:   return String(localized: "Seafood")
+        case .grains:    return String(localized: "Grains")
+        case .pantry:    return String(localized: "Pantry")
+        case .frozen:    return String(localized: "Frozen")
+        case .beverages: return String(localized: "Beverages")
+        case .snacks:    return String(localized: "Snacks")
+        case .other:     return String(localized: "Other")
+        }
+    }
+
     var defaultEmoji: String {
         switch self {
         case .produce:   return "🥦"
@@ -146,6 +161,19 @@ enum FoodUnit: String, CaseIterable, Codable {
     case tablespoon = "Tablespoon"
     case teaspoon = "Teaspoon"
     case cup = "Cup"
+
+    var localizedName: String {
+        switch self {
+        case .gram:       return String(localized: "Gram")
+        case .kilogram:   return String(localized: "Kilogram")
+        case .milliliter: return String(localized: "Milliliter")
+        case .liter:      return String(localized: "Liter")
+        case .piece:      return String(localized: "Piece")
+        case .tablespoon: return String(localized: "Tablespoon")
+        case .teaspoon:   return String(localized: "Teaspoon")
+        case .cup:        return String(localized: "Cup")
+        }
+    }
 
     var abbreviation: String {
         switch self {

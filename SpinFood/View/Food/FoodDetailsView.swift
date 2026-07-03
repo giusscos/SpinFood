@@ -140,7 +140,7 @@ struct FoodDetailsView: View {
                     .font(.system(.title2, design: .serif).weight(.bold))
                     .multilineTextAlignment(.center)
 
-                Label(food.category.rawValue, systemImage: food.category.icon)
+                Label(food.category.localizedName, systemImage: food.category.icon)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

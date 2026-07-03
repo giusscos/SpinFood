@@ -1,0 +1,41 @@
+Foo est ton compagnon de cuisine personnel — une app magnifiquement conçue qui t'aide à cuisiner, gérer ton garde-manger, faire tes courses et suivre tes habitudes, le tout au même endroit.
+
+Construis ta collection de recettes dans une interface façon livre avec animation de tournage de pages, comme feuilleter un vrai livre de cuisine. Ajoute tes propres recettes avec photos, ingrédients et instructions étape par étape. Quand il est temps de cuisiner, Foo te guide à travers chaque étape, une à la fois.
+
+───────────────────────
+TA CUISINE, ORGANISÉE
+───────────────────────
+
+LIVRE DE RECETTES
+Crée et stocke toutes tes recettes dans un magnifique livre avec animation de pages. Réordonne-les, modifie-les à tout moment et cuisine directement depuis la page.
+
+CUISINER ÉTAPE PAR ÉTAPE
+Suis les instructions guidées avec une vue claire et sans distraction — ne perds jamais le fil en plein milieu d'une recette.
+
+INVENTAIRE
+Garde une trace de chaque ingrédient dans ta cuisine. Sache exactement ce que tu as pour ne jamais te retrouver à court d'un ingrédient clé en pleine recette.
+
+LISTE DE COURSES
+Foo génère automatiquement ta liste de courses à partir de ce dont tu as besoin. Coche les articles pendant tes courses, puis réapprovisionne ton garde-manger en un seul tap.
+
+───────────────────────
+FOO PRO
+───────────────────────
+
+Débloque l'expérience cuisine complète :
+
+• Recettes illimitées — aucune limite, jamais
+• Recherche de recettes — trouve n'importe quoi instantanément
+• Statistiques de cuisine — chaque repas enregistré
+• Listes de courses — générées automatiquement et toujours prêtes
+• Résumé — recettes cuisinées, consommation alimentaire, réapprovisionnements du garde-manger et aperçu du gaspillage alimentaire
+
+Disponible en abonnement ou achat unique à vie.
+
+───────────────────────
+CONÇU AVEC SOIN
+───────────────────────
+
+Foo a une esthétique éditoriale chaleureuse, inspirée des livres de cuisine que tu aimes. Il est aussi agréable à feuilleter qu'à utiliser — calme, concentré et conçu autour de ta cuisine, pas des algorithmes.
+
+La confidentialité d'abord. Aucun compte requis. Tes recettes restent sur ton appareil.

@@ -249,6 +249,36 @@
 "h" = "h";
 "m" = "m";
 
+// MARK: - Food Categories
+"Produce" = "Frutas y verduras";
+"Dairy" = "Lácteos";
+"Meat" = "Carne";
+"Seafood" = "Mariscos";
+"Grains" = "Cereales";
+"Pantry" = "Despensa";
+"Frozen" = "Congelados";
+"Beverages" = "Bebidas";
+"Snacks" = "Snacks";
+"Other" = "Otros";
+"All Categories" = "Todas las categorías";
+
+// MARK: - Food Units
+"Gram" = "Gramo";
+"Kilogram" = "Kilogramo";
+"Milliliter" = "Mililitro";
+"Liter" = "Litro";
+"Piece" = "Pieza";
+"Tablespoon" = "Cucharada";
+"Teaspoon" = "Cucharadita";
+"Cup" = "Taza";
+
+// MARK: - Paywall Lifetime
+"Pay once, cook forever." = "Paga una vez, cocina para siempre.";
+"No recurring charges, ever." = "Sin cargos recurrentes, nunca.";
+
+// MARK: - Language
+"Language" = "Idioma";
+
 // MARK: - App / Settings
 "Foo" = "Foo";
 "Your personal recipe book" = "Tu libro de recetas personal";
@@ -275,7 +305,7 @@
 "Cooking Stats" = "Estadísticas de cocina";
 "Every meal charted" = "Cada comida registrada";
 "Auto-generated" = "Generado automáticamente";
-"One-time purchase available" = "Compra única disponible";
+"One-time purchase" = "Compra única disponible";
 "Lifetime Access" = "Acceso de por vida";
 "Pay once, cook forever. No recurring charges, ever." = "Paga una vez, cocina para siempre. Sin cargos recurrentes, nunca.";
 

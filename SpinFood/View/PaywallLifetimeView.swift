@@ -28,10 +28,12 @@ struct PaywallLifetimeView: View {
                 Text("Lifetime Access")
                     .font(.title3.bold())
 
-                Text("Pay once, cook forever.\nNo recurring charges, ever.")
+                Text("Pay once, cook forever.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                Text("No recurring charges, ever.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
             .padding(.top, 28)
             .padding(.horizontal)

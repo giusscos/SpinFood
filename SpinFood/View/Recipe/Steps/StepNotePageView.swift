@@ -441,7 +441,7 @@ struct DottedPaperBackground: View {
 
 struct StepAddBlockButton: View {
     var icon: String
-    var label: String
+    var label: LocalizedStringKey
     var action: () -> Void
 
     var body: some View {

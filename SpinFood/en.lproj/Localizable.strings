@@ -250,6 +250,36 @@
 "h" = "h";
 "m" = "m";
 
+// MARK: - Food Categories
+"Produce" = "Produce";
+"Dairy" = "Dairy";
+"Meat" = "Meat";
+"Seafood" = "Seafood";
+"Grains" = "Grains";
+"Pantry" = "Pantry";
+"Frozen" = "Frozen";
+"Beverages" = "Beverages";
+"Snacks" = "Snacks";
+"Other" = "Other";
+"All Categories" = "All Categories";
+
+// MARK: - Food Units
+"Gram" = "Gram";
+"Kilogram" = "Kilogram";
+"Milliliter" = "Milliliter";
+"Liter" = "Liter";
+"Piece" = "Piece";
+"Tablespoon" = "Tablespoon";
+"Teaspoon" = "Teaspoon";
+"Cup" = "Cup";
+
+// MARK: - Paywall Lifetime
+"Pay once, cook forever." = "Pay once, cook forever.";
+"No recurring charges, ever." = "No recurring charges, ever.";
+
+// MARK: - Language
+"Language" = "Language";
+
 // MARK: - App / Settings
 "Foo" = "Foo";
 "Your personal recipe book" = "Your personal recipe book";
@@ -276,7 +306,7 @@
 "Cooking Stats" = "Cooking Stats";
 "Every meal charted" = "Every meal charted";
 "Auto-generated" = "Auto-generated";
-"One-time purchase available" = "One-time purchase available";
+"One-time purchase" = "One-time purchase";
 "Lifetime Access" = "Lifetime Access";
 "Pay once, cook forever. No recurring charges, ever." = "Pay once, cook forever. No recurring charges, ever.";
 

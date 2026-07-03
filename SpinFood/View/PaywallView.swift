@@ -17,7 +17,59 @@ struct PaywallView: View {
     var body: some View {
         NavigationStack {
             SubscriptionStoreView(groupID: store.groupId) {
-                coverContent
+                VStack(spacing: 30) {
+                    // Title block
+                    VStack(spacing: 8) {
+                        Text("Foo")
+                            .font(.system(size: 34, weight: .bold, design: .serif))
+
+                        Text("Premium Edition")
+                            .font(.system(size: 11, weight: .regular, design: .serif))
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                    }
+
+                    Image(systemName: "fork.knife")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.orange.opacity(0.85))
+
+                    // Table of contents
+                    VStack(spacing: 24) {
+                        VStack (spacing: 12) {
+                            tocEntry(roman: "I",   title: "Unlimited Recipes",  note: "No caps, ever")
+                            tocDivider
+                        }
+                        
+                        VStack (spacing: 12) {
+                            tocEntry(roman: "II",  title: "Recipe Search",      note: "Find anything instantly")
+                            tocDivider
+                        }
+                        
+                        VStack (spacing: 12) {
+                            tocEntry(roman: "III", title: "Cooking Stats",      note: "Every meal charted")
+                            tocDivider
+                        }
+                        
+                        VStack (spacing: 12) {
+                            tocEntry(roman: "IV",  title: "Shopping Lists",     note: "Auto-generated")
+                        }
+                    }
+
+                    // Lifetime purchase link
+                    Button {
+                        showLifetimePlans = true
+                    } label: {
+                        Label("One-time purchase", systemImage: "infinity")
+                            .font(.footnote)
+                    }
+                    .tint(.green)
+
+                    legalLinks
+                        .padding(.vertical, 12)
+                }
+                .padding(.horizontal)
+                .background(pageBackground.ignoresSafeArea())
+
             }
             .subscriptionStoreControlStyle(.pagedProminentPicker, placement: .bottomBar)
             .subscriptionStoreButtonLabel(.multiline)
@@ -38,58 +90,9 @@ struct PaywallView: View {
         .background(pageBackground.ignoresSafeArea())
     }
 
-    // MARK: - Book Cover
-
-    private var coverContent: some View {
-        VStack(spacing: 30) {
-            // Title block
-            VStack(spacing: 8) {
-                Text("FOO")
-                    .font(.system(size: 34, weight: .bold, design: .serif))
-                    .tracking(5)
-
-                Text("Premium Edition")
-                    .font(.system(size: 11, weight: .regular, design: .serif))
-                    .foregroundStyle(.secondary)
-                    .tracking(3)
-                    .textCase(.uppercase)
-            }
-            .padding(.top)
-
-            Image(systemName: "fork.knife")
-                .font(.system(size: 20))
-                .foregroundStyle(.orange.opacity(0.85))
-
-            // Table of contents
-            VStack(spacing: 24) {
-                tocEntry(roman: "I",   title: "Unlimited Recipes",  note: "No caps, ever")
-                tocDivider
-                tocEntry(roman: "II",  title: "Recipe Search",      note: "Find anything instantly")
-                tocDivider
-                tocEntry(roman: "III", title: "Cooking Stats",      note: "Every meal charted")
-                tocDivider
-                tocEntry(roman: "IV",  title: "Shopping Lists",     note: "Auto-generated")
-            }
-
-            // Lifetime purchase link
-            Button {
-                showLifetimePlans = true
-            } label: {
-                Label("One-time purchase available", systemImage: "infinity")
-                    .font(.footnote)
-            }
-            .tint(.green)
-
-            legalLinks
-                .padding(.vertical, 12)
-        }
-        .padding(.horizontal)
-        .background(pageBackground.ignoresSafeArea())
-    }
-
     // MARK: - Table of Contents Entry
 
-    private func tocEntry(roman: String, title: String, note: String) -> some View {
+    private func tocEntry(roman: String, title: LocalizedStringKey, note: LocalizedStringKey) -> some View {
         HStack(alignment: .center, spacing: 0) {
             Text(roman)
                 .font(.system(size: 11, weight: .light, design: .serif))
@@ -104,16 +107,9 @@ struct PaywallView: View {
                     .font(.system(.caption, design: .serif))
                     .foregroundStyle(.secondary)
             }
-
-            Spacer(minLength: 4)
-
-            Text(". . . . . . .")
-                .font(.system(size: 9, design: .serif))
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
-                .layoutPriority(-1)
+            
+            Spacer()
         }
-        .padding(.vertical, 11)
     }
 
     // MARK: - Ornaments

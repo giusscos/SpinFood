@@ -298,7 +298,7 @@ struct BookRecipePage: View {
 
     // MARK: - Helpers
 
-    private func metaBadge(label: String, value: String) -> some View {
+    private func metaBadge(label: LocalizedStringKey, value: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
                 .font(.system(size: 9, weight: .semibold, design: .serif))

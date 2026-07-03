@@ -101,7 +101,7 @@ struct EditFoodView: View {
                             Spacer()
                             Picker("", selection: $category) {
                                 ForEach(FoodCategory.allCases, id: \.self) { cat in
-                                    Label(cat.rawValue, systemImage: cat.icon).tag(cat)
+                                    Label(cat.localizedName, systemImage: cat.icon).tag(cat)
                                 }
                             }
                             .labelsHidden()
@@ -116,7 +116,7 @@ struct EditFoodView: View {
                             Spacer()
                             Picker("", selection: $unit) {
                                 ForEach(FoodUnit.allCases, id: \.self) { u in
-                                    Text(u.rawValue).tag(u)
+                                    Text(u.localizedName).tag(u)
                                 }
                             }
                             .labelsHidden()

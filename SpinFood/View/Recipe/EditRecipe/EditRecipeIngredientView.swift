@@ -91,7 +91,7 @@ struct EditRecipeIngredientView: View {
                     Text(food.name)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text(food.category.rawValue)
+                    Text(food.category.localizedName)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

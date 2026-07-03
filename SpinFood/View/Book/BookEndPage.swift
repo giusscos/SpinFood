@@ -118,7 +118,7 @@ struct BookEndPage: View {
     
     // MARK: - Section Header
     
-    private func sectionHeader(_ title: String) -> some View {
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
         Text(title)
             .font(.system(size: 10, weight: .semibold, design: .serif))
             .foregroundStyle(.secondary)
@@ -262,7 +262,7 @@ struct BookEndPage: View {
 
     // MARK: - Helpers
     
-    private func actionRow(icon: String, label: String, isExternal: Bool = false, action: @escaping () -> Void) -> some View {
+    private func actionRow(icon: String, label: LocalizedStringKey, isExternal: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: icon)

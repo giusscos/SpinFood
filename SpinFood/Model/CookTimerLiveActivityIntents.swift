@@ -15,6 +15,7 @@ struct ToggleCookTimerIntent: LiveActivityIntent {
 
         for activity in Activity<CookTimerAttributes>.activities {
             let state = activity.content.state
+            let label = activity.attributes.label
             if state.isRunning {
                 let remaining = max(0, state.endDate?.timeIntervalSinceNow ?? state.remainingWhenPaused)
                 let paused = CookTimerAttributes.ContentState(
@@ -24,6 +25,7 @@ struct ToggleCookTimerIntent: LiveActivityIntent {
                     total: state.total
                 )
                 await activity.update(.init(state: paused, staleDate: nil))
+                CookTimerAlarmScheduler.cancel()
             } else {
                 let remaining = state.remainingWhenPaused
                 guard remaining > 0 else { continue }
@@ -35,6 +37,7 @@ struct ToggleCookTimerIntent: LiveActivityIntent {
                     total: state.total
                 )
                 await activity.update(.init(state: running, staleDate: endDate))
+                CookTimerAlarmScheduler.schedule(after: remaining, label: label)
             }
         }
         return .result()
@@ -51,6 +54,7 @@ struct DismissCookTimerIntent: LiveActivityIntent {
             return .result()
         }
 
+        CookTimerAlarmScheduler.cancel()
         for activity in Activity<CookTimerAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
         }

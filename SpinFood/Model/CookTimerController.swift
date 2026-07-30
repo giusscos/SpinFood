@@ -1,6 +1,5 @@
 import Foundation
 import Observation
-import UserNotifications
 import ActivityKit
 
 @Observable
@@ -17,7 +16,6 @@ final class CookTimerController {
 
     private var endDate: Date?
     private var tickTimer: Timer?
-    private let notificationID = "cook-timer-complete"
     private var liveActivity: Activity<CookTimerAttributes>?
     private var contentUpdatesTask: Task<Void, Never>?
     private var lastPushedState: CookTimerAttributes.ContentState?
@@ -31,7 +29,7 @@ final class CookTimerController {
 
         Self.sharedActive = self
         stopTicking()
-        cancelNotification()
+        CookTimerAlarmScheduler.cancel()
 
         self.label = label.isEmpty ? String(localized: "Timer") : label
         self.total = duration
@@ -42,7 +40,7 @@ final class CookTimerController {
         self.endDate = Date().addingTimeInterval(duration)
         self.lastEmittedSecond = -1
 
-        scheduleCompletionNotification(after: duration, label: self.label)
+        CookTimerAlarmScheduler.schedule(after: duration, label: self.label)
         startTicking()
         startOrUpdateLiveActivity()
     }
@@ -53,7 +51,7 @@ final class CookTimerController {
         isRunning = false
         endDate = nil
         stopTicking()
-        cancelNotification()
+        CookTimerAlarmScheduler.cancel()
         updateLiveActivity()
     }
 
@@ -62,7 +60,7 @@ final class CookTimerController {
         isRunning = true
         endDate = Date().addingTimeInterval(remaining)
         lastEmittedSecond = -1
-        scheduleCompletionNotification(after: remaining, label: label)
+        CookTimerAlarmScheduler.schedule(after: remaining, label: label)
         startTicking()
         updateLiveActivity()
     }
@@ -73,7 +71,7 @@ final class CookTimerController {
 
     func reset() {
         stopTicking()
-        cancelNotification()
+        CookTimerAlarmScheduler.cancel()
         remaining = total
         isRunning = false
         endDate = nil
@@ -82,7 +80,7 @@ final class CookTimerController {
 
     func dismiss() {
         stopTicking()
-        cancelNotification()
+        CookTimerAlarmScheduler.cancel()
         endLiveActivity()
         isRunning = false
         isVisible = false
@@ -144,22 +142,6 @@ final class CookTimerController {
     private func syncRemainingFromEndDate() {
         guard let endDate else { return }
         remaining = max(0, endDate.timeIntervalSinceNow)
-    }
-
-    private func scheduleCompletionNotification(after interval: TimeInterval, label: String) {
-        guard interval > 0 else { return }
-        let content = UNMutableNotificationContent()
-        content.title = String(localized: "Timer Done")
-        content.body = "\(label) — " + String(localized: "Timer finished. Time to move on!")
-        content.sound = .default
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
-        UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: notificationID, content: content, trigger: trigger)
-        )
-    }
-
-    private func cancelNotification() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationID])
     }
 
     // MARK: - Live Activity
@@ -259,21 +241,21 @@ final class CookTimerController {
 
         if isRunning {
             if !wasRunning {
-                cancelNotification()
+                CookTimerAlarmScheduler.cancel()
                 if remaining > 0 {
-                    scheduleCompletionNotification(after: remaining, label: label)
+                    CookTimerAlarmScheduler.schedule(after: remaining, label: label)
                 }
             }
             startTicking()
         } else {
             stopTicking()
-            cancelNotification()
+            CookTimerAlarmScheduler.cancel()
         }
     }
 
     private func applyExternalDismiss() {
         stopTicking()
-        cancelNotification()
+        CookTimerAlarmScheduler.cancel()
         contentUpdatesTask?.cancel()
         contentUpdatesTask = nil
         liveActivity = nil

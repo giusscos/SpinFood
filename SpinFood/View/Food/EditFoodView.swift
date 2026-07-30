@@ -6,6 +6,7 @@ struct EditFoodView: View {
     @Environment(\.modelContext) var modelContext
 
     var food: FoodModel?
+    var scannedProduct: OpenFoodFactsProduct? = nil
 
     @State private var name: String = ""
     @State private var emoji: String = ""
@@ -16,6 +17,10 @@ struct EditFoodView: View {
     @State private var hasExpiryDate: Bool = false
     @State private var expiryDate: Date = Calendar.current.date(byAdding: .day, value: 7, to: .now) ?? .now
     @State private var showEmojiPicker: Bool = false
+    @State private var showBarcodeScanner: Bool = false
+    @State private var isLookingUpBarcode: Bool = false
+    @State private var barcodeError: String? = nil
+    @State private var scannedBarcodeHint: String? = nil
 
     enum Field: Hashable {
         case name
@@ -83,9 +88,43 @@ struct EditFoodView: View {
 
                     // Food details
                     VStack(alignment: .leading, spacing: 8) {
-                        Label("Food details", systemImage: "tag")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                        HStack {
+                            Label("Food details", systemImage: "tag")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            if !isEditing {
+                                Button {
+                                    focusedField = nil
+                                    barcodeError = nil
+                                    showBarcodeScanner = true
+                                } label: {
+                                    Label("Scan", systemImage: "barcode.viewfinder")
+                                        .font(.subheadline.weight(.semibold))
+                                }
+                            }
+                        }
+
+                        if isLookingUpBarcode {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                Text("Looking up product…")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        if let scannedBarcodeHint {
+                            Text(scannedBarcodeHint)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if let barcodeError {
+                            Text(barcodeError)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
 
                         TextField("Name", text: $name)
                             .autocorrectionDisabled()
@@ -240,10 +279,22 @@ struct EditFoodView: View {
                         hasExpiryDate = true
                         expiryDate = expiry
                     }
+                } else if let scannedProduct {
+                    apply(scannedProduct)
                 }
             }
             .sheet(isPresented: $showEmojiPicker) {
                 EmojiPickerSheet(selectedEmoji: $emoji)
+            }
+            .fullScreenCover(isPresented: $showBarcodeScanner) {
+                BarcodeScannerView(
+                    onScan: { code in
+                        showBarcodeScanner = false
+                        Task { await lookupBarcode(code) }
+                    },
+                    onCancel: { showBarcodeScanner = false }
+                )
+                .ignoresSafeArea()
             }
         }
     }
@@ -280,6 +331,35 @@ struct EditFoodView: View {
         }
 
         dismiss()
+    }
+
+    private func apply(_ product: OpenFoodFactsProduct) {
+        name = product.name
+        emoji = product.emoji
+        category = product.category
+        unit = product.unit
+        if quantity == 0 {
+            quantity = unit == .piece ? 1 : 100
+        }
+        var hint = String(localized: "Scanned: \(product.barcode)")
+        if let brand = product.brand, !brand.isEmpty {
+            hint += " · \(brand)"
+        }
+        scannedBarcodeHint = hint
+    }
+
+    @MainActor
+    private func lookupBarcode(_ code: String) async {
+        isLookingUpBarcode = true
+        barcodeError = nil
+        defer { isLookingUpBarcode = false }
+        do {
+            let product = try await OpenFoodFactsService.lookup(barcode: code)
+            apply(product)
+        } catch {
+            barcodeError = error.localizedDescription
+            scannedBarcodeHint = String(localized: "Barcode: \(code)")
+        }
     }
 }
 

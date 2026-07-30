@@ -26,6 +26,17 @@ struct BookRecipePage: View {
 
     @State private var activeSheet: ActiveRecipeDetailSheet?
     @State private var showDeleteConfirmation = false
+    @State private var sharingItems: [Any] = []
+    @State private var showShareSheet = false
+    @State private var exportErrorMessage: String? = nil
+
+    // Cook serving picker (shown as a sheet BEFORE the fullScreenCover opens)
+    @State private var showCookServingPicker = false
+    @State private var pendingCookSteps: [StepRecipe]? = nil
+    @State private var cookServings: Int = 1
+    @State private var cookServingScale: Double = 1
+    @State private var cookConfirmed = false
+    @State private var cookLimitAlertMessage: String? = nil
 
     private var pageBackground: Color {
         Color(UIColor { trait in
@@ -73,6 +84,14 @@ struct BookRecipePage: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        shareRecipe()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: onEdit) {
                         Image(systemName: "square.and.pencil")
                             .font(.system(size: 16, weight: .medium))
@@ -110,7 +129,11 @@ struct BookRecipePage: View {
                 case .confirmEat:
                     RecipeConfirmEatView(recipe: recipe)
                 case .cookNow(let steps):
-                    CookRecipeStepByStepView(recipe: recipe, steps: steps)
+                    CookRecipeStepByStepView(
+                        recipe: recipe,
+                        steps: steps,
+                        servingScale: recipe.lastCookServingScale
+                    )
                 case .steps(let steps):
                     StepBookCurlView(
                         steps: steps,
@@ -121,6 +144,76 @@ struct BookRecipePage: View {
                     .ignoresSafeArea()
                 }
             }
+            .sheet(isPresented: $showShareSheet) {
+                ShareSheet(items: sharingItems)
+                    .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showCookServingPicker, onDismiss: {
+                if cookConfirmed, let steps = pendingCookSteps {
+                    // Defer so the sheet can finish dismissing before the full-screen cover presents.
+                    DispatchQueue.main.async {
+                        activeSheet = .cookNow(steps)
+                    }
+                }
+                cookConfirmed = false
+                pendingCookSteps = nil
+            }) {
+                CookServingPickerSheet(
+                    recipe: recipe,
+                    selectedServings: $cookServings,
+                    maxServings: max(1, min(20, recipe.maxCookableServings)),
+                    onConfirm: {
+                        let maxAllowed = recipe.maxCookableServings
+                        guard maxAllowed > 0 else {
+                            cookLimitAlertMessage = String(localized: "Not enough ingredients in your pantry to cook this recipe.")
+                            showCookServingPicker = false
+                            return
+                        }
+                        if cookServings > maxAllowed {
+                            cookLimitAlertMessage = String(localized: "You only have enough ingredients for \(maxAllowed) serving\(maxAllowed == 1 ? "" : "s").")
+                            cookServings = maxAllowed
+                            return
+                        }
+                        cookServingScale = Double(cookServings) / Double(max(1, recipe.servings))
+                        recipe.lastCookServingScale = cookServingScale
+                        recipe.lastStepIndex = 0
+                        recipe.cookingInProgress = true
+                        cookConfirmed = true
+                        showCookServingPicker = false
+                    },
+                    onCancel: { showCookServingPicker = false }
+                )
+                .presentationDetents([.height(320)])
+                .interactiveDismissDisabled()
+            }
+            .alert("Export Failed", isPresented: Binding(
+                get: { exportErrorMessage != nil },
+                set: { if !$0 { exportErrorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { exportErrorMessage = nil }
+            } message: {
+                Text(exportErrorMessage ?? "")
+            }
+            .alert("Can't Cook", isPresented: Binding(
+                get: { cookLimitAlertMessage != nil },
+                set: { if !$0 { cookLimitAlertMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { cookLimitAlertMessage = nil }
+            } message: {
+                Text(cookLimitAlertMessage ?? "")
+            }
+        }
+    }
+
+    // MARK: - Share
+
+    private func shareRecipe() {
+        do {
+            let url = try RecipeTransfer.export(recipe)
+            sharingItems = [url]
+            showShareSheet = true
+        } catch {
+            exportErrorMessage = error.localizedDescription
         }
     }
 
@@ -200,8 +293,28 @@ struct BookRecipePage: View {
                     if recipe.rating > 0 {
                         metaBadge(label: "RATING", value: String(repeating: "★", count: recipe.rating))
                     }
+                    if let difficulty = recipe.difficulty {
+                        metaBadge(label: "LEVEL", value: difficulty.localizedName)
+                    }
                 }
                 .padding(.top, 4)
+            }
+
+            if !recipe.tags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(recipe.tags, id: \.self) { tag in
+                            Label(tag.localizedName, systemImage: tag.icon)
+                                .font(.system(size: 11, design: .rounded).weight(.medium))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.accentColor.opacity(0.1))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(.capsule)
+                        }
+                    }
+                }
+                .padding(.top, 2)
             }
         }
         .padding(.horizontal, 32)
@@ -261,16 +374,44 @@ struct BookRecipePage: View {
 
             VStack(spacing: 12) {
                 if let steps = recipe.steps, !steps.isEmpty {
-                    Button { activeSheet = .cookNow(steps) } label: {
-                        Label("Cook Step by Step", systemImage: "frying.pan")
+                    Button {
+                        startCookStepByStep(steps: steps)
+                    } label: {
+                        Label(
+                            recipe.cookingInProgress ? "Resume Cooking" : "Cook Step by Step",
+                            systemImage: "frying.pan"
+                        )
                             .font(.system(.callout, design: .serif).weight(.medium))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                             .background(
-                                recipe.canCook ? Color.accentColor : Color.secondary.opacity(0.15),
+                                recipe.canCook || recipe.cookingInProgress
+                                    ? Color.accentColor
+                                    : Color.secondary.opacity(0.15),
                                 in: RoundedRectangle(cornerRadius: 10)
                             )
-                            .foregroundStyle(recipe.canCook ? .white : .secondary)
+                            .foregroundStyle(recipe.canCook || recipe.cookingInProgress ? .white : .secondary)
+                            .contentTransition(.interpolate)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: recipe.cookingInProgress)
+                    }
+
+                    if recipe.cookingInProgress {
+                        Button {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                                recipe.finishCookingSession()
+                            }
+                        } label: {
+                            Label("Reset Cooking Progress", systemImage: "arrow.counterclockwise")
+                                .font(.system(.callout, design: .serif).weight(.medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                                .foregroundStyle(.primary)
+                        }
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)),
+                            removal: .opacity.combined(with: .scale(scale: 0.96))
+                        ))
                     }
 
                     Button { activeSheet = .steps(steps) } label: {
@@ -292,11 +433,30 @@ struct BookRecipePage: View {
                         .foregroundStyle(.primary)
                 }
             }
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: recipe.cookingInProgress)
         }
         .padding(.horizontal, 32)
     }
 
     // MARK: - Helpers
+
+    private func startCookStepByStep(steps: [StepRecipe]) {
+        if recipe.cookingInProgress {
+            cookServingScale = recipe.lastCookServingScale
+            activeSheet = .cookNow(steps)
+            return
+        }
+
+        let maxAllowed = recipe.maxCookableServings
+        guard maxAllowed > 0 else {
+            cookLimitAlertMessage = String(localized: "Not enough ingredients in your pantry to cook this recipe.")
+            return
+        }
+
+        pendingCookSteps = steps
+        cookServings = min(max(1, recipe.servings), min(20, maxAllowed))
+        showCookServingPicker = true
+    }
 
     private func metaBadge(label: LocalizedStringKey, value: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -309,3 +469,113 @@ struct BookRecipePage: View {
         }
     }
 }
+
+// MARK: - Cook Serving Picker Sheet
+
+private struct CookServingPickerSheet: View {
+    let recipe: RecipeModel
+    @Binding var selectedServings: Int
+    var maxServings: Int
+    var onConfirm: () -> Void
+    var onCancel: () -> Void
+
+    private let paperColor = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark
+            ? .systemBackground
+            : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
+    })
+
+    private var scale: Double {
+        Double(selectedServings) / Double(max(1, recipe.servings))
+    }
+
+    private var cappedMax: Int { max(1, maxServings) }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                VStack(spacing: 6) {
+                    Text("How many servings?")
+                        .font(.system(.title3, design: .serif).weight(.semibold))
+                    Text("Recipe makes \(recipe.servings)")
+                        .font(.system(.subheadline, design: .serif))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 8)
+
+                HStack(spacing: 28) {
+                    Button {
+                        if selectedServings > 1 { selectedServings -= 1 }
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.system(size: 34))
+                            .foregroundStyle(selectedServings > 1 ? Color.accentColor : .secondary.opacity(0.2))
+                    }
+                    .disabled(selectedServings <= 1)
+
+                    Text("\(selectedServings)")
+                        .font(.system(size: 52, weight: .bold, design: .serif))
+                        .monospacedDigit()
+                        .frame(minWidth: 64)
+                        .contentTransition(.numericText())
+                        .animation(.easeInOut(duration: 0.15), value: selectedServings)
+
+                    Button {
+                        if selectedServings < cappedMax { selectedServings += 1 }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 34))
+                            .foregroundStyle(selectedServings < cappedMax ? Color.accentColor : .secondary.opacity(0.2))
+                    }
+                    .disabled(selectedServings >= cappedMax)
+                }
+                .buttonStyle(.borderless)
+
+                VStack(spacing: 4) {
+                    if selectedServings != recipe.servings {
+                        Text("Scaling × \(String(format: "%.2g", scale)) from original")
+                            .foregroundStyle(.orange)
+                    }
+
+                    Text("Up to \(cappedMax) based on your pantry")
+                        .foregroundStyle(.secondary)
+                }
+                .font(.system(.caption, design: .rounded))
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+            .background(paperColor.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if selectedServings > cappedMax {
+                    selectedServings = cappedMax
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel", action: onCancel)
+                        .font(.system(.body, design: .serif))
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Start Cooking", action: onConfirm)
+                        .font(.system(.body, design: .serif).weight(.semibold))
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Share Sheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+

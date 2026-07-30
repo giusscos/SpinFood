@@ -1,20 +1,30 @@
-//
-//  RecipeConfirmEatView.swift
-//  SpinFood
-//
-//  Created by Giuseppe Cosenza on 11/12/24.
-//
-
 import SwiftUI
 import SwiftData
 
 struct RecipeConfirmEatView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
-    
+
     @Query var foods: [FoodModel]
-    
+
     var recipe: RecipeModel
+    var initialServings: Int? = nil
+    /// When `false`, servings were already chosen at cook start and the stepper is hidden.
+    var allowsServingsAdjustment: Bool = true
+    var onConfirmed: (() -> Void)? = nil
+
+    @State private var selectedServings: Int = 1
+
+    private var scale: Decimal {
+        guard recipe.servings > 0 else { return 1 }
+        return Decimal(selectedServings) / Decimal(recipe.servings)
+    }
+
+    private var maxServings: Int {
+        let pantryMax = recipe.maxCookableServings
+        if pantryMax <= 0 { return 1 }
+        return min(20, pantryMax)
+    }
 
     private var paperBackground: Color {
         Color(UIColor { trait in
@@ -23,7 +33,7 @@ struct RecipeConfirmEatView: View {
                 : UIColor(red: 0.99, green: 0.98, blue: 0.96, alpha: 1)
         })
     }
-        
+
     var body: some View {
         NavigationStack {
             List {
@@ -55,24 +65,53 @@ struct RecipeConfirmEatView: View {
                 }
 
                 Section {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Cooking \(recipe.name) will deduct the ingredients from your pantry.")
                             .font(.system(.subheadline, design: .rounded))
                             .foregroundStyle(.secondary)
 
-                        Label("\(recipe.servings) \(recipe.servings == 1 ? "serving" : "servings")", systemImage: "person.2")
+                        if allowsServingsAdjustment {
+                            HStack {
+                                Label(
+                                    "\(selectedServings) \(selectedServings == 1 ? String(localized: "serving") : String(localized: "servings"))",
+                                    systemImage: "person.2"
+                                )
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundStyle(selectedServings == recipe.servings ? .secondary : .primary)
+
+                                Spacer()
+
+                                Stepper("", value: $selectedServings, in: 1...maxServings)
+                                    .labelsHidden()
+                            }
+
+                            if selectedServings != recipe.servings {
+                                Text("Quantities scaled from \(recipe.servings) servings")
+                                    .font(.system(.caption, design: .rounded))
+                                    .foregroundStyle(.orange)
+                            }
+
+                            Text("Up to \(maxServings) based on your pantry")
+                                .font(.system(.caption, design: .rounded))
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Label(
+                                "\(selectedServings) \(selectedServings == 1 ? String(localized: "serving") : String(localized: "servings"))",
+                                systemImage: "person.2"
+                            )
                             .font(.system(.subheadline, design: .rounded))
                             .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 .listRowInsets(.init(top: 16, leading: 16, bottom: 16, trailing: 16))
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
-                
+
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     Section {
                         ForEach(ingredients) { ingredient in
-                            IngredientRowView(ingredient: ingredient)
+                            IngredientRowView(ingredient: ingredient, scale: scale)
                                 .listRowBackground(paperBackground)
                         }
                     } header: {
@@ -88,6 +127,11 @@ struct RecipeConfirmEatView: View {
             .background(paperBackground.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+            .onAppear {
+                let fallback = max(1, recipe.servings)
+                let desired = initialServings ?? fallback
+                selectedServings = min(maxServings, max(1, desired))
+            }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Ready to eat?")
@@ -102,12 +146,12 @@ struct RecipeConfirmEatView: View {
                             .font(.system(.body, design: .rounded))
                     }
                 }
-
             }
             .toolbar {
                 ToolbarItem(placement: .bottomBar) {
                     Button {
                         consumeFood()
+                        onConfirmed?()
                         dismiss()
                     } label: {
                         Label("Confirm", systemImage: "fork.knife")
@@ -120,46 +164,47 @@ struct RecipeConfirmEatView: View {
             }
         }
     }
-    
+
     private func consumeFood() {
-        if let ingredients = recipe.ingredients, !ingredients.isEmpty {
-            recipe.cookedAt.append(Date.now)
-            recipe.lastStepIndex = 0
-            
-            for ingredient in ingredients {
-                updateIngredientQuantity(ingredient)
-            }
+        guard let ingredients = recipe.ingredients, !ingredients.isEmpty else {
+            recipe.finishCookingSession()
+            return
+        }
+        recipe.cookedAt.append(Date.now)
+        recipe.finishCookingSession()
+        for ingredient in ingredients {
+            updateIngredientQuantity(ingredient)
         }
     }
-    
+
     private func updateIngredientQuantity(_ ingredient: RecipeFoodModel) {
         guard let requiredIngredient = ingredient.ingredient else { return }
-        
-        if let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) {
-            inventoryItem.currentQuantity -= ingredient.quantityNeeded
-            
-            if inventoryItem.currentQuantity < 0 {
-                inventoryItem.currentQuantity = 0
-            }
-            
-            let consumption = FoodConsumptionModel(
-                consumedAt: Date.now,
-                quantity: ingredient.quantityNeeded,
-                unit: inventoryItem.unit,
-                food: inventoryItem
-            )
-            
-            if inventoryItem.consumptions == nil {
-                inventoryItem.consumptions = [consumption]
-            } else {
-                inventoryItem.consumptions?.append(consumption)
-            }
+        guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return }
+
+        let consumed = ingredient.quantityNeeded * scale
+        inventoryItem.currentQuantity -= consumed
+        if inventoryItem.currentQuantity < 0 {
+            inventoryItem.currentQuantity = 0
+        }
+
+        let consumption = FoodConsumptionModel(
+            consumedAt: Date.now,
+            quantity: consumed,
+            unit: inventoryItem.unit,
+            food: inventoryItem
+        )
+
+        if inventoryItem.consumptions == nil {
+            inventoryItem.consumptions = [consumption]
+        } else {
+            inventoryItem.consumptions?.append(consumption)
         }
     }
 }
 
 struct IngredientRowView: View {
     let ingredient: RecipeFoodModel
+    var scale: Decimal = 1
 
     var body: some View {
         if let item = ingredient.ingredient {
@@ -169,7 +214,7 @@ struct IngredientRowView: View {
                         .font(.system(.headline, design: .rounded))
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text(ingredient.quantityNeeded, format: .number)
+                    Text(ingredient.quantityNeeded * scale, format: .number)
                         .font(.system(.headline, design: .rounded))
                     +
                     Text(" \(item.unit.abbreviation)")

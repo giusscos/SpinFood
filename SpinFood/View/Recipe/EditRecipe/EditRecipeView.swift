@@ -265,6 +265,8 @@ struct EditRecipeView: View {
     @State private var cropSource: UIImage? = nil
     @State private var showCrop: Bool = false
     @State private var servings: Int = 2
+    @State private var difficulty: RecipeDifficulty? = nil
+    @State private var recipeTags: Set<RecipeTag> = []
 
     @State private var showIngredientsSheet: Bool = false
     @State private var showStepsBook: Bool = false
@@ -372,6 +374,74 @@ struct EditRecipeView: View {
                             .foregroundStyle(.secondary)
 
                         TimePickerView(duration: $duration)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+
+                    divider
+
+                    // Difficulty
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Difficulty", systemImage: "chart.bar")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        Picker("Difficulty", selection: $difficulty) {
+                            Text("None").tag(Optional<RecipeDifficulty>.none)
+                            ForEach(RecipeDifficulty.allCases, id: \.self) { d in
+                                Text(d.localizedName).tag(Optional(d))
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+
+                    divider
+
+                    // Tags
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Tags", systemImage: "tag")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+
+                        LazyVGrid(
+                            columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3),
+                            spacing: 8
+                        ) {
+                            ForEach(RecipeTag.allCases, id: \.self) { tag in
+                                Button {
+                                    if recipeTags.contains(tag) {
+                                        recipeTags.remove(tag)
+                                    } else {
+                                        recipeTags.insert(tag)
+                                    }
+                                } label: {
+                                    Label(tag.localizedName, systemImage: tag.icon)
+                                        .font(.system(.caption, design: .rounded).weight(.medium))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 8)
+                                        .frame(maxWidth: .infinity)
+                                        .background(
+                                            recipeTags.contains(tag)
+                                                ? Color.accentColor.opacity(0.15)
+                                                : Color.secondary.opacity(0.08)
+                                        )
+                                        .foregroundStyle(recipeTags.contains(tag) ? Color.accentColor : .primary)
+                                        .clipShape(.rect(cornerRadius: 8))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(
+                                                    recipeTags.contains(tag)
+                                                        ? Color.accentColor.opacity(0.4)
+                                                        : Color.clear,
+                                                    lineWidth: 1
+                                                )
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
@@ -674,6 +744,8 @@ struct EditRecipeView: View {
             recipe.duration = duration
             recipe.servings = servings
             recipe.steps = steps
+            recipe.difficulty = difficulty
+            recipe.tags = Array(recipeTags)
         } else {
             let newRecipe = RecipeModel(
                 name: name,
@@ -682,7 +754,9 @@ struct EditRecipeView: View {
                 duration: duration,
                 servings: servings,
                 ingredients: ingredients,
-                steps: steps
+                steps: steps,
+                difficulty: difficulty,
+                tags: Array(recipeTags)
             )
             modelContext.insert(newRecipe)
         }

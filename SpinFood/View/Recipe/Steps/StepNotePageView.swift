@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import PhotosUI
 import PencilKit
 
@@ -14,14 +15,18 @@ struct StepNotePageView: View {
     var allSteps: [StepRecipe]
     var isEditing: Bool
     var isCooking: Bool
+    var servingScale: Double = 1
     var onBack: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
     var onClose: (() -> Void)? = nil
+
+    @Environment(\.cookTimer) private var cookTimer
 
     @State private var editingBlock: StepBlock? = nil
     @State private var showImagePicker = false
     @State private var pickedImageItem: PhotosPickerItem? = nil
     @State private var pendingImageBlock: StepBlock? = nil
+    @State private var showSuggestedDurationPicker = false
 
     private var sortedBlocks: [StepBlock] { step.sortedBlocks }
 
@@ -84,19 +89,81 @@ struct StepNotePageView: View {
     // MARK: - Header
 
     private var stepHeader: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("STEP")
-                .font(.system(size: 10, weight: .semibold, design: .serif))
-                .foregroundStyle(.secondary)
-                .tracking(2)
-                .padding(.bottom, 2)
-            Text("\(stepNumber)")
-                .font(.system(size: 38, weight: .bold, design: .serif))
-            Spacer()
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("STEP")
+                    .font(.system(size: 10, weight: .semibold, design: .serif))
+                    .foregroundStyle(.secondary)
+                    .tracking(2)
+                    .padding(.bottom, 2)
+                Text("\(stepNumber)")
+                    .font(.system(size: 38, weight: .bold, design: .serif))
+                Spacer()
+
+                if step.hasSuggestedTimer && isCooking {
+                    Label(timerDisplayString(step.suggestedDuration), systemImage: "timer")
+                        .font(.system(.caption, design: .serif).weight(.semibold))
+                        .foregroundStyle(.orange)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.orange.opacity(0.12), in: Capsule())
+                }
+            }
+
+            if isEditing {
+                suggestedDurationEditor
+            }
         }
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 10)
+    }
+
+    private var suggestedDurationEditor: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: Binding(
+                get: { step.suggestedDuration > 0 },
+                set: { enabled in
+                    if enabled {
+                        if step.suggestedDuration <= 0 { step.suggestedDuration = 60 }
+                        showSuggestedDurationPicker = true
+                    } else {
+                        step.suggestedDuration = 0
+                        showSuggestedDurationPicker = false
+                    }
+                }
+            )) {
+                Label("Auto-start timer", systemImage: "timer")
+                    .font(.system(.subheadline, design: .serif))
+            }
+            .tint(.orange)
+
+            if step.suggestedDuration > 0 {
+                Button {
+                    showSuggestedDurationPicker.toggle()
+                } label: {
+                    HStack {
+                        Text("Duration")
+                            .font(.system(.callout, design: .serif))
+                        Spacer()
+                        Text(timerDisplayString(step.suggestedDuration))
+                            .font(.system(.callout, design: .serif).weight(.semibold))
+                            .foregroundStyle(.orange)
+                    }
+                }
+                .buttonStyle(.borderless)
+
+                if showSuggestedDurationPicker {
+                    TimePickerView(duration: Binding(
+                        get: { step.suggestedDuration },
+                        set: { step.suggestedDuration = max(0, $0) }
+                    ))
+                    .frame(height: 140)
+                }
+            }
+        }
+        .padding(12)
+        .background(Color.orange.opacity(0.07), in: .rect(cornerRadius: 10))
     }
 
     // MARK: - Legacy / empty
@@ -249,7 +316,11 @@ struct StepNotePageView: View {
 
         case .timer:
             if isCooking {
-                StepTimerBlockView(duration: block.timerDuration, label: block.timerLabel)
+                StepTimerBlockView(
+                    duration: block.timerDuration,
+                    label: block.timerLabel,
+                    cookTimer: cookTimer
+                )
             } else {
                 HStack(spacing: 10) {
                     Image(systemName: "timer").foregroundStyle(.orange)
@@ -276,8 +347,9 @@ struct StepNotePageView: View {
                     ForEach(block.linkedIngredientIDs, id: \.self) { id in
                         if let item = ingredients.first(where: { $0.id == id }),
                            let food = item.ingredient {
-                            let qty = block.ingredientStepQuantities[id.uuidString]
+                            let baseQty = block.ingredientStepQuantities[id.uuidString]
                                 ?? NSDecimalNumber(decimal: item.quantityNeeded).doubleValue
+                            let qty = baseQty * servingScale
                             HStack(spacing: 10) {
                                 Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
                                     .font(.title3)
@@ -464,10 +536,7 @@ struct StepAddBlockButton: View {
 struct StepTimerBlockView: View {
     var duration: TimeInterval
     var label: String
-
-    @State private var remaining: TimeInterval = 0
-    @State private var isRunning = false
-    @State private var timerRef: Timer? = nil
+    var cookTimer: CookTimerController? = nil
 
     var body: some View {
         VStack(spacing: 10) {
@@ -476,59 +545,32 @@ struct StepTimerBlockView: View {
                 Text(label.isEmpty ? "Timer" : label)
                     .font(.system(.callout, design: .serif).weight(.semibold))
                 Spacer()
-                Text(timeString(remaining))
+                Text(timeString(duration))
                     .font(.system(.title2, design: .serif).monospacedDigit().weight(.semibold))
-                    .foregroundStyle(remaining <= 30 && isRunning ? .red : .primary)
-                    .contentTransition(.numericText())
-                    .animation(.linear(duration: 0.3), value: remaining)
+                    .foregroundStyle(.secondary)
             }
-            HStack(spacing: 10) {
-                Button(action: toggleTimer) {
-                    Label(
-                        isRunning ? "Pause" : (remaining < duration && remaining > 0 ? "Resume" : "Start"),
-                        systemImage: isRunning ? "pause.fill" : "play.fill"
-                    )
+            Button {
+                cookTimer?.start(duration: duration, label: label)
+            } label: {
+                Label("Start", systemImage: "play.fill")
                     .font(.system(.callout, design: .serif).weight(.semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
-
-                Button(action: resetTimer) {
-                    Image(systemName: "arrow.counterclockwise")
-                }
-                .buttonStyle(.bordered)
-                .tint(.secondary)
-                .disabled(remaining == duration && !isRunning)
             }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
         }
         .padding(14)
         .background(Color.orange.opacity(0.07), in: .rect(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.orange.opacity(0.18), lineWidth: 1))
-        .onAppear { remaining = duration }
-        .onDisappear { stopTimer() }
     }
-
-    private func toggleTimer() { isRunning ? stopTimer() : startTimer() }
-
-    private func startTimer() {
-        guard remaining > 0 else { return }
-        isRunning = true
-        timerRef = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if remaining > 0 { remaining -= 1 } else { stopTimer() }
-        }
-    }
-
-    private func stopTimer() {
-        isRunning = false; timerRef?.invalidate(); timerRef = nil
-    }
-
-    private func resetTimer() { stopTimer(); remaining = duration }
 
     private func timeString(_ t: TimeInterval) -> String {
-        let h = Int(t) / 3600, m = Int(t) % 3600 / 60, s = Int(t) % 60
-        if h > 0 { return String(format: "%d:%02d:%02d", h, m, s) }
+        let clamped = max(0, Int(t))
+        let h = clamped / 3600
+        let m = (clamped % 3600) / 60
+        let s = clamped % 60
+        if h > 0 { return String(format: "%02d:%02d:%02d", h, m, s) }
         return String(format: "%02d:%02d", m, s)
     }
 }

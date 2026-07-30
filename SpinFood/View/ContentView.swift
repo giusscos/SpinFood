@@ -8,8 +8,11 @@ enum AppTab: Hashable {
 
 struct ContentView: View {
     @Environment(\.requestReview) var requestReview
+    @Environment(\.scenePhase) private var scenePhase
 
     @Query var recipes: [RecipeModel]
+    @Query var foods: [FoodModel]
+    @Query var mealPlan: [MealPlanEntry]
 
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
 
@@ -96,12 +99,30 @@ struct ContentView: View {
         .environment(store)
         .environment(navigator)
         .onAppear {
+            NotificationManager.shared.requestPermission()
+            NotificationManager.shared.scheduleAll(foods: foods)
+            WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             if recipes.count >= 3 && !store.hasActiveSubscription {
                 isPresentingPaywall = true
             }
             if recipes.count >= 5 && store.hasActiveSubscription {
                 requestReview()
             }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                NotificationManager.shared.scheduleAll(foods: foods)
+                WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+            }
+        }
+        .onChange(of: foods.count) { _, _ in
+            WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+        }
+        .onChange(of: mealPlan.count) { _, _ in
+            WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+        }
+        .onChange(of: recipes.count) { _, _ in
+            WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
         }
         .fullScreenCover(isPresented: $isPresentingPaywall) {
             PaywallView()

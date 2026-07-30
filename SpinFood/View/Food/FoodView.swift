@@ -13,6 +13,7 @@ enum ActiveFoodSheet: Identifiable {
     case details(FoodModel)
     case edit(FoodModel)
     case create
+    case createFromScan(OpenFoodFactsProduct)
 
     var id: String {
         switch self {
@@ -22,6 +23,8 @@ enum ActiveFoodSheet: Identifiable {
             return "editFood-\(food.id)"
         case .create:
             return "createFood"
+        case .createFromScan(let product):
+            return "createScan-\(product.barcode)"
         }
     }
 }
@@ -47,12 +50,16 @@ enum FoodFilterOption {
     case all
     case lowStock
     case outOfStock
+    case expiringSoon
+    case expired
 
     var label: String {
         switch self {
         case .all: return String(localized: "All Food")
         case .lowStock: return String(localized: "Low Stock")
         case .outOfStock: return String(localized: "Out of Stock")
+        case .expiringSoon: return String(localized: "Expiring Soon")
+        case .expired: return String(localized: "Expired")
         }
     }
 }
@@ -73,6 +80,8 @@ struct FoodView: View {
     @State private var sortOption: FoodSortOption = .nameAsc
     @State private var filterOption: FoodFilterOption = .all
     @State private var selectedItems = Set<UUID>()
+    @State private var showBarcodeScanner = false
+    @State private var barcodeLookupError: String?
 
     private var paperBackground: Color {
         Color(UIColor { trait in
@@ -96,6 +105,10 @@ struct FoodView: View {
             result = result.filter { $0.currentQuantity < $0.quantity * 0.2 && $0.currentQuantity > 0 }
         case .outOfStock:
             result = result.filter { $0.currentQuantity <= 0 }
+        case .expiringSoon:
+            result = result.filter { $0.isExpiringSoon }
+        case .expired:
+            result = result.filter { $0.isExpired }
         }
 
         switch sortOption {
@@ -170,12 +183,33 @@ struct FoodView: View {
             case .create:
                 EditFoodView()
                     .navigationTransition(.zoom(sourceID: "addFood", in: addFoodNamespace))
+            case .createFromScan(let product):
+                EditFoodView(scannedProduct: product)
             case .details(let food):
                 FoodDetailsView(food: food)
                     .navigationTransition(.zoom(sourceID: food.id, in: foodRowNamespace))
             case .edit(let food):
                 EditFoodView(food: food)
             }
+        }
+        .fullScreenCover(isPresented: $showBarcodeScanner) {
+            BarcodeScannerView(
+                onScan: { code in
+                    showBarcodeScanner = false
+                    Task { await handleScannedBarcode(code) }
+                },
+                onCancel: { showBarcodeScanner = false }
+            )
+            .ignoresSafeArea()
+        }
+        .alert("Barcode Lookup", isPresented: Binding(
+            get: { barcodeLookupError != nil },
+            set: { if !$0 { barcodeLookupError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+            Button("Add Manually") { activeSheet = .create }
+        } message: {
+            Text(barcodeLookupError ?? "")
         }
         .onAppear {
             AddFirstIngredientTip.hasIngredients = !food.isEmpty
@@ -206,6 +240,14 @@ struct FoodView: View {
                 .popoverTip(addFirstIngredientTip)
             }
 
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showBarcodeScanner = true
+                } label: {
+                    Label("Scan barcode", systemImage: "barcode.viewfinder")
+                }
+            }
+
             if !food.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -229,6 +271,9 @@ struct FoodView: View {
                                 Text(FoodFilterOption.all.label).tag(FoodFilterOption.all)
                                 Text(FoodFilterOption.lowStock.label).tag(FoodFilterOption.lowStock)
                                 Text(FoodFilterOption.outOfStock.label).tag(FoodFilterOption.outOfStock)
+                                Divider()
+                                Text(FoodFilterOption.expiringSoon.label).tag(FoodFilterOption.expiringSoon)
+                                Text(FoodFilterOption.expired.label).tag(FoodFilterOption.expired)
                             }
                         } label: {
                             Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
@@ -253,6 +298,16 @@ struct FoodView: View {
                     }
                 }
             }
+        }
+    }
+
+    @MainActor
+    private func handleScannedBarcode(_ code: String) async {
+        do {
+            let product = try await OpenFoodFactsService.lookup(barcode: code)
+            activeSheet = .createFromScan(product)
+        } catch {
+            barcodeLookupError = error.localizedDescription
         }
     }
 }

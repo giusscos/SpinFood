@@ -14,10 +14,12 @@ enum StepBookMode: Equatable {
 
 struct StepBookCurlView: UIViewControllerRepresentable {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.cookTimer) private var cookTimer
 
     var steps: [StepRecipe]
     var ingredients: [RecipeFoodModel]
     var mode: StepBookMode
+    var servingScale: Double = 1
     var startPage: Int = 0
     var onPageChange: ((Int) -> Void)? = nil
     var onDismiss: (() -> Void)? = nil
@@ -37,9 +39,11 @@ struct StepBookCurlView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ vc: StepBookPageViewController, context: Context) {
         context.coordinator.onPageChange = onPageChange
+        vc.cookTimer = cookTimer
 
         let newIDs = steps.map { $0.id }
-        guard newIDs != vc.lastStepIDs || vc.currentMode != mode || vc.pages.isEmpty else { return }
+        guard newIDs != vc.lastStepIDs || vc.currentMode != mode || vc.pages.isEmpty
+                || vc.currentServingScale != servingScale else { return }
 
         let oldCount = vc.lastStepIDs.count
         let newCount = newIDs.count
@@ -49,6 +53,7 @@ struct StepBookCurlView: UIViewControllerRepresentable {
             steps: steps,
             ingredients: ingredients,
             mode: mode,
+            servingScale: servingScale,
             onDismiss: onDismiss,
             onAddStep: onAddStep,
             onDeleteStep: onDeleteStep,
@@ -111,6 +116,8 @@ final class StepBookPageViewController: UIPageViewController {
     var currentPage: Int = 0
     var lastStepIDs: [UUID] = []
     var currentMode: StepBookMode = .edit
+    var currentServingScale: Double = 1
+    var cookTimer: CookTimerController?
     weak var coordinator: StepBookCoordinator?
     let modelContext: ModelContext
     private var indexPageHostingVC: UIHostingController<StepIndexPageView>?
@@ -139,6 +146,7 @@ final class StepBookPageViewController: UIPageViewController {
         steps: [StepRecipe],
         ingredients: [RecipeFoodModel],
         mode: StepBookMode,
+        servingScale: Double = 1,
         onDismiss: (() -> Void)?,
         onAddStep: (() -> Void)?,
         onDeleteStep: ((StepRecipe) -> Void)?,
@@ -146,6 +154,7 @@ final class StepBookPageViewController: UIPageViewController {
         onFinishCooking: (() -> Void)?
     ) {
         lastStepIDs = steps.map { $0.id }
+        currentServingScale = servingScale
         var newPages: [UIViewController] = []
 
         if mode == .edit {
@@ -185,6 +194,7 @@ final class StepBookPageViewController: UIPageViewController {
                 ingredients: ingredients,
                 allSteps: steps,
                 mode: mode,
+                servingScale: servingScale,
                 onBack: mode == .edit ? { [weak self] in self?.navigateTo(page: 0) } : nil,
                 onDelete: mode == .edit ? { [weak self] in
                     self?.navigateTo(page: 0)
@@ -233,6 +243,7 @@ final class StepBookPageViewController: UIPageViewController {
         ingredients: [RecipeFoodModel],
         allSteps: [StepRecipe],
         mode: StepBookMode,
+        servingScale: Double = 1,
         onBack: (() -> Void)?,
         onDelete: (() -> Void)?,
         onClose: (() -> Void)?
@@ -249,10 +260,13 @@ final class StepBookPageViewController: UIPageViewController {
                 allSteps: allSteps,
                 isEditing: isEditing,
                 isCooking: isCooking,
+                servingScale: servingScale,
                 onBack: onBack,
                 onDelete: onDelete,
                 onClose: onClose
-            ).environment(\.modelContext, modelContext)
+            )
+            .environment(\.modelContext, modelContext)
+            .environment(\.cookTimer, cookTimer)
         )
         hvc.view.backgroundColor = Self.pageBackground
 

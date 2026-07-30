@@ -1,5 +1,7 @@
 import SwiftUI
+import SwiftData
 import TipKit
+import UniformTypeIdentifiers
 
 struct BookIndexPage: View {
     let recipes: [RecipeModel]
@@ -12,7 +14,13 @@ struct BookIndexPage: View {
 
     private let addFirstRecipeTip = AddFirstRecipeTip()
 
+    @Environment(\.modelContext) private var modelContext
+
     @State private var isEditing = false
+    @State private var filterDifficulty: RecipeDifficulty? = nil
+    @State private var filterTags: Set<RecipeTag> = []
+    @State private var showImport = false
+    @State private var importErrorMessage: String? = nil
 
     private var pageBackground: Color {
         Color(UIColor { trait in
@@ -20,6 +28,18 @@ struct BookIndexPage: View {
                 ? .systemBackground
                 : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
         })
+    }
+
+    private var isFiltering: Bool {
+        filterDifficulty != nil || !filterTags.isEmpty
+    }
+
+    private var displayedRecipes: [RecipeModel] {
+        recipes.filter { recipe in
+            let difficultyOK = filterDifficulty == nil || recipe.difficulty == filterDifficulty
+            let tagsOK = filterTags.isEmpty || filterTags.isSubset(of: Set(recipe.tags))
+            return difficultyOK && tagsOK
+        }
     }
 
     var body: some View {
@@ -30,6 +50,9 @@ struct BookIndexPage: View {
                 VStack(spacing: 0) {
                     if recipes.isEmpty {
                         emptyState
+                        Spacer(minLength: 0)
+                    } else if displayedRecipes.isEmpty {
+                        noResultsState
                         Spacer(minLength: 0)
                     } else {
                         recipeList
@@ -51,20 +74,41 @@ struct BookIndexPage: View {
             .onChange(of: recipes.isEmpty) { _, isEmpty in
                 AddFirstRecipeTip.hasRecipes = !isEmpty
             }
+            .fileImporter(
+                isPresented: $showImport,
+                allowedContentTypes: [.data],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    do {
+                        try RecipeTransfer.import(from: url, into: modelContext)
+                    } catch {
+                        importErrorMessage = error.localizedDescription
+                    }
+                case .failure(let error):
+                    importErrorMessage = error.localizedDescription
+                }
+            }
+            .alert("Import Failed", isPresented: Binding(
+                get: { importErrorMessage != nil },
+                set: { if !$0 { importErrorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { importErrorMessage = nil }
+            } message: {
+                Text(importErrorMessage ?? "")
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if isEditing {
                         Button("Done") {
-                            withAnimation {
-                                isEditing = false
-                            }
+                            withAnimation { isEditing = false }
                         }
                     } else {
                         if !recipes.isEmpty {
                             Button("Edit") {
-                                withAnimation {
-                                    isEditing = true
-                                }
+                                withAnimation { isEditing = true }
                             }
                         }
                     }
@@ -91,8 +135,64 @@ struct BookIndexPage: View {
                         }
                         .popoverTip(addFirstRecipeTip)
 
-                        Button(action: onSettings) {
-                            Image(systemName: "gear")
+                        Menu {
+                            if !recipes.isEmpty {
+                                Menu {
+                                    Button {
+                                        filterDifficulty = nil
+                                    } label: {
+                                        Label("All", systemImage: filterDifficulty == nil ? "checkmark" : "circle")
+                                    }
+                                    ForEach(RecipeDifficulty.allCases, id: \.self) { d in
+                                        Button {
+                                            filterDifficulty = filterDifficulty == d ? nil : d
+                                        } label: {
+                                            Label(d.localizedName, systemImage: filterDifficulty == d ? "checkmark" : d.icon)
+                                        }
+                                    }
+                                } label: {
+                                    Label("Difficulty", systemImage: filterDifficulty != nil ? "gauge.medium.badge.plus" : "gauge.medium")
+                                }
+
+                                Menu {
+                                    ForEach(RecipeTag.allCases, id: \.self) { tag in
+                                        Button {
+                                            if filterTags.contains(tag) {
+                                                filterTags.remove(tag)
+                                            } else {
+                                                filterTags.insert(tag)
+                                            }
+                                        } label: {
+                                            Label(tag.localizedName, systemImage: filterTags.contains(tag) ? "checkmark" : tag.icon)
+                                        }
+                                    }
+                                } label: {
+                                    Label("Tags", systemImage: filterTags.isEmpty ? "tag" : "tag.fill")
+                                }
+
+                                if isFiltering {
+                                    Button(role: .destructive) {
+                                        filterDifficulty = nil
+                                        filterTags.removeAll()
+                                    } label: {
+                                        Label("Clear Filters", systemImage: "xmark.circle")
+                                    }
+                                }
+                            }
+
+                            Section {
+                                Button {
+                                    showImport = true
+                                } label: {
+                                    Label("Import Recipe", systemImage: "square.and.arrow.down")
+                                }
+
+                                Button(action: onSettings) {
+                                    Label("Settings", systemImage: "gear")
+                                }
+                            }
+                        } label: {
+                            Image(systemName: isFiltering ? "ellipsis.circle.fill" : "ellipsis.circle")
                         }
                     }
                 }
@@ -104,10 +204,18 @@ struct BookIndexPage: View {
 
     private var recipeList: some View {
         List {
-            ForEach(Array(recipes.enumerated()), id: \.element.id) { index, recipe in
+            if isFiltering {
+                Section {
+                    activeFiltersRow
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            }
+
+            ForEach(Array(displayedRecipes.enumerated()), id: \.element.id) { index, recipe in
                 VStack(spacing: 0) {
                     BookIndexEntry(index: index + 1, recipe: recipe)
-                    if index < recipes.count - 1 {
+                    if index < displayedRecipes.count - 1 {
                         Divider()
                             .padding(.leading, 80)
                             .padding(.trailing, 32)
@@ -127,18 +235,16 @@ struct BookIndexPage: View {
                     }
                     Divider()
                     Button(role: .destructive) {
-                        withAnimation {
-                            onDelete(recipe)
-                        }
+                        withAnimation { onDelete(recipe) }
                     } label: {
                         Label("Delete Recipe", systemImage: "trash")
                     }
                 }
             }
             .onDelete { indexSet in
-                indexSet.forEach { onDelete(recipes[$0]) }
+                indexSet.forEach { onDelete(displayedRecipes[$0]) }
             }
-            .onMove(perform: onMove)
+            .onMove(perform: isFiltering ? nil : onMove)
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -146,6 +252,41 @@ struct BookIndexPage: View {
         .safeAreaInset(edge: .bottom) {
             Color.clear.frame(height: 48)
         }
+    }
+
+    private var activeFiltersRow: some View {
+        HStack(spacing: 8) {
+            if let d = filterDifficulty {
+                HStack(spacing: 4) {
+                    Image(systemName: d.icon)
+                    Text(d.localizedName)
+                }
+                .font(.system(.caption, design: .rounded).weight(.medium))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.orange.opacity(0.12))
+                .foregroundStyle(.orange)
+                .clipShape(.capsule)
+            }
+            ForEach(Array(filterTags), id: \.self) { tag in
+                HStack(spacing: 4) {
+                    Image(systemName: tag.icon)
+                    Text(tag.localizedName)
+                }
+                .font(.system(.caption, design: .rounded).weight(.medium))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.accentColor.opacity(0.1))
+                .foregroundStyle(Color.accentColor)
+                .clipShape(.capsule)
+            }
+            Spacer()
+            Text("\(displayedRecipes.count) result\(displayedRecipes.count == 1 ? "" : "s")")
+                .font(.system(.caption, design: .rounded))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
     }
 
     // MARK: - Empty
@@ -163,6 +304,26 @@ struct BookIndexPage: View {
                 .font(.system(.subheadline, design: .serif))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 72)
+    }
+
+    private var noResultsState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 52))
+                .foregroundStyle(.secondary.opacity(0.4))
+
+            Text("No matching recipes")
+                .font(.system(.title3, design: .serif))
+
+            Button("Clear Filters") {
+                filterDifficulty = nil
+                filterTags.removeAll()
+            }
+            .font(.system(.subheadline, design: .serif))
+            .foregroundStyle(Color.accentColor)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 72)
@@ -201,6 +362,25 @@ private struct BookIndexEntry: View {
                         Text("·  \(recipe.servings) servings")
                             .font(.system(.caption, design: .serif))
                             .foregroundStyle(.tertiary)
+                    }
+                    if let d = recipe.difficulty {
+                        Label(d.localizedName, systemImage: d.icon)
+                            .font(.system(.caption, design: .serif))
+                            .foregroundStyle(.orange)
+                    }
+                }
+
+                if !recipe.tags.isEmpty {
+                    HStack(spacing: 4) {
+                        ForEach(recipe.tags.prefix(3), id: \.self) { tag in
+                            Text(tag.localizedName)
+                                .font(.system(size: 9, design: .rounded).weight(.medium))
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.accentColor.opacity(0.1))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(.capsule)
+                        }
                     }
                 }
             }

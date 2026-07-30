@@ -50,6 +50,13 @@ struct SummaryView: View {
                 Text("Summary")
                     .font(.system(.title3, design: .serif).weight(.semibold))
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    MealPlannerView()
+                } label: {
+                    Image(systemName: "calendar")
+                }
+            }
         }
     }
 

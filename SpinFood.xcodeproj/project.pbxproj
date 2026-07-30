@@ -6,21 +6,41 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A10000092D0877F700AF213D /* SpinFoodWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000012D0877F700AF213D /* SpinFoodWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A10000112D0877F700AF213D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A100000F2D0877F700AF213D /* WidgetKit.framework */; };
+		A10000122D0877F700AF213D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000102D0877F700AF213D /* SwiftUI.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A100000B2D0877F700AF213D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6871FEF02D0877F600AF213D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000042D0877F700AF213D;
+			remoteInfo = SpinFoodWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
-		6836F2C32D99B63B003F7615 /* Embed Watch Content */ = {
+		A10000082D0877F700AF213D /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
+			dstPath = "";
+			dstSubfolderSpec = 13;
 			files = (
+				A10000092D0877F700AF213D /* SpinFoodWidgetExtension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed Watch Content";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		6871FEF82D0877F600AF213D /* SpinFood.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpinFood.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000012D0877F700AF213D /* SpinFoodWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SpinFoodWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A100000F2D0877F700AF213D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		A10000102D0877F700AF213D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -30,6 +50,13 @@
 				Info.plist,
 			);
 			target = 6871FEF72D0877F600AF213D /* SpinFood */;
+		};
+		A10000032D0877F700AF213D /* Exceptions for "SpinFoodWidget" folder in "SpinFoodWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A10000042D0877F700AF213D /* SpinFoodWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -42,6 +69,14 @@
 			path = SpinFood;
 			sourceTree = "<group>";
 		};
+		A10000022D0877F700AF213D /* SpinFoodWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A10000032D0877F700AF213D /* Exceptions for "SpinFoodWidget" folder in "SpinFoodWidgetExtension" target */,
+			);
+			path = SpinFoodWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +87,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000062D0877F700AF213D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000112D0877F700AF213D /* WidgetKit.framework in Frameworks */,
+				A10000122D0877F700AF213D /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -59,6 +103,8 @@
 			isa = PBXGroup;
 			children = (
 				6871FEFA2D0877F600AF213D /* SpinFood */,
+				A10000022D0877F700AF213D /* SpinFoodWidget */,
+				A10000132D0877F700AF213D /* Frameworks */,
 				6871FEF92D0877F600AF213D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,8 +113,18 @@
 			isa = PBXGroup;
 			children = (
 				6871FEF82D0877F600AF213D /* SpinFood.app */,
+				A10000012D0877F700AF213D /* SpinFoodWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000132D0877F700AF213D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A100000F2D0877F700AF213D /* WidgetKit.framework */,
+				A10000102D0877F700AF213D /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -81,11 +137,12 @@
 				6871FEF42D0877F600AF213D /* Sources */,
 				6871FEF52D0877F600AF213D /* Frameworks */,
 				6871FEF62D0877F600AF213D /* Resources */,
-				6836F2C32D99B63B003F7615 /* Embed Watch Content */,
+				A10000082D0877F700AF213D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A100000A2D0877F700AF213D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				6871FEFA2D0877F600AF213D /* SpinFood */,
@@ -96,6 +153,28 @@
 			productName = SpinFood;
 			productReference = 6871FEF82D0877F600AF213D /* SpinFood.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A10000042D0877F700AF213D /* SpinFoodWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000E2D0877F700AF213D /* Build configuration list for PBXNativeTarget "SpinFoodWidgetExtension" */;
+			buildPhases = (
+				A10000052D0877F700AF213D /* Sources */,
+				A10000062D0877F700AF213D /* Frameworks */,
+				A10000072D0877F700AF213D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A10000022D0877F700AF213D /* SpinFoodWidget */,
+			);
+			name = SpinFoodWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = SpinFoodWidgetExtension;
+			productReference = A10000012D0877F700AF213D /* SpinFoodWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -108,6 +187,9 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					6871FEF72D0877F600AF213D = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					A10000042D0877F700AF213D = {
 						CreatedOnToolsVersion = 16.1;
 					};
 				};
@@ -131,12 +213,20 @@
 			projectRoot = "";
 			targets = (
 				6871FEF72D0877F600AF213D /* SpinFood */,
+				A10000042D0877F700AF213D /* SpinFoodWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		6871FEF62D0877F600AF213D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000072D0877F700AF213D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -153,7 +243,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000052D0877F700AF213D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A100000A2D0877F700AF213D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000042D0877F700AF213D /* SpinFoodWidgetExtension */;
+			targetProxy = A100000B2D0877F700AF213D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6871FF0A2D0877F700AF213D /* Debug */ = {
@@ -183,7 +288,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = giusscos.SpinFood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -219,7 +324,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = giusscos.SpinFood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -351,6 +456,62 @@
 			};
 			name = Release;
 		};
+		A100000C2D0877F700AF213D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = SpinFoodWidget/SpinFoodWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SpinFoodWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Foo;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = giusscos.SpinFood.SpinFoodWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A100000D2D0877F700AF213D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = SpinFoodWidget/SpinFoodWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SpinFoodWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Foo;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = giusscos.SpinFood.SpinFoodWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -368,6 +529,15 @@
 			buildConfigurations = (
 				6871FF0A2D0877F700AF213D /* Debug */,
 				6871FF0B2D0877F700AF213D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100000E2D0877F700AF213D /* Build configuration list for PBXNativeTarget "SpinFoodWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000C2D0877F700AF213D /* Debug */,
+				A100000D2D0877F700AF213D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

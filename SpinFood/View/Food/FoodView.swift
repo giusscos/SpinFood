@@ -65,7 +65,6 @@ enum FoodFilterOption {
 }
 
 struct FoodView: View {
-    @Environment(\.editMode) var editMode
     @Environment(\.modelContext) var modelContext
 
     @Query var food: [FoodModel]
@@ -80,6 +79,7 @@ struct FoodView: View {
     @State private var sortOption: FoodSortOption = .nameAsc
     @State private var filterOption: FoodFilterOption = .all
     @State private var selectedItems = Set<UUID>()
+    @State private var isEditing = false
     @State private var showBarcodeScanner = false
     @State private var barcodeLookupError: String?
 
@@ -129,10 +129,6 @@ struct FoodView: View {
         return result
     }
 
-    var isEditMode: Bool {
-        editMode?.wrappedValue.isEditing ?? false
-    }
-
     var body: some View {
         List(selection: $selectedItems) {
             if !filteredFood.isEmpty {
@@ -175,6 +171,7 @@ struct FoodView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(paperBackground.ignoresSafeArea())
+        .environment(\.editMode, .constant(isEditing ? .active : .inactive))
         .searchable(text: $searchText, prompt: "Search pantry")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
@@ -185,6 +182,7 @@ struct FoodView: View {
                     .navigationTransition(.zoom(sourceID: "addFood", in: addFoodNamespace))
             case .createFromScan(let product):
                 EditFoodView(scannedProduct: product)
+                    .navigationTransition(.zoom(sourceID: "addFood", in: addFoodNamespace))
             case .details(let food):
                 FoodDetailsView(food: food)
                     .navigationTransition(.zoom(sourceID: food.id, in: foodRowNamespace))
@@ -201,6 +199,7 @@ struct FoodView: View {
                 onCancel: { showBarcodeScanner = false }
             )
             .ignoresSafeArea()
+            .navigationTransition(.zoom(sourceID: "addFood", in: addFoodNamespace))
         }
         .alert("Barcode Lookup", isPresented: Binding(
             get: { barcodeLookupError != nil },
@@ -223,78 +222,91 @@ struct FoodView: View {
                     .font(.system(.title3, design: .serif).weight(.semibold))
             }
 
-            if !food.isEmpty {
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
+            ToolbarItem(placement: .topBarLeading) {
+                if isEditing {
+                    Button("Done") {
+                        withAnimation {
+                            isEditing = false
+                            selectedItems.removeAll()
+                        }
+                    }
+                } else if !food.isEmpty {
+                    Button("Edit") {
+                        withAnimation { isEditing = true }
+                    }
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    addFirstIngredientTip.invalidate(reason: .actionPerformed)
-                    activeSheet = .create
-                } label: {
-                    Label("Add", systemImage: "plus")
+            if isEditing {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(role: .destructive) {
+                        for id in selectedItems {
+                            if let foodToDelete = food.first(where: { $0.id == id }) {
+                                modelContext.delete(foodToDelete)
+                            }
+                        }
+                        selectedItems.removeAll()
+                        withAnimation { isEditing = false }
+                    } label: {
+                        Label("Delete selected", systemImage: "trash")
+                    }
+                    .disabled(selectedItems.isEmpty)
                 }
-                .matchedTransitionSource(id: "addFood", in: addFoodNamespace)
-                .popoverTip(addFirstIngredientTip)
-            }
-
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showBarcodeScanner = true
-                } label: {
-                    Label("Scan barcode", systemImage: "barcode.viewfinder")
-                }
-            }
-
-            if !food.isEmpty {
+            } else {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Menu {
-                            Picker("Sort by", selection: $sortOption) {
-                                Text(FoodSortOption.nameAsc.label).tag(FoodSortOption.nameAsc)
-                                Text(FoodSortOption.nameDesc.label).tag(FoodSortOption.nameDesc)
-                                Divider()
-                                Text(FoodSortOption.quantityAsc.label).tag(FoodSortOption.quantityAsc)
-                                Text(FoodSortOption.quantityDesc.label).tag(FoodSortOption.quantityDesc)
-                                Divider()
-                                Text(FoodSortOption.dateAsc.label).tag(FoodSortOption.dateAsc)
-                                Text(FoodSortOption.dateDesc.label).tag(FoodSortOption.dateDesc)
-                            }
+                        Button {
+                            addFirstIngredientTip.invalidate(reason: .actionPerformed)
+                            activeSheet = .create
                         } label: {
-                            Label("Sort", systemImage: "arrow.up.arrow.down")
+                            Label("Manual", systemImage: "square.and.pencil")
                         }
 
-                        Menu {
-                            Picker("Filter", selection: $filterOption) {
-                                Text(FoodFilterOption.all.label).tag(FoodFilterOption.all)
-                                Text(FoodFilterOption.lowStock.label).tag(FoodFilterOption.lowStock)
-                                Text(FoodFilterOption.outOfStock.label).tag(FoodFilterOption.outOfStock)
-                                Divider()
-                                Text(FoodFilterOption.expiringSoon.label).tag(FoodFilterOption.expiringSoon)
-                                Text(FoodFilterOption.expired.label).tag(FoodFilterOption.expired)
-                            }
+                        Button {
+                            showBarcodeScanner = true
                         } label: {
-                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                            Label("Barcode scanner", systemImage: "barcode.viewfinder")
                         }
-
-                        Divider()
-
-                        Button(role: .destructive) {
-                            for id in selectedItems {
-                                if let foodToDelete = food.first(where: { $0.id == id }) {
-                                    modelContext.delete(foodToDelete)
-                                }
-                            }
-                            selectedItems.removeAll()
-                            editMode?.wrappedValue = .inactive
-                        } label: {
-                            Label("Delete selected", systemImage: "trash")
-                        }
-                        .disabled(selectedItems.isEmpty)
                     } label: {
-                        Label("Menu", systemImage: "ellipsis")
+                        Label("Add", systemImage: "plus")
+                    }
+                    .matchedTransitionSource(id: "addFood", in: addFoodNamespace)
+                    .popoverTip(addFirstIngredientTip)
+                }
+
+                if !food.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Menu {
+                                Picker("Sort by", selection: $sortOption) {
+                                    Text(FoodSortOption.nameAsc.label).tag(FoodSortOption.nameAsc)
+                                    Text(FoodSortOption.nameDesc.label).tag(FoodSortOption.nameDesc)
+                                    Divider()
+                                    Text(FoodSortOption.quantityAsc.label).tag(FoodSortOption.quantityAsc)
+                                    Text(FoodSortOption.quantityDesc.label).tag(FoodSortOption.quantityDesc)
+                                    Divider()
+                                    Text(FoodSortOption.dateAsc.label).tag(FoodSortOption.dateAsc)
+                                    Text(FoodSortOption.dateDesc.label).tag(FoodSortOption.dateDesc)
+                                }
+                            } label: {
+                                Label("Sort", systemImage: "arrow.up.arrow.down")
+                            }
+
+                            Menu {
+                                Picker("Filter", selection: $filterOption) {
+                                    Text(FoodFilterOption.all.label).tag(FoodFilterOption.all)
+                                    Text(FoodFilterOption.lowStock.label).tag(FoodFilterOption.lowStock)
+                                    Text(FoodFilterOption.outOfStock.label).tag(FoodFilterOption.outOfStock)
+                                    Divider()
+                                    Text(FoodFilterOption.expiringSoon.label).tag(FoodFilterOption.expiringSoon)
+                                    Text(FoodFilterOption.expired.label).tag(FoodFilterOption.expired)
+                                }
+                            } label: {
+                                Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                            }
+                        } label: {
+                            Label("Menu", systemImage: "ellipsis")
+                        }
                     }
                 }
             }

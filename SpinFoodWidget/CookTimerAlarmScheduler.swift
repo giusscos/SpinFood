@@ -31,23 +31,32 @@ enum CookTimerAlarmScheduler {
         }
     }
 
+    @discardableResult
+    static func requestAuthorization() async -> Bool {
+        guard #available(iOS 26.0, *) else { return false }
+        let manager = AlarmManager.shared
+        switch manager.authorizationState {
+        case .authorized:
+            return true
+        case .denied:
+            return false
+        case .notDetermined:
+            do {
+                return try await manager.requestAuthorization() == .authorized
+            } catch {
+                return false
+            }
+        @unknown default:
+            return false
+        }
+    }
+
     @available(iOS 26.0, *)
     private static func scheduleAlarmKit(after interval: TimeInterval, label: String) async {
         let manager = AlarmManager.shared
 
         do {
-            let authorized: Bool
-            switch manager.authorizationState {
-            case .authorized:
-                authorized = true
-            case .notDetermined:
-                authorized = try await manager.requestAuthorization() == .authorized
-            case .denied:
-                authorized = false
-            @unknown default:
-                authorized = false
-            }
-
+            let authorized = await requestAuthorization()
             guard authorized else {
                 scheduleNotification(after: interval, label: label)
                 return

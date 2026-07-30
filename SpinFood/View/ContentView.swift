@@ -20,8 +20,12 @@ struct ContentView: View {
     @State var isPresentingPaywall: Bool = false
     @State private var navigator = AppNavigator()
 
+    @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
+
     var body: some View {
-        if store.isLoading {
+        if !onboardingCompleted {
+            OnboardingView()
+        } else if store.isLoading {
             ProgressView()
         } else {
             mainTabView
@@ -99,7 +103,6 @@ struct ContentView: View {
         .environment(store)
         .environment(navigator)
         .onAppear {
-            NotificationManager.shared.requestPermission()
             NotificationManager.shared.scheduleAll(foods: foods)
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             if recipes.count >= 3 && !store.hasActiveSubscription {

@@ -6,8 +6,14 @@ final class NotificationManager {
 
     private init() {}
 
-    func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    @discardableResult
+    func requestPermission() async -> Bool {
+        do {
+            return try await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .sound, .badge])
+        } catch {
+            return false
+        }
     }
 
     func scheduleAll(foods: [FoodModel]) {

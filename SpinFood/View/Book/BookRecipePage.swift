@@ -163,12 +163,7 @@ struct BookRecipePage: View {
                     selectedServings: $cookServings,
                     maxServings: max(1, min(20, recipe.maxCookableServings)),
                     onConfirm: {
-                        let maxAllowed = recipe.maxCookableServings
-                        guard maxAllowed > 0 else {
-                            cookLimitAlertMessage = String(localized: "Not enough ingredients in your pantry to cook this recipe.")
-                            showCookServingPicker = false
-                            return
-                        }
+                        let maxAllowed = max(1, recipe.maxCookableServings)
                         if cookServings > maxAllowed {
                             cookLimitAlertMessage = String(localized: "You only have enough ingredients for \(maxAllowed) serving\(maxAllowed == 1 ? "" : "s").")
                             cookServings = maxAllowed
@@ -340,19 +335,22 @@ struct BookRecipePage: View {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(ingredients) { item in
                     if let food = item.ingredient {
+                        let perServing = item.quantityNeeded / Decimal(max(1, recipe.servings))
+                        let insufficient = food.currentQuantity < perServing
                         HStack(spacing: 10) {
                             Circle()
-                                .fill(Color.secondary.opacity(0.3))
+                                .fill(insufficient ? Color.orange.opacity(0.7) : Color.secondary.opacity(0.3))
                                 .frame(width: 5, height: 5)
 
                             Text("\(food.emoji.isEmpty ? "" : food.emoji + " ")\(food.name)")
                                 .font(.system(.body, design: .serif))
+                                .foregroundStyle(insufficient ? .orange : .primary)
 
                             Spacer()
 
                             Text("\(item.quantityNeeded.formatted()) \(food.unit.abbreviation)")
                                 .font(.system(.callout, design: .serif))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(insufficient ? .orange : .secondary)
                         }
                     }
                 }
@@ -447,14 +445,9 @@ struct BookRecipePage: View {
             return
         }
 
-        let maxAllowed = recipe.maxCookableServings
-        guard maxAllowed > 0 else {
-            cookLimitAlertMessage = String(localized: "Not enough ingredients in your pantry to cook this recipe.")
-            return
-        }
-
         pendingCookSteps = steps
-        cookServings = min(max(1, recipe.servings), min(20, maxAllowed))
+        let maxAllowed = max(1, min(20, recipe.maxCookableServings))
+        cookServings = min(max(1, recipe.servings), maxAllowed)
         showCookServingPicker = true
     }
 

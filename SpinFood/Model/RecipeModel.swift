@@ -98,22 +98,29 @@ final class RecipeModel {
         }
     }
 
-    /// Maximum servings the pantry can support for this recipe (at least 1 when empty/unconstrained).
+    /// Maximum servings the pantry can support for this recipe.
+    /// Returns `0` when at least one linked ingredient cannot cover a single serving.
+    /// Returns `20` when unconstrained (no ingredients). Unlinked ingredients are skipped.
     var maxCookableServings: Int {
         guard let ingredients, !ingredients.isEmpty else { return 20 }
         let baseServings = max(1, servings)
         var maxServings = 20
+        var didEvaluateIngredient = false
 
         for recipeFood in ingredients {
-            guard let food = recipeFood.ingredient else { return 0 }
+            guard let food = recipeFood.ingredient else { continue }
             guard recipeFood.quantityNeeded > 0 else { continue }
 
-            let batches = food.currentQuantity / recipeFood.quantityNeeded
-            let servingsFromIngredient = Int(truncating: (batches * Decimal(baseServings)) as NSDecimalNumber)
-            maxServings = min(maxServings, max(0, servingsFromIngredient))
+            didEvaluateIngredient = true
+            // Avoid Int(truncating: NSDecimalNumber) — it returns 0 for repeating decimals (e.g. 66.666…).
+            var servingsDecimal = food.currentQuantity / recipeFood.quantityNeeded * Decimal(baseServings)
+            var rounded = Decimal()
+            NSDecimalRound(&rounded, &servingsDecimal, 0, .down)
+            let servingsFromIngredient = max(0, NSDecimalNumber(decimal: rounded).intValue)
+            maxServings = min(maxServings, servingsFromIngredient)
         }
 
-        return maxServings
+        return didEvaluateIngredient ? maxServings : 20
     }
 
     func finishCookingSession() {

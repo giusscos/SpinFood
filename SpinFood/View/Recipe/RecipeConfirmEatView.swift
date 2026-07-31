@@ -21,6 +21,8 @@ struct RecipeConfirmEatView: View {
     }
 
     private var maxServings: Int {
+        // Touch the query so pantry edits refresh this computed limit.
+        let _ = foods.count
         let pantryMax = recipe.maxCookableServings
         if pantryMax <= 0 { return 1 }
         return min(20, pantryMax)
@@ -111,7 +113,7 @@ struct RecipeConfirmEatView: View {
                 if let ingredients = recipe.ingredients, !ingredients.isEmpty {
                     Section {
                         ForEach(ingredients) { ingredient in
-                            IngredientRowView(ingredient: ingredient, scale: scale)
+                            IngredientRowView(ingredient: ingredient, scale: scale, recipeServings: recipe.servings)
                                 .listRowBackground(paperBackground)
                         }
                     } header: {
@@ -178,8 +180,7 @@ struct RecipeConfirmEatView: View {
     }
 
     private func updateIngredientQuantity(_ ingredient: RecipeFoodModel) {
-        guard let requiredIngredient = ingredient.ingredient else { return }
-        guard let inventoryItem = foods.first(where: { $0.id == requiredIngredient.id }) else { return }
+        guard let inventoryItem = ingredient.ingredient else { return }
 
         let consumed = ingredient.quantityNeeded * scale
         inventoryItem.currentQuantity -= consumed
@@ -205,9 +206,12 @@ struct RecipeConfirmEatView: View {
 struct IngredientRowView: View {
     let ingredient: RecipeFoodModel
     var scale: Decimal = 1
+    var recipeServings: Int = 1
 
     var body: some View {
         if let item = ingredient.ingredient {
+            let perServing = ingredient.quantityNeeded / Decimal(max(1, recipeServings))
+            let insufficient = item.currentQuantity < perServing
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(item.name)
@@ -224,12 +228,14 @@ struct IngredientRowView: View {
 
                 HStack(spacing: 4) {
                     Image(systemName: item.category.icon)
-                    Text(item.currentQuantity, format: .number)
-                    Text(item.unit.abbreviation)
+                    HStack(spacing: 0) {
+                        Text(item.currentQuantity, format: .number)
+                        Text(item.unit.abbreviation)
+                    }
                     Text("in pantry")
                 }
                 .font(.system(.caption, design: .rounded))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(insufficient ? .orange : .secondary)
             }
             .padding(.vertical, 2)
         }

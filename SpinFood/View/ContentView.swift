@@ -26,6 +26,7 @@ struct ContentView: View {
     var body: some View {
         if !onboardingCompleted {
             OnboardingView()
+                .environment(store)
         } else if store.isLoading {
             ProgressView()
         } else {
@@ -117,6 +118,7 @@ struct ContentView: View {
             if phase == .active {
                 NotificationManager.shared.scheduleAll(foods: foods)
                 WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+                Task { await store.updateCustomerProductStatus() }
             }
         }
         .onChange(of: foods.count) { _, _ in
@@ -129,8 +131,11 @@ struct ContentView: View {
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
         }
         .fullScreenCover(isPresented: $isPresentingPaywall) {
-            PaywallView()
-                .environment(\.locale, Locale(identifier: selectedLanguage))
+            PaywallView(onPurchaseComplete: {
+                Task { await store.updateCustomerProductStatus() }
+            })
+            .environment(store)
+            .environment(\.locale, Locale(identifier: selectedLanguage))
         }
         .onChange(of: isPresentingPaywall) { _, isPresenting in
             if !isPresenting {

@@ -4,8 +4,8 @@ import StoreKit
 struct PaywallView: View {
     var onPurchaseComplete: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
+    @Environment(Store.self) private var store
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
-    @State var store = Store()
     @State private var showLifetimePlans = false
 
     private var currentBundle: Bundle {
@@ -89,14 +89,24 @@ struct PaywallView: View {
             .containerBackground(pageBackground, for: .subscriptionStoreFullHeight)
             .subscriptionStoreControlBackground(pageBackground)
             .onInAppPurchaseCompletion { _, result in
-                if case .success = result {
-                    onPurchaseComplete?()
-                    dismiss()
+                if case .success(let purchaseResult) = result,
+                   case .success(let verification) = purchaseResult {
+                    Task {
+                        await store.handlePurchaseSuccess(verification)
+                        onPurchaseComplete?()
+                        dismiss()
+                    }
                 }
             }
             .sheet(isPresented: $showLifetimePlans) {
-                PaywallLifetimeView(onPurchase: { dismiss() })
-                    .presentationDetents([.medium])
+                PaywallLifetimeView(onPurchase: {
+                    Task {
+                        await store.updateCustomerProductStatus()
+                        onPurchaseComplete?()
+                        dismiss()
+                    }
+                })
+                .presentationDetents([.medium])
             }
             .background(pageBackground.ignoresSafeArea())
         }
@@ -192,4 +202,5 @@ struct ProFeatureRow: View {
 
 #Preview {
     PaywallView()
+        .environment(Store())
 }

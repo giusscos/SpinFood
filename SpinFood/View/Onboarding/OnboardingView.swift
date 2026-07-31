@@ -309,6 +309,7 @@ struct OnboardingUpsellView: View {
     let onNext: () -> Void
     let onComplete: () -> Void
 
+    @Environment(Store.self) private var store
     @AppStorage("onboarding_upsell_seen") private var onboardingUpsellSeen: Bool = false
     @State private var appeared = false
     @State private var row1Appeared = false
@@ -443,6 +444,7 @@ struct OnboardingUpsellView: View {
                 showPaywall = false
                 onComplete()
             })
+            .environment(store)
         }
     }
 }

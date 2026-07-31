@@ -10,7 +10,7 @@ import SwiftUI
 
 struct PaywallLifetimeView: View {
     var onPurchase: () -> Void = {}
-    @State var storeKit = Store()
+    @Environment(Store.self) private var store
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,15 +39,19 @@ struct PaywallLifetimeView: View {
             .padding(.horizontal)
             .padding(.bottom, 4)
 
-            StoreView(ids: storeKit.productLifetimeIds) { _ in }
+            StoreView(ids: store.productLifetimeIds) { _ in }
                 .padding(.vertical)
                 .padding(.horizontal, 8)
                 .productViewStyle(.compact)
                 .storeButton(.visible, for: .restorePurchases)
                 .storeButton(.hidden, for: .cancellation)
                 .onInAppPurchaseCompletion { _, result in
-                    if case .success = result {
-                        onPurchase()
+                    if case .success(let purchaseResult) = result,
+                       case .success(let verification) = purchaseResult {
+                        Task {
+                            await store.handlePurchaseSuccess(verification)
+                            onPurchase()
+                        }
                     }
                 }
         }
@@ -57,4 +61,5 @@ struct PaywallLifetimeView: View {
 
 #Preview {
     PaywallLifetimeView()
+        .environment(Store())
 }

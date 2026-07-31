@@ -17,6 +17,7 @@ final class AppNavigator {
 struct BookPageCurlView: UIViewControllerRepresentable {
     let recipes: [RecipeModel]
     let requestedPage: Int?
+    let store: Store
     var onAdd: () -> Void
     var onEdit: (RecipeModel) -> Void
     var onNavigated: (Int) -> Void
@@ -39,6 +40,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
         if newIDs != vc.lastRecipeIDs || vc.pages.isEmpty {
             vc.rebuild(
                 recipes: recipes,
+                store: store,
                 onAdd: onAdd,
                 onSelectRecipe: { [weak vc] recipe in
                     guard let vc,
@@ -134,6 +136,7 @@ final class BookPageViewController: UIPageViewController {
 
     func rebuild(
         recipes: [RecipeModel],
+        store: Store,
         onAdd: @escaping () -> Void,
         onSelectRecipe: @escaping (RecipeModel) -> Void,
         onEdit: @escaping (RecipeModel) -> Void,
@@ -177,7 +180,10 @@ final class BookPageViewController: UIPageViewController {
             )))
         }
 
-        newPages.append(makeHostingVC(BookEndPage(onBack: onBack)))
+        newPages.append(makeHostingVC(
+            BookEndPage(onBack: onBack)
+                .environment(store)
+        ))
 
         pages = newPages
         dataSource = coordinator

@@ -42,6 +42,7 @@ struct BookContainer: View {
         BookPageCurlView(
             recipes: sortedRecipes,
             requestedPage: navigator.requestedBookPage,
+            store: store,
             onAdd: addRecipeTapped,
             onEdit: { recipe in activeRecipeSheet = .edit(recipe) },
             onNavigated: { page in
@@ -63,7 +64,15 @@ struct BookContainer: View {
             }
         }
         .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(onPurchaseComplete: {
+                Task { await store.updateCustomerProductStatus() }
+            })
+            .environment(store)
+        }
+        .onChange(of: showPaywall) { _, isPresenting in
+            if !isPresenting {
+                Task { await store.updateCustomerProductStatus() }
+            }
         }
     }
 

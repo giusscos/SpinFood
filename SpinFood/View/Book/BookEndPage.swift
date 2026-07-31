@@ -8,6 +8,7 @@ struct BookEndPage: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.requestReview) private var requestReview
     @Environment(\.modelContext) private var modelContext
+    @Environment(Store.self) private var store
 
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
 
@@ -80,8 +81,16 @@ struct BookEndPage: View {
                 }
             }
             .fullScreenCover(isPresented: $showPaywall) {
-                PaywallView()
-                    .environment(\.locale, Locale(identifier: selectedLanguage))
+                PaywallView(onPurchaseComplete: {
+                    Task { await store.updateCustomerProductStatus() }
+                })
+                .environment(store)
+                .environment(\.locale, Locale(identifier: selectedLanguage))
+            }
+            .onChange(of: showPaywall) { _, isPresenting in
+                if !isPresenting {
+                    Task { await store.updateCustomerProductStatus() }
+                }
             }
             .alert("Restore Failed", isPresented: Binding(
                 get: { restoreError != nil },
@@ -140,42 +149,63 @@ struct BookEndPage: View {
     private var premiumSection: some View {
         VStack(spacing: 0) {
             dividerLine
-            actionRow(icon: "crown", label: "Upgrade to Pro") {
-                showPaywall = true
-            }
-            dividerLine
-            Button {
-                Task { await restorePurchases() }
-            } label: {
+            if store.hasActiveSubscription {
                 HStack(spacing: 14) {
-                    Group {
-                        if isRestoring {
-                            ProgressView()
-                                .frame(width: 24)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 16))
-                                .foregroundStyle(.secondary)
-                                .frame(width: 24)
-                        }
-                    }
-                    
-                    Text("Restore Purchases")
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.orange)
+                        .frame(width: 24)
+
+                    Text("Foo Pro Active")
                         .font(.system(.body, design: .serif))
                         .foregroundStyle(.primary)
-                    
+
                     Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .light))
-                        .foregroundStyle(.quaternary)
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.green)
                 }
                 .padding(.vertical, 14)
-                .contentShape(Rectangle())
+                .padding(.horizontal, 32)
+            } else {
+                actionRow(icon: "crown", label: "Upgrade to Pro") {
+                    showPaywall = true
+                }
+                dividerLine
+                Button {
+                    Task { await restorePurchases() }
+                } label: {
+                    HStack(spacing: 14) {
+                        Group {
+                            if isRestoring {
+                                ProgressView()
+                                    .frame(width: 24)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 24)
+                            }
+                        }
+
+                        Text("Restore Purchases")
+                            .font(.system(.body, design: .serif))
+                            .foregroundStyle(.primary)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .light))
+                            .foregroundStyle(.quaternary)
+                    }
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(isRestoring)
+                .padding(.horizontal, 32)
             }
-            .buttonStyle(.plain)
-            .disabled(isRestoring)
-            .padding(.horizontal, 32)
             dividerLine
         }
     }
@@ -319,6 +349,7 @@ struct BookEndPage: View {
         defer { isRestoring = false }
         do {
             try await AppStore.sync()
+            await store.updateCustomerProductStatus()
         } catch {
             restoreError = error.localizedDescription
         }

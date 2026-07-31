@@ -5,6 +5,8 @@ struct OpenFoodFactsProduct: Equatable {
     var name: String
     var brand: String?
     var quantityText: String?
+    var parsedQuantity: Decimal?
+    var imageURL: URL?
     var category: FoodCategory
     var unit: FoodUnit
     var emoji: String
@@ -69,12 +71,19 @@ enum OpenFoodFactsService {
         let categories = (product["categories_tags"] as? [String]) ?? []
         let mappedCategory = mapCategory(tags: categories)
         let mappedUnit = mapUnit(quantityText: quantityText, categories: categories)
+        let parsedQuantity = parseQuantity(from: quantityText)
+
+        let imageURL = (product["image_front_small_url"] as? String).flatMap { URL(string: $0) }
+            ?? (product["image_front_url"] as? String).flatMap { URL(string: $0) }
+            ?? (product["image_url"] as? String).flatMap { URL(string: $0) }
 
         let result = OpenFoodFactsProduct(
             barcode: barcode,
             name: resolvedName,
             brand: brand?.isEmpty == true ? nil : brand,
             quantityText: quantityText,
+            parsedQuantity: parsedQuantity,
+            imageURL: imageURL,
             category: mappedCategory,
             unit: mappedUnit,
             emoji: mappedCategory.defaultEmoji
@@ -114,6 +123,14 @@ enum OpenFoodFactsService {
         return .piece
     }
 
+    // Extracts the leading numeric value from a quantity string like "500 g" or "1.5 l".
+    private static func parseQuantity(from text: String?) -> Decimal? {
+        guard let text, !text.isEmpty else { return nil }
+        guard let range = text.range(of: #"(\d+(?:[.,]\d+)?)"#, options: .regularExpression) else { return nil }
+        let numberStr = String(text[range]).replacingOccurrences(of: ",", with: ".")
+        return Decimal(string: numberStr)
+    }
+
     // MARK: - Cache
 
     private static func cachedProduct(for barcode: String) -> OpenFoodFactsProduct? {
@@ -141,6 +158,8 @@ private struct CachedProduct: Codable {
     var name: String
     var brand: String?
     var quantityText: String?
+    var parsedQuantity: Decimal?
+    var imageURL: URL?
     var categoryRaw: String
     var unitRaw: String
     var emoji: String
@@ -150,6 +169,8 @@ private struct CachedProduct: Codable {
         name = product.name
         brand = product.brand
         quantityText = product.quantityText
+        parsedQuantity = product.parsedQuantity
+        imageURL = product.imageURL
         categoryRaw = product.category.rawValue
         unitRaw = product.unit.rawValue
         emoji = product.emoji
@@ -161,6 +182,8 @@ private struct CachedProduct: Codable {
             name: name,
             brand: brand,
             quantityText: quantityText,
+            parsedQuantity: parsedQuantity,
+            imageURL: imageURL,
             category: FoodCategory(rawValue: categoryRaw) ?? .other,
             unit: FoodUnit(rawValue: unitRaw) ?? .piece,
             emoji: emoji

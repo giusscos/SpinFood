@@ -21,6 +21,7 @@ struct EditFoodView: View {
     @State private var isLookingUpBarcode: Bool = false
     @State private var barcodeError: String? = nil
     @State private var scannedBarcodeHint: String? = nil
+    @State private var productImageURL: URL? = nil
 
     enum Field: Hashable {
         case name
@@ -114,10 +115,30 @@ struct EditFoodView: View {
                             }
                         }
 
-                        if let scannedBarcodeHint {
-                            Text(scannedBarcodeHint)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        if scannedBarcodeHint != nil || productImageURL != nil {
+                            HStack(alignment: .center, spacing: 10) {
+                                if let productImageURL {
+                                    AsyncImage(url: productImageURL) { phase in
+                                        if let image = phase.image {
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 52, height: 52)
+                                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        } else {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .fill(.secondary.opacity(0.1))
+                                                .frame(width: 52, height: 52)
+                                                .overlay { ProgressView().scaleEffect(0.7) }
+                                        }
+                                    }
+                                }
+                                if let scannedBarcodeHint {
+                                    Text(scannedBarcodeHint)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
 
                         if let barcodeError {
@@ -338,8 +359,13 @@ struct EditFoodView: View {
         emoji = product.emoji
         category = product.category
         unit = product.unit
+        productImageURL = product.imageURL
         if quantity == 0 {
-            quantity = unit == .piece ? 1 : 100
+            if let parsed = product.parsedQuantity, parsed > 0 {
+                quantity = parsed
+            } else {
+                quantity = unit == .piece ? 1 : 100
+            }
         }
         var hint = String(localized: "Scanned: \(product.barcode)")
         if let brand = product.brand, !brand.isEmpty {
@@ -352,6 +378,7 @@ struct EditFoodView: View {
     private func lookupBarcode(_ code: String) async {
         isLookingUpBarcode = true
         barcodeError = nil
+        productImageURL = nil
         defer { isLookingUpBarcode = false }
         do {
             let product = try await OpenFoodFactsService.lookup(barcode: code)

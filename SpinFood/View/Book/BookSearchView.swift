@@ -45,7 +45,15 @@ struct BookSearchView: View {
                 }
             })
             .fullScreenCover(isPresented: $showPaywall) {
-                PaywallView()
+                PaywallView(onPurchaseComplete: {
+                    Task { await store.updateCustomerProductStatus() }
+                })
+                .environment(store)
+            }
+            .onChange(of: showPaywall) { _, isPresenting in
+                if !isPresenting {
+                    Task { await store.updateCustomerProductStatus() }
+                }
             }
         }
     }

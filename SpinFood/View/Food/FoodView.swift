@@ -81,6 +81,7 @@ struct FoodView: View {
     @State private var selectedItems = Set<UUID>()
     @State private var isEditing = false
     @State private var showBarcodeScanner = false
+    @State private var isLookingUpBarcode = false
     @State private var barcodeLookupError: String?
 
     private var paperBackground: Color {
@@ -315,6 +316,8 @@ struct FoodView: View {
 
     @MainActor
     private func handleScannedBarcode(_ code: String) async {
+        isLookingUpBarcode = true
+        defer { isLookingUpBarcode = false }
         do {
             let product = try await OpenFoodFactsService.lookup(barcode: code)
             activeSheet = .createFromScan(product)

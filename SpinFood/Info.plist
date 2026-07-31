@@ -5,7 +5,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Used to take photos for recipe steps and to scan product barcodes for your pantry.</string>
 	<key>NSAlarmKitUsageDescription</key>
-	<string>SpinFood rings an alarm when your cooking timer finishes, even if your phone is on silent.</string>
+	<string>Foo rings an alarm when your cooking timer finishes, even if your phone is on silent.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIBackgroundModes</key>

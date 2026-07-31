@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var navigator = AppNavigator()
 
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
+    @AppStorage("onboarding_upsell_seen") private var onboardingUpsellSeen: Bool = false
 
     var body: some View {
         if !onboardingCompleted {
@@ -105,7 +106,7 @@ struct ContentView: View {
         .onAppear {
             NotificationManager.shared.scheduleAll(foods: foods)
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
-            if recipes.count >= 3 && !store.hasActiveSubscription {
+            if recipes.count >= 3 && !store.hasActiveSubscription && !onboardingUpsellSeen {
                 isPresentingPaywall = true
             }
             if recipes.count >= 5 && store.hasActiveSubscription {

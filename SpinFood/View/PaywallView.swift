@@ -2,6 +2,7 @@ import SwiftUI
 import StoreKit
 
 struct PaywallView: View {
+    var onPurchaseComplete: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
     @State var store = Store()
@@ -39,30 +40,31 @@ struct PaywallView: View {
                             .textCase(.uppercase)
                     }
 
-                    Image(systemName: "fork.knife")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.orange.opacity(0.85))
-
-                    // Table of contents
-                    VStack(spacing: 24) {
-                        VStack (spacing: 12) {
-                            tocEntry(roman: "I",   title: L("Unlimited Recipes"),      note: L("No caps, ever"))
-                            tocDivider
-                        }
-
-                        VStack (spacing: 12) {
-                            tocEntry(roman: "II",  title: L("Recipe Search"),           note: L("Find anything instantly"))
-                            tocDivider
-                        }
-
-                        VStack (spacing: 12) {
-                            tocEntry(roman: "III", title: L("Cooking Stats"),           note: L("Every meal charted"))
-                            tocDivider
-                        }
-
-                        VStack (spacing: 12) {
-                            tocEntry(roman: "IV",  title: L("Shopping Lists"),          note: L("Auto-generated"))
-                        }
+                    VStack(spacing: 14) {
+                        OnboardingFeatureRow(
+                            icon: "book.fill",
+                            color: .orange,
+                            title: L("Unlimited Recipes"),
+                            description: L("No caps, ever")
+                        )
+                        OnboardingFeatureRow(
+                            icon: "magnifyingglass",
+                            color: .blue,
+                            title: L("Recipe Search"),
+                            description: L("Find anything instantly")
+                        )
+                        OnboardingFeatureRow(
+                            icon: "chart.bar.fill",
+                            color: .green,
+                            title: L("Cooking Stats"),
+                            description: L("Every meal charted")
+                        )
+                        OnboardingFeatureRow(
+                            icon: "cart.fill",
+                            color: .purple,
+                            title: L("Shopping Lists"),
+                            description: L("Auto-generated")
+                        )
                     }
 
                     // Lifetime purchase link
@@ -88,6 +90,7 @@ struct PaywallView: View {
             .subscriptionStoreControlBackground(pageBackground)
             .onInAppPurchaseCompletion { _, result in
                 if case .success = result {
+                    onPurchaseComplete?()
                     dismiss()
                 }
             }
@@ -98,36 +101,6 @@ struct PaywallView: View {
             .background(pageBackground.ignoresSafeArea())
         }
         .background(pageBackground.ignoresSafeArea())
-    }
-
-    // MARK: - Table of Contents Entry
-
-    private func tocEntry(roman: String, title: String, note: String) -> some View {
-        HStack(alignment: .center, spacing: 0) {
-            Text(roman)
-                .font(.system(size: 11, weight: .light, design: .serif))
-                .foregroundStyle(.secondary)
-                .frame(width: 28, alignment: .center)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.system(.body, design: .serif))
-
-                Text(note)
-                    .font(.system(.caption, design: .serif))
-                    .foregroundStyle(.secondary)
-            }
-            
-            Spacer()
-        }
-    }
-
-    // MARK: - Ornaments
-
-    private var tocDivider: some View {
-        Rectangle()
-            .fill(Color.secondary.opacity(0.1))
-            .frame(height: 0.5)
     }
 
     // MARK: - Legal

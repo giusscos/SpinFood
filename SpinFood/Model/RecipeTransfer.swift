@@ -49,7 +49,7 @@ enum RecipeTransferError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .encodingFailed: return "Could not export the recipe."
-        case .decodingFailed: return "The selected file is not a valid SpinFood recipe."
+        case .decodingFailed: return "The selected file is not a valid Foo recipe."
         }
     }
 }

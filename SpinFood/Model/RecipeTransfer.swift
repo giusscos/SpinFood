@@ -57,7 +57,7 @@ enum RecipeTransferError: LocalizedError {
 // MARK: - Transfer logic
 
 final class RecipeTransfer {
-    static let fileExtension = "spinfood"
+    static let fileExtension = "foo"
 
     static func export(_ recipe: RecipeModel) throws -> URL {
         let export = RecipeExport(

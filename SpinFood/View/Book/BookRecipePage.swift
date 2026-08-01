@@ -24,6 +24,8 @@ struct BookRecipePage: View {
     var onBack: () -> Void
     var onDelete: () -> Void = {}
 
+    @Environment(AppNavigator.self) private var navigator
+
     @State private var activeSheet: ActiveRecipeDetailSheet?
     @State private var showDeleteConfirmation = false
     @State private var sharingItems: [Any] = []
@@ -197,6 +199,19 @@ struct BookRecipePage: View {
             } message: {
                 Text(cookLimitAlertMessage ?? "")
             }
+            .onAppear { handlePendingWidgetCook() }
+            .onChange(of: navigator.requestedCookRecipeID) { _, _ in
+                handlePendingWidgetCook()
+            }
+        }
+    }
+
+    private func handlePendingWidgetCook() {
+        guard navigator.requestedCookRecipeID == recipe.id,
+              let steps = recipe.steps, !steps.isEmpty else { return }
+        navigator.requestedCookRecipeID = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            startCookStepByStep(steps: steps)
         }
     }
 

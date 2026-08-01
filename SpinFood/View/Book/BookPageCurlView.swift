@@ -7,6 +7,7 @@ import UIKit
 final class AppNavigator {
     var selectedTab: AppTab = .recipes
     var requestedBookPage: Int? = nil
+    var requestedCookRecipeID: UUID? = nil
     var currentBookPage: Int = 0
     var checkedShoppingItemsCount: Int = 0
     var triggerShoppingRefill: Bool = false
@@ -18,6 +19,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
     let recipes: [RecipeModel]
     let requestedPage: Int?
     let store: Store
+    let navigator: AppNavigator
     var onAdd: () -> Void
     var onEdit: (RecipeModel) -> Void
     var onNavigated: (Int) -> Void
@@ -41,6 +43,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
             vc.rebuild(
                 recipes: recipes,
                 store: store,
+                navigator: navigator,
                 onAdd: onAdd,
                 onSelectRecipe: { [weak vc] recipe in
                     guard let vc,
@@ -137,6 +140,7 @@ final class BookPageViewController: UIPageViewController {
     func rebuild(
         recipes: [RecipeModel],
         store: Store,
+        navigator: AppNavigator,
         onAdd: @escaping () -> Void,
         onSelectRecipe: @escaping (RecipeModel) -> Void,
         onEdit: @escaping (RecipeModel) -> Void,
@@ -171,13 +175,16 @@ final class BookPageViewController: UIPageViewController {
         }
 
         for (i, recipe) in recipes.enumerated() {
-            newPages.append(makeHostingVC(BookRecipePage(
-                recipe: recipe,
-                pageNumber: i + 1,
-                onEdit: { onEdit(recipe) },
-                onBack: onBack,
-                onDelete: { onDelete(recipe) }
-            )))
+            newPages.append(makeHostingVC(
+                BookRecipePage(
+                    recipe: recipe,
+                    pageNumber: i + 1,
+                    onEdit: { onEdit(recipe) },
+                    onBack: onBack,
+                    onDelete: { onDelete(recipe) }
+                )
+                .environment(navigator)
+            ))
         }
 
         newPages.append(makeHostingVC(

@@ -107,6 +107,7 @@ struct ContentView: View {
         .onAppear {
             NotificationManager.shared.scheduleAll(foods: foods)
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+            consumePendingWidgetCook()
             if recipes.count >= 3 && !store.hasActiveSubscription && !onboardingUpsellSeen {
                 isPresentingPaywall = true
             }
@@ -118,7 +119,10 @@ struct ContentView: View {
             if phase == .active {
                 NotificationManager.shared.scheduleAll(foods: foods)
                 WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+                consumePendingWidgetCook()
                 Task { await store.updateCustomerProductStatus() }
+            } else if phase == .background {
+                WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             }
         }
         .onChange(of: foods.count) { _, _ in
@@ -129,6 +133,7 @@ struct ContentView: View {
         }
         .onChange(of: recipes.count) { _, _ in
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+            consumePendingWidgetCook()
         }
         .fullScreenCover(isPresented: $isPresentingPaywall) {
             PaywallView(onPurchaseComplete: {
@@ -142,6 +147,22 @@ struct ContentView: View {
                 Task { await store.updateCustomerProductStatus() }
             }
         }
+    }
+
+    private func consumePendingWidgetCook() {
+        guard let idString = AppGroupContainer.sharedDefaults.string(forKey: AppGroupContainer.pendingCookRecipeIDKey),
+              let id = UUID(uuidString: idString) else { return }
+
+        let sorted = recipes.sorted {
+            if $0.order != $1.order { return $0.order < $1.order }
+            return $0.name < $1.name
+        }
+        guard let index = sorted.firstIndex(where: { $0.id == id }) else { return }
+
+        AppGroupContainer.sharedDefaults.removeObject(forKey: AppGroupContainer.pendingCookRecipeIDKey)
+        navigator.selectedTab = .recipes
+        navigator.requestedCookRecipeID = id
+        navigator.requestedBookPage = index + 1
     }
 }
 

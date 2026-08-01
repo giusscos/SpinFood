@@ -5,6 +5,7 @@ import SwiftUI
 struct SpinFoodWidgetBundle: WidgetBundle {
     var body: some Widget {
         SpinFoodWidget()
+        CookableRecipeWidget()
         CookTimerLiveActivity()
     }
 }

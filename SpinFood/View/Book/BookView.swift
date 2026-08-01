@@ -43,6 +43,7 @@ struct BookContainer: View {
             recipes: sortedRecipes,
             requestedPage: navigator.requestedBookPage,
             store: store,
+            navigator: navigator,
             onAdd: addRecipeTapped,
             onEdit: { recipe in activeRecipeSheet = .edit(recipe) },
             onNavigated: { page in

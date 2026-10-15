@@ -247,7 +247,6 @@ struct PaywallView: View {
         switch product.id {
         case Store.yearlyID: L("Yearly")
         case Store.weeklyID: L("Weekly")
-        case Store.familyID: L("Family")
         default: product.displayName
         }
     }
@@ -261,8 +260,6 @@ struct PaywallView: View {
             return L("Billed yearly")
         case Store.weeklyID:
             return L("Billed weekly")
-        case Store.familyID:
-            return L("Up to 6 people · billed yearly")
         default:
             return product.pricePerPeriodText(bundle: currentBundle)
         }
@@ -356,7 +353,7 @@ struct PaywallView: View {
 
     private var placeholderPricing: some View {
         VStack(spacing: 10) {
-            ForEach(["Yearly", "Weekly", "Family"], id: \.self) { name in
+            ForEach(["Yearly", "Weekly"], id: \.self) { name in
                 HStack {
                     Text(verbatim: L(name))
                     Spacer()

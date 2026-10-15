@@ -355,11 +355,9 @@
 "What you cook, eat and waste" = "What you cook, eat and waste";
 "Yearly" = "Yearly";
 "Weekly" = "Weekly";
-"Family" = "Family";
 "%@/week · save %d%%" = "%@/week · save %d%%";
 "Billed yearly" = "Billed yearly";
 "Billed weekly" = "Billed weekly";
-"Up to 6 people · billed yearly" = "Up to 6 people · billed yearly";
 "%@ FREE" = "%@ FREE";
 "BEST VALUE" = "BEST VALUE";
 "Try %@ free" = "Try %@ free";

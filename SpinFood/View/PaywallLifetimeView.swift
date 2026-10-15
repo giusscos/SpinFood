@@ -39,7 +39,7 @@ struct PaywallLifetimeView: View {
             .padding(.horizontal)
             .padding(.bottom, 4)
 
-            StoreView(ids: store.productLifetimeIds) { _ in }
+            StoreView(ids: store.lifetimeIDsForSale) { _ in }
                 .padding(.vertical)
                 .padding(.horizontal, 8)
                 .productViewStyle(.compact)

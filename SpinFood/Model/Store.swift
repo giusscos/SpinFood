@@ -30,7 +30,7 @@ final class Store {
     }
 
     var lifetimeProducts: [Product] {
-        productLifetimeIds.compactMap { id in storeProducts.first { $0.id == id } }
+        lifetimeIDsForSale.compactMap { id in storeProducts.first { $0.id == id } }
     }
 
     var purchasedProducts: [Product] {
@@ -48,11 +48,14 @@ final class Store {
 
     static let yearlyID = "f_999_1y_1w"
     static let weeklyID = "f_199_1w"
-    static let familyID = "f_fa_2999_1y_1w"
 
-    let productIds: [String] = [Store.yearlyID, Store.weeklyID, Store.familyID]
+    // The family plans (f_fa_2999_1y_1w, com.giusscos.fooFamilyLifetime) are no longer sold.
+    // Existing owners keep Pro: any active auto-renewable unlocks, and the family lifetime stays in
+    // `productLifetimeIds`.
+    let productIds: [String] = [Store.yearlyID, Store.weeklyID]
     let groupId: String = "21742027"
     let productLifetimeIds: [String] = ["com.giusscos.fooFamilyLifetime", "com.giusscos.fooLifetime"]
+    let lifetimeIDsForSale: [String] = ["com.giusscos.fooLifetime"]
 
     private var updateListenerTask: Task<Void, Error>? = nil
 

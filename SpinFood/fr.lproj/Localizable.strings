@@ -354,11 +354,9 @@
 "What you cook, eat and waste" = "Ce que tu cuisines, manges et gaspilles";
 "Yearly" = "Annuel";
 "Weekly" = "Hebdomadaire";
-"Family" = "Famille";
 "%@/week · save %d%%" = "%@/semaine · économise %d %%";
 "Billed yearly" = "Facturé chaque année";
 "Billed weekly" = "Facturé chaque semaine";
-"Up to 6 people · billed yearly" = "Jusqu'à 6 personnes · facturé chaque année";
 "%@ FREE" = "%@ D'ESSAI";
 "BEST VALUE" = "MEILLEUR PRIX";
 "Try %@ free" = "Essayer %@ gratuitement";

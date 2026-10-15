@@ -1,0 +1,5 @@
+# Xcode per-user UI state
+*.xcuserstate
+
+# macOS Finder metadata
+.DS_Store

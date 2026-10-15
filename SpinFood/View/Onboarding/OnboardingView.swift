@@ -2,19 +2,24 @@ import SwiftUI
 
 struct OnboardingView: View {
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
+    @Environment(Store.self) private var store
 
     @State private var step: Int = 0
 
-    private let stepCount = 4
+    // Kept short so people reach their recipe book quickly. Notifications are requested
+    // when the first pantry item is added, and alarms when the first cook timer starts.
+    private static let paywallStep = 2
 
     var body: some View {
         ZStack(alignment: .top) {
             Color(.systemGroupedBackground).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                stepIndicator
-                    .padding(.top, 20)
-                    .padding(.bottom, 8)
+                if step < Self.paywallStep {
+                    stepIndicator
+                        .padding(.top, 20)
+                        .padding(.bottom, 8)
+                }
 
                 ZStack {
                     switch step {
@@ -24,14 +29,10 @@ struct OnboardingView: View {
                     case 1:
                         OnboardingHowItWorksView(onNext: advance)
                             .transition(stepTransition)
-                    case 2:
-                        OnboardingPermissionsView(onNext: advance)
-                            .transition(stepTransition)
-                    case 3:
-                        OnboardingUpsellView(onNext: completeOnboarding, onComplete: completeOnboarding)
-                            .transition(stepTransition)
                     default:
-                        EmptyView()
+                        PaywallView(context: .onboarding, onClose: completeOnboarding)
+                            .environment(store)
+                            .transition(stepTransition)
                     }
                 }
             }
@@ -45,7 +46,7 @@ struct OnboardingView: View {
 
     private var stepIndicator: some View {
         HStack(spacing: 6) {
-            ForEach(0..<stepCount, id: \.self) { i in
+            ForEach(0..<Self.paywallStep, id: \.self) { i in
                 Capsule()
                     .fill(step == i ? Color.accentColor : Color.secondary.opacity(0.25))
                     .frame(width: step == i ? 20 : 7, height: 7)
@@ -54,7 +55,7 @@ struct OnboardingView: View {
         }
     }
 
-    private func advance() { step += 1 }
+    private func advance() { step = min(step + 1, Self.paywallStep) }
     private func completeOnboarding() { onboardingCompleted = true }
 }
 
@@ -77,11 +78,11 @@ struct OnboardingWelcomeView: View {
                 OnboardingDishCluster(appeared: dishesAppeared)
 
                 VStack(spacing: 12) {
-                    Text("Welcome to Foo")
+                    Text("Cook what you have")
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
 
-                    Text("Track your pantry, plan your meals,\nand reduce food waste every day.")
+                    Text("Your recipes and pantry in one book,\nso you always know what's for dinner.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -108,10 +109,10 @@ struct OnboardingWelcomeView: View {
 
             VStack(spacing: 14) {
                 OnboardingFeatureRow(
-                    icon: "leaf.fill",
+                    icon: "frying.pan.fill",
                     color: .green,
-                    title: "Reduce food waste",
-                    description: "Know what you have before buying more"
+                    title: String(localized: "Cook from your pantry"),
+                    description: String(localized: "See which recipes you can make right now")
                 )
                 .opacity(row1Appeared ? 1 : 0)
                 .blur(radius: row1Appeared ? 0 : 8)
@@ -119,10 +120,10 @@ struct OnboardingWelcomeView: View {
                 .scaleEffect(row1Appeared ? 1 : 0.94, anchor: .leading)
 
                 OnboardingFeatureRow(
-                    icon: "cart.fill",
+                    icon: "barcode.viewfinder",
                     color: .blue,
-                    title: "Shop smarter",
-                    description: "Generate shopping lists from your recipes"
+                    title: String(localized: "Scan to stock up"),
+                    description: String(localized: "Add groceries in seconds with the barcode scanner")
                 )
                 .opacity(row2Appeared ? 1 : 0)
                 .blur(radius: row2Appeared ? 0 : 8)
@@ -130,10 +131,10 @@ struct OnboardingWelcomeView: View {
                 .scaleEffect(row2Appeared ? 1 : 0.94, anchor: .leading)
 
                 OnboardingFeatureRow(
-                    icon: "chart.bar.fill",
+                    icon: "leaf.fill",
                     color: .orange,
-                    title: "Track habits",
-                    description: "See what you consume and when"
+                    title: String(localized: "Waste less"),
+                    description: String(localized: "Get a nudge before food expires")
                 )
                 .opacity(row3Appeared ? 1 : 0)
                 .blur(radius: row3Appeared ? 0 : 8)
@@ -303,152 +304,6 @@ struct OnboardingFeatureRow: View {
     }
 }
 
-// MARK: - Upsell Step
-
-struct OnboardingUpsellView: View {
-    let onNext: () -> Void
-    let onComplete: () -> Void
-
-    @Environment(Store.self) private var store
-    @AppStorage("onboarding_upsell_seen") private var onboardingUpsellSeen: Bool = false
-    @State private var appeared = false
-    @State private var row1Appeared = false
-    @State private var row2Appeared = false
-    @State private var row3Appeared = false
-    @State private var row4Appeared = false
-    @State private var buttonAppeared = false
-    @State private var showPaywall = false
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 12)
-
-            VStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(Color.yellow.opacity(0.14))
-                        .frame(width: 90, height: 90)
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 38))
-                        .foregroundStyle(
-                            LinearGradient(colors: [.orange, .yellow], startPoint: .top, endPoint: .bottom)
-                        )
-                }
-                .scaleEffect(appeared ? 1 : 0.6)
-                .opacity(appeared ? 1 : 0)
-                .blur(radius: appeared ? 0 : 12)
-
-                Text("Get the most out of Foo")
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
-
-                Text("Unlock everything — so nothing goes to waste.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                    .padding(.horizontal, 8)
-            }
-            .padding(.horizontal, 28)
-            .opacity(appeared ? 1 : 0)
-            .blur(radius: appeared ? 0 : 10)
-            .offset(y: appeared ? 0 : 16)
-
-            Spacer(minLength: 20)
-
-            VStack(spacing: 14) {
-                OnboardingFeatureRow(
-                    icon: "book.fill",
-                    color: .orange,
-                    title: "Unlimited Recipes",
-                    description: "Add as many recipes as your kitchen needs — no caps, ever"
-                )
-                .opacity(row1Appeared ? 1 : 0)
-                .blur(radius: row1Appeared ? 0 : 8)
-                .offset(y: row1Appeared ? 0 : 18)
-                .scaleEffect(row1Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "magnifyingglass",
-                    color: .blue,
-                    title: "Recipe Search",
-                    description: "Find any recipe instantly across your whole collection"
-                )
-                .opacity(row2Appeared ? 1 : 0)
-                .blur(radius: row2Appeared ? 0 : 8)
-                .offset(y: row2Appeared ? 0 : 18)
-                .scaleEffect(row2Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "chart.bar.fill",
-                    color: .green,
-                    title: "Cooking Stats",
-                    description: "Every meal charted — what you cook, when, and how often"
-                )
-                .opacity(row3Appeared ? 1 : 0)
-                .blur(radius: row3Appeared ? 0 : 8)
-                .offset(y: row3Appeared ? 0 : 18)
-                .scaleEffect(row3Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "cart.fill",
-                    color: .purple,
-                    title: "Shopping Lists",
-                    description: "Auto-generated from your recipes so you never miss an ingredient"
-                )
-                .opacity(row4Appeared ? 1 : 0)
-                .blur(radius: row4Appeared ? 0 : 8)
-                .offset(y: row4Appeared ? 0 : 18)
-                .scaleEffect(row4Appeared ? 1 : 0.94, anchor: .leading)
-            }
-            .padding(.horizontal, 24)
-
-            Spacer(minLength: 20)
-
-            VStack(spacing: 12) {
-                Button {
-                    showPaywall = true
-                } label: {
-                    Text("See Plans")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-
-                Button(action: onNext) {
-                    Text("Maybe later")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
-            .opacity(buttonAppeared ? 1 : 0)
-            .blur(radius: buttonAppeared ? 0 : 6)
-            .scaleEffect(buttonAppeared ? 1 : 0.88)
-        }
-        .onAppear {
-            onboardingUpsellSeen = true
-            withAnimation(.spring(duration: 0.6, bounce: 0.3).delay(0.1)) { appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.32)) { row1Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.45)) { row2Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.58)) { row3Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.71)) { row4Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.35).delay(0.88)) { buttonAppeared = true }
-        }
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(onPurchaseComplete: {
-                showPaywall = false
-                onComplete()
-            })
-            .environment(store)
-        }
-    }
-}
-
 // MARK: - How It Works Step
 
 struct OnboardingHowItWorksView: View {
@@ -477,11 +332,11 @@ struct OnboardingHowItWorksView: View {
                 .opacity(appeared ? 1 : 0)
                 .blur(radius: appeared ? 0 : 12)
 
-                Text("How Foo works")
+                Text("From pantry to plate")
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
 
-                Text("A quick tour of the kitchen loop — from pantry to plate and back again.")
+                Text("Four steps, and your kitchen runs itself.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -499,8 +354,8 @@ struct OnboardingHowItWorksView: View {
                 OnboardingFeatureRow(
                     icon: "carrot.fill",
                     color: .green,
-                    title: "Add ingredients",
-                    description: "Stock your pantry, then attach those foods to a recipe with the amounts you need"
+                    title: String(localized: "Add ingredients"),
+                    description: String(localized: "Stock your pantry and link foods to your recipes")
                 )
                 .opacity(row1Appeared ? 1 : 0)
                 .blur(radius: row1Appeared ? 0 : 8)
@@ -510,8 +365,8 @@ struct OnboardingHowItWorksView: View {
                 OnboardingFeatureRow(
                     icon: "list.number",
                     color: .blue,
-                    title: "Write the steps",
-                    description: "Break the recipe into clear cooking steps you can follow page by page"
+                    title: String(localized: "Write the steps"),
+                    description: String(localized: "Follow clear steps, page by page")
                 )
                 .opacity(row2Appeared ? 1 : 0)
                 .blur(radius: row2Appeared ? 0 : 8)
@@ -521,8 +376,8 @@ struct OnboardingHowItWorksView: View {
                 OnboardingFeatureRow(
                     icon: "flame.fill",
                     color: .orange,
-                    title: "Cook",
-                    description: "Start cooking from the book — timers keep time, and ingredients leave your pantry when you're done"
+                    title: String(localized: "Cook"),
+                    description: String(localized: "Timers keep time, and used ingredients leave your pantry")
                 )
                 .opacity(row3Appeared ? 1 : 0)
                 .blur(radius: row3Appeared ? 0 : 8)
@@ -532,8 +387,8 @@ struct OnboardingHowItWorksView: View {
                 OnboardingFeatureRow(
                     icon: "arrow.trianglehead.counterclockwise",
                     color: .purple,
-                    title: "Refill",
-                    description: "When stock runs low, shop from the list and refill items to top your pantry back up"
+                    title: String(localized: "Refill"),
+                    description: String(localized: "Shop from the list and top your pantry back up")
                 )
                 .opacity(row4Appeared ? 1 : 0)
                 .blur(radius: row4Appeared ? 0 : 8)
@@ -570,117 +425,7 @@ struct OnboardingHowItWorksView: View {
     }
 }
 
-// MARK: - Permissions Step
-
-struct OnboardingPermissionsView: View {
-    let onNext: () -> Void
-
-    @State private var appeared = false
-    @State private var row1Appeared = false
-    @State private var row2Appeared = false
-    @State private var buttonAppeared = false
-    @State private var isRequesting = false
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(Color.orange.opacity(0.12))
-                        .frame(width: 90, height: 90)
-                    Image(systemName: "bell.badge.fill")
-                        .font(.system(size: 42))
-                        .foregroundStyle(.orange)
-                }
-                .scaleEffect(appeared ? 1 : 0.6)
-                .opacity(appeared ? 1 : 0)
-                .blur(radius: appeared ? 0 : 12)
-
-                Text("Stay on top of your kitchen")
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
-
-                Text("Foo needs a couple of permissions so timers and pantry alerts work when you're away from the app.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                    .padding(.horizontal, 8)
-            }
-            .padding(.horizontal, 28)
-            .opacity(appeared ? 1 : 0)
-            .blur(radius: appeared ? 0 : 10)
-            .offset(y: appeared ? 0 : 16)
-
-            Spacer()
-
-            VStack(spacing: 14) {
-                OnboardingFeatureRow(
-                    icon: "bell.fill",
-                    color: .blue,
-                    title: "Notifications",
-                    description: "Expiry reminders and low-stock alerts for your pantry"
-                )
-                .opacity(row1Appeared ? 1 : 0)
-                .blur(radius: row1Appeared ? 0 : 8)
-                .offset(y: row1Appeared ? 0 : 18)
-                .scaleEffect(row1Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "alarm.fill",
-                    color: .orange,
-                    title: "Alarms",
-                    description: "Cooking timers that ring even if your phone is on silent"
-                )
-                .opacity(row2Appeared ? 1 : 0)
-                .blur(radius: row2Appeared ? 0 : 8)
-                .offset(y: row2Appeared ? 0 : 18)
-                .scaleEffect(row2Appeared ? 1 : 0.94, anchor: .leading)
-            }
-            .padding(.horizontal, 24)
-
-            Spacer()
-
-            Button {
-                Task { await requestPermissionsAndContinue() }
-            } label: {
-                HStack(spacing: 8) {
-                    if isRequesting {
-                        ProgressView()
-                            .tint(.white)
-                    }
-                    Text(isRequesting ? "Please wait…" : "Continue")
-                        .font(.headline)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.accentColor)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
-            .disabled(isRequesting)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
-            .opacity(buttonAppeared ? 1 : 0)
-            .blur(radius: buttonAppeared ? 0 : 6)
-            .scaleEffect(buttonAppeared ? 1 : 0.88)
-        }
-        .onAppear {
-            withAnimation(.spring(duration: 0.6, bounce: 0.3).delay(0.1)) { appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.32)) { row1Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.48)) { row2Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.35).delay(0.65)) { buttonAppeared = true }
-        }
-    }
-
-    private func requestPermissionsAndContinue() async {
-        guard !isRequesting else { return }
-        isRequesting = true
-        _ = await NotificationManager.shared.requestPermission()
-        _ = await CookTimerAlarmScheduler.requestAuthorization()
-        isRequesting = false
-        onNext()
-    }
+#Preview {
+    OnboardingView()
+        .environment(Store())
 }

@@ -24,6 +24,15 @@ final class Store {
         subscriptions.filter { purchasedSubscriptionIDs.contains($0.id) }
     }
 
+    /// Plans shown on the paywall, in `productIds` order (yearly first).
+    var subscriptionProducts: [Product] {
+        productIds.compactMap { id in subscriptions.first { $0.id == id } }
+    }
+
+    var lifetimeProducts: [Product] {
+        productLifetimeIds.compactMap { id in storeProducts.first { $0.id == id } }
+    }
+
     var purchasedProducts: [Product] {
         storeProducts.filter { purchasedLifetimeIDs.contains($0.id) }
     }
@@ -35,7 +44,13 @@ final class Store {
         !purchasedSubscriptionIDs.isEmpty || !purchasedLifetimeIDs.isEmpty
     }
 
-    let productIds: [String] = ["f_199_1w", "f_999_1y_1w", "f_fa_2999_1y_1w"]
+    static let freeRecipeLimit = 3
+
+    static let yearlyID = "f_999_1y_1w"
+    static let weeklyID = "f_199_1w"
+    static let familyID = "f_fa_2999_1y_1w"
+
+    let productIds: [String] = [Store.yearlyID, Store.weeklyID, Store.familyID]
     let groupId: String = "21742027"
     let productLifetimeIds: [String] = ["com.giusscos.fooFamilyLifetime", "com.giusscos.fooLifetime"]
 
@@ -179,4 +194,46 @@ final class Store {
 
 public enum StoreError: Error {
     case failedVerification
+}
+
+extension Product {
+    /// The free-trial part of the introductory offer, if the offer is a free trial.
+    var freeTrialPeriod: Product.SubscriptionPeriod? {
+        guard let offer = subscription?.introductoryOffer, offer.paymentMode == .freeTrial else { return nil }
+        return offer.period
+    }
+
+    /// "1 week", "3 days" — used in the trial badge, the button and the disclosure line.
+    func freeTrialText(bundle: Bundle) -> String? {
+        guard let period = freeTrialPeriod else { return nil }
+        let (one, many): (String, String)
+        switch period.unit {
+        case .day:   (one, many) = ("1 day", "%d days")
+        case .week:  (one, many) = ("1 week", "%d weeks")
+        case .month: (one, many) = ("1 month", "%d months")
+        case .year:  (one, many) = ("1 year", "%d years")
+        @unknown default: return nil
+        }
+        return period.value == 1
+            ? bundle.localizedString(forKey: one, value: one, table: nil)
+            : String(format: bundle.localizedString(forKey: many, value: many, table: nil), period.value)
+    }
+
+    /// "$29.99/year", "$2.99/week"; the plain price for non-subscriptions.
+    func pricePerPeriodText(bundle: Bundle) -> String {
+        guard let unit = subscription?.subscriptionPeriod.unit else { return displayPrice }
+        let key: String
+        switch unit {
+        case .year:  key = "%@/year"
+        case .month: key = "%@/month"
+        case .week:  key = "%@/week"
+        default:     return displayPrice
+        }
+        return String(format: bundle.localizedString(forKey: key, value: key, table: nil), displayPrice)
+    }
+
+    /// Yearly price spread over 52 weeks, in the storefront currency.
+    var weeklyEquivalentText: String {
+        (price / 52).formatted(priceFormatStyle)
+    }
 }

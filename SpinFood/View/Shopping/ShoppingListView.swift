@@ -30,6 +30,7 @@ enum ShoppingSortOption: CaseIterable {
 
 struct ShoppingListView: View {
     @Environment(Store.self) var store
+    @State private var showPaywall = false
     @Environment(AppNavigator.self) var navigator
 
     @Query var recipes: [RecipeModel]
@@ -339,9 +340,27 @@ struct ShoppingListView: View {
                     tocEntry(roman: "IV",  title: "One-Tap Refill",       note: "Restock with a single tap")
                 }
 
+                Button {
+                    showPaywall = true
+                } label: {
+                    Text("Upgrade to Pro")
+                        .font(.system(.body, design: .serif).weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .padding(.horizontal, 24)
+
                 Spacer(minLength: 60)
             }
             .padding(.horizontal)
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView(context: .shopping, onPurchaseComplete: {
+                Task { await store.updateCustomerProductStatus() }
+            })
+            .environment(store)
         }
         .scrollContentBackground(.hidden)
     }

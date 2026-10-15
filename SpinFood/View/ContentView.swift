@@ -18,17 +18,25 @@ struct ContentView: View {
 
     @State var store = Store()
     @State var isPresentingPaywall: Bool = false
+    @State private var paywallContext: PaywallContext = .general
+    @State private var launchWaitElapsed = false
     @State private var navigator = AppNavigator()
 
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
-    @AppStorage("onboarding_upsell_seen") private var onboardingUpsellSeen: Bool = false
+    @AppStorage("milestone_paywall_shown") private var milestonePaywallShown: Bool = false
 
     var body: some View {
         if !onboardingCompleted {
             OnboardingView()
                 .environment(store)
-        } else if store.isLoading {
+        } else if store.isLoading && !launchWaitElapsed {
+            // StoreKit can take seconds without a network; don't hold the whole app for it.
+            // Entitlement-dependent prompts wait for `store.isLoading` in `handleLaunchPrompts`.
             ProgressView()
+                .task {
+                    try? await Task.sleep(for: .milliseconds(400))
+                    launchWaitElapsed = true
+                }
         } else {
             mainTabView
         }
@@ -57,6 +65,7 @@ struct ContentView: View {
                         .buttonBorderShape(.capsule)
                     } else {
                         Button {
+                            paywallContext = navigator.selectedTab == .shopping ? .shopping : .stats
                             isPresentingPaywall = true
                         } label: {
                             Text("Upgrade to Pro")
@@ -108,12 +117,10 @@ struct ContentView: View {
             NotificationManager.shared.scheduleAll(foods: foods)
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             consumePendingWidgetCook()
-            if recipes.count >= 3 && !store.hasActiveSubscription && !onboardingUpsellSeen {
-                isPresentingPaywall = true
-            }
-            if recipes.count >= 5 && store.hasActiveSubscription {
-                requestReview()
-            }
+            if !store.isLoading { handleLaunchPrompts() }
+        }
+        .onChange(of: store.isLoading) { _, isLoading in
+            if !isLoading { handleLaunchPrompts() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -125,8 +132,15 @@ struct ContentView: View {
                 WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             }
         }
-        .onChange(of: foods.count) { _, _ in
+        .onChange(of: foods.count) { oldCount, newCount in
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+            // Ask for expiry and low-stock alerts once there's something to alert about.
+            if oldCount == 0 && newCount > 0 {
+                Task {
+                    await NotificationManager.shared.requestPermission()
+                    NotificationManager.shared.scheduleAll(foods: foods)
+                }
+            }
         }
         .onChange(of: mealPlan.count) { _, _ in
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
@@ -136,7 +150,7 @@ struct ContentView: View {
             consumePendingWidgetCook()
         }
         .fullScreenCover(isPresented: $isPresentingPaywall) {
-            PaywallView(onPurchaseComplete: {
+            PaywallView(context: paywallContext, onPurchaseComplete: {
                 Task { await store.updateCustomerProductStatus() }
             })
             .environment(store)
@@ -146,6 +160,18 @@ struct ContentView: View {
             if !isPresenting {
                 Task { await store.updateCustomerProductStatus() }
             }
+        }
+    }
+
+    private func handleLaunchPrompts() {
+        // Once per install, after the free book fills up.
+        if recipes.count >= Store.freeRecipeLimit && !store.hasActiveSubscription && !milestonePaywallShown {
+            milestonePaywallShown = true
+            paywallContext = .milestone
+            isPresentingPaywall = true
+        }
+        if recipes.count >= 5 && store.hasActiveSubscription {
+            requestReview()
         }
     }
 

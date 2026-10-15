@@ -10,6 +10,7 @@ import SwiftData
 
 struct SummaryView: View {
     @Environment(Store.self) var store
+    @State private var showPaywall = false
 
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
@@ -149,9 +150,27 @@ struct SummaryView: View {
                     tocEntry(roman: "IV",  title: "Food Waste Insights", note: "Reduce waste, save money")
                 }
 
+                Button {
+                    showPaywall = true
+                } label: {
+                    Text("Upgrade to Pro")
+                        .font(.system(.body, design: .serif).weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .padding(.horizontal, 24)
+
                 Spacer(minLength: 60)
             }
             .padding(.horizontal)
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView(context: .stats, onPurchaseComplete: {
+                Task { await store.updateCustomerProductStatus() }
+            })
+            .environment(store)
         }
         .scrollContentBackground(.hidden)
         .background(paperBackground.ignoresSafeArea())

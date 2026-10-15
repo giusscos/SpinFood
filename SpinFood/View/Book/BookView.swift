@@ -29,7 +29,7 @@ struct BookContainer: View {
     @State private var activeRecipeSheet: ActiveRecipeSheet?
     @State private var showPaywall = false
 
-    static let freeRecipeLimit = 3
+    static let freeRecipeLimit = Store.freeRecipeLimit
 
     private var sortedRecipes: [RecipeModel] {
         recipes.sorted {
@@ -65,7 +65,7 @@ struct BookContainer: View {
             }
         }
         .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(onPurchaseComplete: {
+            PaywallView(context: .recipeLimit, onPurchaseComplete: {
                 Task { await store.updateCustomerProductStatus() }
             })
             .environment(store)

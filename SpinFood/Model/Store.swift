@@ -41,7 +41,10 @@ final class Store {
     var isLoading: Bool = true
 
     var hasActiveSubscription: Bool {
-        !purchasedSubscriptionIDs.isEmpty || !purchasedLifetimeIDs.isEmpty
+        #if DEBUG && targetEnvironment(simulator)
+        if ScreenshotSeed.simulatorPremium { return true }
+        #endif
+        return !purchasedSubscriptionIDs.isEmpty || !purchasedLifetimeIDs.isEmpty
     }
 
     static let freeRecipeLimit = 3

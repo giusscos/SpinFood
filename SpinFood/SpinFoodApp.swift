@@ -43,6 +43,9 @@ struct SpinFoodApp: App {
 
     init() {
         try? Tips.configure()
+        #if DEBUG && targetEnvironment(simulator)
+        ScreenshotSeed.seedIfRequested(in: sharedModelContainer.mainContext)
+        #endif
     }
 
     var body: some Scene {

@@ -197,6 +197,12 @@ final class BarcodeScannerViewController: UIViewController, AVCaptureMetadataOut
     }
 
     private func showUnavailable() {
+        #if DEBUG && targetEnvironment(simulator)
+        if let feed = ScreenshotSeed.scannerFeedImage {
+            showSimulatorFeed(feed)
+            return
+        }
+        #endif
         let label = UILabel()
         label.text = String(localized: "Camera unavailable")
         label.textColor = .white
@@ -208,6 +214,25 @@ final class BarcodeScannerViewController: UIViewController, AVCaptureMetadataOut
             label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
         ])
     }
+
+    #if DEBUG && targetEnvironment(simulator)
+    /// No camera in the simulator: show a still photo and "scan" its barcode on tap.
+    private func showSimulatorFeed(_ image: UIImage) {
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.frame = view.bounds
+        imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.insertSubview(imageView, at: 0)
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(simulateScan)))
+    }
+
+    @objc private func simulateScan() {
+        guard !hasScanned else { return }
+        hasScanned = true
+        onScan?(ScreenshotSeed.feedBarcode)
+    }
+    #endif
 
     func metadataOutput(
         _ output: AVCaptureMetadataOutput,

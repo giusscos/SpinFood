@@ -30,6 +30,9 @@ enum OpenFoodFactsService {
     private static let cacheKey = "barcodeLookupCache"
 
     static func lookup(barcode: String) async throws -> OpenFoodFactsProduct {
+        #if DEBUG && targetEnvironment(simulator)
+        if let product = ScreenshotSeed.scannedProduct(for: barcode) { return product }
+        #endif
         if let cached = cachedProduct(for: barcode) {
             return cached
         }

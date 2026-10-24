@@ -23,6 +23,8 @@ struct BookRecipePage: View {
     var onEdit: () -> Void
     var onBack: () -> Void
     var onDelete: () -> Void = {}
+    /// False for the right-hand page of a two-page spread, so a spread shows one "Index" button.
+    var showsBackButton: Bool = true
 
     @Environment(AppNavigator.self) private var navigator
 
@@ -75,13 +77,15 @@ struct BookRecipePage: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: onBack) {
-                        HStack(spacing: 5) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 13, weight: .semibold))
-                            Text("Index")
-                                .font(.system(.subheadline, design: .serif))
+                if showsBackButton {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: onBack) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text("Index")
+                                    .font(.system(.subheadline, design: .serif))
+                            }
                         }
                     }
                 }

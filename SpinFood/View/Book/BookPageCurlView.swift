@@ -188,7 +188,9 @@ final class BookPageViewController: UIPageViewController {
                     pageNumber: i + 1,
                     onEdit: { onEdit(recipe) },
                     onBack: onBack,
-                    onDelete: { onDelete(recipe) }
+                    onDelete: { onDelete(recipe) },
+                    // Recipe i sits on page i + 1; in a spread only the left (even) page gets "Index".
+                    showsBackButton: !isSpread || (i + 1).isMultiple(of: 2)
                 )
                 .environment(navigator)
             ))

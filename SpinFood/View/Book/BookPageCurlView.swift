@@ -25,13 +25,15 @@ struct BookPageCurlView: UIViewControllerRepresentable {
     var onNavigated: (Int) -> Void
     var onDeleteRecipe: (RecipeModel) -> Void = { _ in }
     var onMoveRecipes: (IndexSet, Int) -> Void = { _, _ in }
+    /// Two facing pages with the spine in the middle (iPhone Duo inner display, iPad).
+    var isSpread: Bool = false
 
     func makeCoordinator() -> BookPageCoordinator {
         BookPageCoordinator()
     }
 
     func makeUIViewController(context: Context) -> BookPageViewController {
-        let vc = BookPageViewController()
+        let vc = BookPageViewController(isSpread: isSpread)
         context.coordinator.hostVC = vc
         vc.coordinator = context.coordinator
         return vc
@@ -119,6 +121,7 @@ final class BookPageViewController: UIPageViewController {
     var lastRecipeIDs: [UUID] = []
     weak var coordinator: BookPageCoordinator?
     private var indexHostingVC: UIHostingController<BookIndexPage>?
+    let isSpread: Bool
 
     static let pageBackgroundColor = UIColor { trait in
         trait.userInterfaceStyle == .dark
@@ -126,12 +129,16 @@ final class BookPageViewController: UIPageViewController {
             : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
     }
 
-    init() {
+    init(isSpread: Bool = false) {
+        self.isSpread = isSpread
+        let spine: UIPageViewController.SpineLocation = isSpread ? .mid : .min
         super.init(
             transitionStyle: .pageCurl,
             navigationOrientation: .horizontal,
-            options: [.spineLocation: UIPageViewController.SpineLocation.min.rawValue]
+            options: [.spineLocation: spine.rawValue]
         )
+        // Facing pages turn together, like a real book.
+        isDoubleSided = isSpread
         view.backgroundColor = Self.pageBackgroundColor
     }
 
@@ -192,6 +199,11 @@ final class BookPageViewController: UIPageViewController {
                 .environment(store)
         ))
 
+        // A spread always shows two pages, so pad an odd book with a blank last page.
+        if isSpread && !newPages.count.isMultiple(of: 2) {
+            newPages.insert(makeHostingVC(Color.clear), at: newPages.count - 1)
+        }
+
         pages = newPages
         dataSource = coordinator
         delegate = coordinator
@@ -204,16 +216,32 @@ final class BookPageViewController: UIPageViewController {
                 target = 0
             }
         }
-        if let vc = pages[safeIndex: target] {
-            setViewControllers([vc], direction: .forward, animated: false)
+        target = spreadStart(for: target)
+        if let shown = viewControllers(showing: target) {
+            currentPage = target
+            setViewControllers(shown, direction: .forward, animated: false)
         }
     }
 
     func navigateTo(page: Int) {
-        guard page >= 0, page < pages.count, page != currentPage else { return }
-        let direction: NavigationDirection = page > currentPage ? .forward : .reverse
-        currentPage = page
-        setViewControllers([pages[page]], direction: direction, animated: true)
+        guard page >= 0, page < pages.count else { return }
+        let target = spreadStart(for: page)
+        guard target != currentPage, let shown = viewControllers(showing: target) else { return }
+        let direction: NavigationDirection = target > currentPage ? .forward : .reverse
+        currentPage = target
+        setViewControllers(shown, direction: direction, animated: true)
+    }
+
+    /// In a spread, pages pair up as (0, 1), (2, 3)…; the left page identifies the spread.
+    private func spreadStart(for page: Int) -> Int {
+        isSpread ? page - page % 2 : page
+    }
+
+    private func viewControllers(showing page: Int) -> [UIViewController]? {
+        guard let first = pages[safeIndex: page] else { return nil }
+        guard isSpread else { return [first] }
+        guard let second = pages[safeIndex: page + 1] else { return nil }
+        return [first, second]
     }
 
     private func makeHostingVC<V: View>(_ rootView: V) -> UIHostingController<V> {

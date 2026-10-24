@@ -23,6 +23,7 @@ struct BookContainer: View {
     @Environment(\.modelContext) var modelContext
     @Environment(Store.self) var store
     @Environment(AppNavigator.self) var navigator
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @Query var recipes: [RecipeModel]
 
@@ -51,8 +52,12 @@ struct BookContainer: View {
                 navigator.currentBookPage = page
             },
             onDeleteRecipe: handleDeleteRecipe,
-            onMoveRecipes: handleMoveRecipes
+            onMoveRecipes: handleMoveRecipes,
+            isSpread: horizontalSizeClass == .regular
         )
+        // The spine position is fixed when the page controller is created, so rebuild it
+        // when the width class changes (e.g. folding or unfolding iPhone Duo).
+        .id(horizontalSizeClass == .regular)
         .ignoresSafeArea()
         .fullScreenCover(item: $activeRecipeSheet) { sheet in
             switch sheet {

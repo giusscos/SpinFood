@@ -357,16 +357,25 @@ private struct BookIndexEntry: View {
                         Text(recipe.duration.formatted)
                             .font(.system(.caption, design: .serif))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                     if recipe.servings > 0 {
                         Text("·  \(recipe.servings) servings")
                             .font(.system(.caption, design: .serif))
                             .foregroundStyle(.tertiary)
+                            .lineLimit(1)
                     }
                     if let d = recipe.difficulty {
-                        Label(d.localizedName, systemImage: d.icon)
-                            .font(.system(.caption, design: .serif))
-                            .foregroundStyle(.orange)
+                        // Keep the level on one line on narrow screens (e.g. iPhone Duo's outer display).
+                        HStack(spacing: 4) {
+                            Image(systemName: d.icon)
+                            Text(d.localizedName)
+                                .lineLimit(1)
+                        }
+                        .font(.system(.caption, design: .serif))
+                        .foregroundStyle(.orange)
+                        .fixedSize()
+                        .layoutPriority(1)
                     }
                 }
 

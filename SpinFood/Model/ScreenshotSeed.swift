@@ -75,6 +75,12 @@ enum ScreenshotSeed {
     /// Sample names in the app's language, so captures aren't half English: [en: (it, de, es, fr)].
     private static let names: [String: (String, String, String, String)] = [
         "Spaghetti": ("Spaghetti", "Spaghetti", "Espaguetis", "Spaghettis"),
+        "Sweet cherry tomatoes cooked down with garlic and olive oil, tossed with spaghetti and finished with fresh basil.": (
+            "Pomodorini dolci cotti con aglio e olio d'oliva, saltati con gli spaghetti e completati con basilico fresco.",
+            "Süße Kirschtomaten, mit Knoblauch und Olivenöl eingekocht, mit Spaghetti vermengt und mit frischem Basilikum vollendet.",
+            "Tomates cherry dulces cocinados con ajo y aceite de oliva, mezclados con espaguetis y terminados con albahaca fresca.",
+            "Des tomates cerises sucrées mijotées avec de l'ail et de l'huile d'olive, mêlées aux spaghettis et relevées de basilic frais."
+        ),
         "Cherry Tomatoes": ("Pomodorini", "Kirschtomaten", "Tomates cherry", "Tomates cerises"),
         "Tomato Passata": ("Passata di pomodoro", "Passierte Tomaten", "Tomate triturado", "Coulis de tomate"),
         "Garlic": ("Aglio", "Knoblauch", "Ajo", "Ail"),
@@ -162,7 +168,7 @@ enum ScreenshotSeed {
         let lemon = food("Lemon", "🍋", 6, 5, .piece, .produce, expiresIn: 12)
         let onion = food("Onion", "🧅", 6, 5, .piece, .produce, expiresIn: 30)
         let cream = food("Cooking Cream", "🥛", 200, 200, .milliliter, .dairy, expiresIn: 6)
-        let bread = food("Bread", "🍞", 1, 1, .piece, .grains, expiresIn: 2)
+        let bread = food("Bread", "🍞", 500, 400, .gram, .grains, expiresIn: 2)
         let salmon = food("Salmon Fillet", "🐟", 400, 0, .gram, .seafood)
         let butter = food("Butter", "🧈", 250, 200, .gram, .dairy, expiresIn: 30)
         let chicken = food("Chicken Breast", "🍗", 600, 500, .gram, .meat, expiresIn: 3)
@@ -179,8 +185,8 @@ enum ScreenshotSeed {
         let ricotta = food("Ricotta", "🧀", 250, 200, .gram, .dairy, expiresIn: -1)
 
         let wasted: [(FoodModel, Decimal, Double)] = [
-            (lettuce, 150, 2), (bread, 1, 5), (ricotta, 50, 9), (lettuce, 120, 16), (cream, 100, 24),
-            (lettuce, 200, 34), (bread, 1, 38), (salmon, 200, 45), (cream, 150, 52),
+            (lettuce, 150, 2), (bread, 100, 5), (ricotta, 50, 9), (lettuce, 120, 16), (cream, 100, 24),
+            (lettuce, 200, 34), (bread, 100, 38), (salmon, 200, 45), (cream, 150, 52),
         ]
         for (item, quantity, daysAgo) in wasted {
             context.insert(FoodWasteModel(wastedAt: Date.now.addingTimeInterval(-daysAgo * day), quantity: quantity, food: item))
@@ -257,7 +263,7 @@ enum ScreenshotSeed {
             Seed(name: "Roasted Tomato Soup", photo: "soup",
                  description: "Tomatoes and onion roasted until sweet, blended smooth with a swirl of cream.",
                  minutes: 45, servings: 4, difficulty: .easy, tags: [.vegetarian], rating: 5, timesCooked: 4,
-                 ingredients: [(tomatoes, 350), (passata, 300), (onion, 1), (garlic, 3), (cream, 50), (oliveOil, 30), (bread, 1)],
+                 ingredients: [(tomatoes, 350), (passata, 300), (onion, 1), (garlic, 3), (cream, 50), (oliveOil, 30), (bread, 100)],
                  steps: [
                     step(0, "Roast", [text(0, "Toss the tomatoes, onion and garlic with olive oil and roast at 200 °C until blistered."), timer(1, minutes: 25, "Roast vegetables")]),
                     step(1, "Simmer", [text(0, "Tip everything into a pot with the passata and simmer to bring the flavors together."), timer(1, minutes: 10, "Simmer soup")]),
@@ -290,7 +296,7 @@ enum ScreenshotSeed {
             Seed(name: "Avocado Toast", photo: "toast",
                  description: "Sourdough, smashed avocado, lemon and a soft-boiled egg.",
                  minutes: 10, servings: 2, difficulty: .easy, tags: [.vegetarian, .quick], rating: 4, timesCooked: 11,
-                 ingredients: [(bread, 1), (avocado, 1), (lemon, 1), (eggs, 2)],
+                 ingredients: [(bread, 100), (avocado, 1), (lemon, 1), (eggs, 2)],
                  steps: [
                     step(0, "Boil the egg", [text(0, "Lower the egg into boiling water."), timer(1, minutes: 6, "Soft-boiled egg")]),
                     step(1, "Assemble", [text(0, "Toast the bread, smash the avocado with lemon and salt, and top with the halved egg.")]),
@@ -300,7 +306,7 @@ enum ScreenshotSeed {
         for (index, seed) in seeds.enumerated() {
             let recipe = RecipeModel(
                 name: localized(seed.name),
-                descriptionRecipe: seed.description,
+                descriptionRecipe: localized(seed.description),
                 image: photoData(seed.photo),
                 duration: seed.minutes * 60,
                 servings: seed.servings,

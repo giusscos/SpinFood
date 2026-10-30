@@ -6,6 +6,7 @@ struct RecipeConfirmEatView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     @Environment(\.requestReview) private var requestReview
+    @Environment(AppNavigator.self) private var navigator
 
     @AppStorage("review_requested_at_cook_count") private var reviewRequestedAtCookCount: Int = 0
 
@@ -191,16 +192,27 @@ struct RecipeConfirmEatView: View {
             recipe.finishCookingSession()
             return
         }
+        let savedFoods = ingredients
+            .compactMap(\.ingredient)
+            .filter { $0.needsUsingSoon && !$0.isOutOfStock }
+            .map(\.name)
+
         recipe.cookedAt.append(Date.now)
         recipe.finishCookingSession()
         for ingredient in ingredients {
             updateIngredientQuantity(ingredient)
+        }
+        modelContext.saveConfirmedChanges()
+
+        if !savedFoods.isEmpty {
+            navigator.savedFoodNames = savedFoods.formatted(.list(type: .and))
         }
     }
 
     private func updateIngredientQuantity(_ ingredient: RecipeFoodModel) {
         guard let inventoryItem = ingredient.ingredient else { return }
 
+        let rescued = inventoryItem.needsUsingSoon && !inventoryItem.isOutOfStock
         let consumed = ingredient.quantityNeeded * scale
         inventoryItem.currentQuantity -= consumed
         if inventoryItem.currentQuantity < 0 {
@@ -211,7 +223,8 @@ struct RecipeConfirmEatView: View {
             consumedAt: Date.now,
             quantity: consumed,
             unit: inventoryItem.unit,
-            food: inventoryItem
+            food: inventoryItem,
+            rescued: rescued
         )
 
         if inventoryItem.consumptions == nil {
@@ -263,4 +276,5 @@ struct IngredientRowView: View {
 
 #Preview {
     RecipeConfirmEatView(recipe: RecipeModel(name: "Carbonara"))
+        .environment(AppNavigator())
 }

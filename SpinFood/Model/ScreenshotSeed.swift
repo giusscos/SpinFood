@@ -116,6 +116,16 @@ enum ScreenshotSeed {
             context.insert(FoodWasteModel(wastedAt: Date.now.addingTimeInterval(-daysAgo * day), quantity: quantity, food: item))
         }
 
+        for (index, item) in [spaghetti, tomatoes, cream, bread, lettuce].enumerated() {
+            context.insert(FoodConsumptionModel(
+                consumedAt: Date.now.addingTimeInterval(-Double(index) * day),
+                quantity: 100,
+                unit: item.unit,
+                food: item,
+                rescued: true
+            ))
+        }
+
         func text(_ order: Int, _ content: String) -> StepBlock {
             StepBlock(type: .text, order: order, textContent: content)
         }

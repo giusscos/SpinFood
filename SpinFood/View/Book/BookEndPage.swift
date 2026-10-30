@@ -1,6 +1,7 @@
 import SwiftUI
 import StoreKit
 import SwiftData
+import UserNotifications
 
 struct BookEndPage: View {
     var onBack: () -> Void
@@ -13,6 +14,9 @@ struct BookEndPage: View {
 
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
     @AppStorage(BookLayout.twoPagesKey) private var prefersTwoPages = true
+    @AppStorage(ReminderSchedule.storageKey) private var reminderMinutes = ReminderSchedule.beforeDinner
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var reminderStatus: UNAuthorizationStatus?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var showPaywall = false
@@ -225,6 +229,25 @@ struct BookEndPage: View {
                 twoPagesRow
                 dividerLine
             }
+            remindersRow
+            dividerLine
+            if reminderMinutes != ReminderSchedule.off, reminderStatus == .denied {
+                actionRow(icon: "bell.slash", label: "Allow Notifications in Settings", isExternal: true) {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+                dividerLine
+            } else if reminderMinutes != ReminderSchedule.off, reminderStatus == .notDetermined {
+                actionRow(icon: "bell.badge", label: "Turn On Reminders") {
+                    Task {
+                        await NotificationManager.shared.requestPermission()
+                        reminderStatus = await NotificationManager.shared.authorizationStatus()
+                        NotificationManager.shared.requestReschedule()
+                    }
+                }
+                dividerLine
+            }
             languageRow
             dividerLine
             actionRow(icon: "star", label: "Rate Foo") {
@@ -263,6 +286,38 @@ struct BookEndPage: View {
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 32)
+    }
+
+    private var remindersRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "bell")
+                .font(.system(size: 16))
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+
+            Text("Reminders")
+                .font(.system(.body, design: .serif))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Picker("", selection: $reminderMinutes) {
+                Text("In the morning").tag(ReminderSchedule.morning)
+                Text("Before dinner").tag(ReminderSchedule.beforeDinner)
+                Text("Off").tag(ReminderSchedule.off)
+            }
+            .pickerStyle(.menu)
+            .tint(.secondary)
+            .fixedSize()
+            .onChange(of: reminderMinutes) { _, _ in
+                NotificationManager.shared.requestReschedule()
+            }
+        }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 32)
+        .task(id: scenePhase) {
+            reminderStatus = await NotificationManager.shared.authorizationStatus()
+        }
     }
 
     private var languageRow: some View {

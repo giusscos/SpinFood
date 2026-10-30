@@ -7,12 +7,15 @@ struct BookIndexPage: View {
     var onSelectRecipe: (RecipeModel) -> Void
     var onAdd: () -> Void
     var onShowIdeas: () -> Void = {}
+    var onShowIdea: (String) -> Void = { _ in }
     var onSettings: () -> Void
     var onEdit: (RecipeModel) -> Void = { _ in }
     var onDelete: (RecipeModel) -> Void = { _ in }
     var onMove: (IndexSet, Int) -> Void = { _, _ in }
 
     @Environment(\.modelContext) private var modelContext
+
+    @Query private var foods: [FoodModel]
 
     @State private var isEditing = false
     @State private var filterDifficulty: RecipeDifficulty? = nil
@@ -196,6 +199,15 @@ struct BookIndexPage: View {
 
     private var recipeList: some View {
         List {
+            if !isEditing && !isFiltering, let tonight {
+                tonightCard(tonight)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 4)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets())
+            }
+
             if isFiltering {
                 Section {
                     activeFiltersRow
@@ -291,6 +303,11 @@ struct BookIndexPage: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
+            if let tonight {
+                tonightCard(tonight)
+                    .padding(.bottom, 16)
+            }
+
             HStack(spacing: -10) {
                 ForEach(StarterRecipe.all.prefix(5)) { recipe in
                     Text(recipe.emoji)
@@ -325,6 +342,88 @@ struct BookIndexPage: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 32)
         .padding(.top, 72)
+    }
+
+    // MARK: - Tonight
+
+    private var tonight: CookSuggestion? {
+        CookSuggestion.tonight(foods: foods, recipes: recipes)
+    }
+
+    private func tonightCard(_ suggestion: CookSuggestion) -> some View {
+        Button {
+            open(suggestion)
+        } label: {
+            HStack(spacing: 12) {
+                Group {
+                    if let emoji = suggestion.emoji {
+                        Text(emoji)
+                            .font(.system(size: 26))
+                    } else {
+                        Image(systemName: "fork.knife")
+                            .font(.body)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+                .frame(width: 46, height: 46)
+                .background(Color.accentColor.opacity(0.14), in: .rect(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tonight")
+                        .font(.system(size: 10, weight: .semibold, design: .serif))
+                        .tracking(1.2)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Color.accentColor)
+
+                    Text(suggestion.name)
+                        .font(.system(.body, design: .serif).weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    tonightReason(suggestion.reason)
+                        .font(.caption)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 4)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(10)
+            .background(Color.accentColor.opacity(0.07), in: .rect(cornerRadius: 14))
+            .contentShape(.rect(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func tonightReason(_ reason: CookSuggestion.Reason) -> some View {
+        switch reason {
+        case .usesExpiring(let names):
+            Text("Uses \(names.formatted(.list(type: .and))) before it expires")
+                .foregroundStyle(.orange)
+        case .haveEverything:
+            Text("You have everything")
+                .foregroundStyle(.green)
+        case .missing(let names):
+            Text("\(names.count) missing: \(names.formatted(.list(type: .and)))")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func open(_ suggestion: CookSuggestion) {
+        switch suggestion.route {
+        case .bookRecipe(let id):
+            if let recipe = recipes.first(where: { $0.id == id }) { onSelectRecipe(recipe) }
+        case .recipeIdea(let id):
+            onShowIdea(id)
+        case .recipeIdeas, .inventory, .quickAdd:
+            break
+        }
     }
 
     private var moreIdeasRow: some View {

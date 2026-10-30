@@ -33,6 +33,7 @@ struct FoodWasteStatsView: View {
 
     @Query(sort: \FoodWasteModel.wastedAt, order: .reverse) private var records: [FoodWasteModel]
     @Query private var consumptions: [FoodConsumptionModel]
+    @Query(filter: #Predicate<FoodConsumptionModel> { $0.rescued }) private var savedRecords: [FoodConsumptionModel]
 
     @State private var selectedRange: DateRange = .month
 
@@ -139,6 +140,10 @@ struct FoodWasteStatsView: View {
                         WasteTrendLabel(current: wastedGrams, previous: records.estimatedGrams(in: interval(periodsAgo: 1)))
                             .font(.system(.footnote, design: .serif).weight(.medium))
                             .padding(.top, 4)
+
+                        Text("Foods saved: \(savedRecords.filter { period.contains($0.consumedAt) }.count)")
+                            .font(.system(.footnote, design: .serif).weight(.medium))
+                            .foregroundStyle(.green)
 
                         if let wastePercent {
                             Text("\(wastePercent)% of the food you tracked")

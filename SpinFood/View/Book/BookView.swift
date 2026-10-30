@@ -30,7 +30,6 @@ struct BookContainer: View {
 
     @State private var activeRecipeSheet: ActiveRecipeSheet?
     @State private var showPaywall = false
-    @State private var showRecipeIdeas = false
 
     static let freeRecipeLimit = Store.freeRecipeLimit
 
@@ -52,7 +51,8 @@ struct BookContainer: View {
             store: store,
             navigator: navigator,
             onAdd: addRecipeTapped,
-            onShowIdeas: { showRecipeIdeas = true },
+            onShowIdeas: { navigator.recipeIdeasRequest = RecipeIdeasRequest() },
+            onShowIdea: { navigator.recipeIdeasRequest = RecipeIdeasRequest(recipeID: $0) },
             onEdit: { recipe in activeRecipeSheet = .edit(recipe) },
             onNavigated: { page in
                 navigator.requestedBookPage = nil
@@ -80,9 +80,7 @@ struct BookContainer: View {
                 EditFoodView()
             }
         }
-        .sheet(isPresented: $showRecipeIdeas) {
-            RecipeIdeasView()
-        }
+        .onAppear { openRequestedRecipe() }
         .onChange(of: navigator.requestedOpenRecipeID) { _, _ in openRequestedRecipe() }
         .onChange(of: recipes.count) { _, _ in openRequestedRecipe() }
         .fullScreenCover(isPresented: $showPaywall) {

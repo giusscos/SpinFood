@@ -12,6 +12,8 @@ struct ContentView: View {
     @Query var recipes: [RecipeModel]
     @Query var foods: [FoodModel]
     @Query var mealPlan: [MealPlanEntry]
+    @Query(filter: #Predicate<FoodConsumptionModel> { $0.rescued }) private var savedRecords: [FoodConsumptionModel]
+    @Query private var wasteRecords: [FoodWasteModel]
 
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
 
@@ -81,7 +83,7 @@ struct ContentView: View {
         }
     }
 
-    private var coreTabView: some View {
+    private var tabs: some View {
         TabView(selection: Binding(
             get: { navigator.selectedTab },
             set: { navigator.selectedTab = $0 }
@@ -112,41 +114,67 @@ struct ContentView: View {
         }
         .environment(store)
         .environment(navigator)
-        .onAppear {
-            NotificationManager.shared.scheduleAll(foods: foods)
-            WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
-            consumePendingWidgetCook()
-            if !store.isLoading { handleLaunchPrompts() }
-            // Food may already be stocked from onboarding; once asked, this no longer prompts.
-            if !foods.isEmpty {
-                Task {
-                    await NotificationManager.shared.requestPermission()
-                    NotificationManager.shared.scheduleAll(foods: foods)
+    }
+
+    private var tabsWithFeedback: some View {
+        tabs
+            .overlay(alignment: .bottom) {
+                if let names = navigator.savedFoodNames {
+                    savedFoodBanner(names: names)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .animation(.snappy, value: navigator.savedFoodNames)
+            .sensoryFeedback(.success, trigger: navigator.savedFoodNames) { _, new in new != nil }
+            .task(id: navigator.savedFoodNames) {
+                guard navigator.savedFoodNames != nil else { return }
+                try? await Task.sleep(for: .seconds(4))
+                guard !Task.isCancelled else { return }
+                navigator.savedFoodNames = nil
+            }
+            .sheet(item: Binding(
+                get: { navigator.recipeIdeasRequest },
+                set: { navigator.recipeIdeasRequest = $0 }
+            )) { request in
+                RecipeIdeasView(initialRecipeID: request.recipeID)
+                    .environment(navigator)
+            }
+    }
+
+    private var coreTabView: some View {
+        tabsWithFeedback
+        .onAppear {
+            rescheduleReminders()
+            NotificationManager.shared.clearBadge()
+            WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
+            consumePendingWidgetCook()
+            openPendingReminder()
+            if !store.isLoading { handleLaunchPrompts() }
+        }
+        .onChange(of: NotificationManager.shared.pendingRoute) { _, _ in
+            openPendingReminder()
+        }
+        .onChange(of: NotificationManager.shared.rescheduleRequests) { _, _ in
+            rescheduleReminders()
         }
         .onChange(of: store.isLoading) { _, isLoading in
             if !isLoading { handleLaunchPrompts() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
-                NotificationManager.shared.scheduleAll(foods: foods)
+                rescheduleReminders()
+                NotificationManager.shared.clearBadge()
                 WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
                 consumePendingWidgetCook()
                 Task { await store.updateCustomerProductStatus() }
             } else if phase == .background {
+                // Everything changed while the app was open is reflected in what it says next.
+                rescheduleReminders()
                 WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             }
         }
-        .onChange(of: foods.count) { oldCount, newCount in
+        .onChange(of: foods.count) { _, _ in
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
-            // Ask for expiry and low-stock alerts once there's something to alert about.
-            if oldCount == 0 && newCount > 0 {
-                Task {
-                    await NotificationManager.shared.requestPermission()
-                    NotificationManager.shared.scheduleAll(foods: foods)
-                }
-            }
         }
         .onChange(of: mealPlan.count) { _, _ in
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
@@ -167,6 +195,58 @@ struct ContentView: View {
                 Task { await store.updateCustomerProductStatus() }
             }
         }
+    }
+
+    private func rescheduleReminders() {
+        NotificationManager.shared.reschedule(
+            foods: foods,
+            recipes: recipes,
+            savedRecords: savedRecords,
+            wasteRecords: wasteRecords
+        )
+    }
+
+    private func openPendingReminder() {
+        guard let route = NotificationManager.shared.pendingRoute else { return }
+        NotificationManager.shared.pendingRoute = nil
+        switch route {
+        case .recipeIdeas:
+            navigator.selectedTab = .recipes
+            navigator.recipeIdeasRequest = RecipeIdeasRequest()
+        case .recipeIdea(let id):
+            navigator.selectedTab = .recipes
+            navigator.recipeIdeasRequest = RecipeIdeasRequest(recipeID: id)
+        case .bookRecipe(let id):
+            navigator.selectedTab = .recipes
+            navigator.requestedOpenRecipeID = id
+        case .inventory:
+            navigator.selectedTab = .inventory
+        case .quickAdd:
+            navigator.selectedTab = .inventory
+            navigator.requestedQuickAdd = true
+        }
+    }
+
+    private func savedFoodBanner(names: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "leaf.fill")
+                .foregroundStyle(.green)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Saved from the bin: \(names)")
+                    .font(.system(.subheadline, design: .serif).weight(.semibold))
+                    .lineLimit(2)
+                Text("Foods saved so far: \(savedRecords.count)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial, in: .rect(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+        .padding(.horizontal)
+        .padding(.bottom, 92)
     }
 
     private func handleLaunchPrompts() {

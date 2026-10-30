@@ -121,6 +121,8 @@ final class FoodModel {
         return days < 0
     }
 
+    var needsUsingSoon: Bool { isExpired || isExpiringSoon }
+
     /// Call before adding stock. A date from a batch that's gone or past saving doesn't describe the new
     /// one, so it gets a fresh estimate, or no date when the food isn't a known grocery.
     func prepareExpiryForRestock() {

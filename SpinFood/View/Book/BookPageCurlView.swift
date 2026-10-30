@@ -3,6 +3,12 @@ import UIKit
 
 // MARK: - AppNavigator
 
+/// Opens Recipe Ideas, optionally on one recipe.
+struct RecipeIdeasRequest: Identifiable {
+    let id = UUID()
+    var recipeID: String? = nil
+}
+
 @Observable
 final class AppNavigator {
     var selectedTab: AppTab = .recipes
@@ -10,6 +16,10 @@ final class AppNavigator {
     var requestedCookRecipeID: UUID? = nil
     /// A recipe to show in the book. `BookContainer` turns it into a page once the recipe has loaded.
     var requestedOpenRecipeID: UUID? = nil
+    var recipeIdeasRequest: RecipeIdeasRequest? = nil
+    var requestedQuickAdd: Bool = false
+    /// Names of food that was just saved from expiring, for the banner that celebrates it.
+    var savedFoodNames: String? = nil
     var currentBookPage: Int = 0
     var checkedShoppingItemsCount: Int = 0
     var triggerShoppingRefill: Bool = false
@@ -28,6 +38,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
     let navigator: AppNavigator
     var onAdd: () -> Void
     var onShowIdeas: () -> Void = {}
+    var onShowIdea: (String) -> Void = { _ in }
     var onEdit: (RecipeModel) -> Void
     var onNavigated: (Int) -> Void
     var onDeleteRecipe: (RecipeModel) -> Void = { _ in }
@@ -57,6 +68,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
                 navigator: navigator,
                 onAdd: onAdd,
                 onShowIdeas: onShowIdeas,
+                onShowIdea: onShowIdea,
                 onSelectRecipe: { [weak vc] recipe in
                     guard let vc,
                           let index = recipes.firstIndex(where: { $0.id == recipe.id }) else { return }
@@ -164,6 +176,7 @@ final class BookPageViewController: UIPageViewController {
         navigator: AppNavigator,
         onAdd: @escaping () -> Void,
         onShowIdeas: @escaping () -> Void,
+        onShowIdea: @escaping (String) -> Void,
         onSelectRecipe: @escaping (RecipeModel) -> Void,
         onEdit: @escaping (RecipeModel) -> Void,
         onDelete: @escaping (RecipeModel) -> Void,
@@ -182,6 +195,7 @@ final class BookPageViewController: UIPageViewController {
             onSelectRecipe: onSelectRecipe,
             onAdd: onAdd,
             onShowIdeas: onShowIdeas,
+            onShowIdea: onShowIdea,
             onSettings: onSettings,
             onEdit: onEdit,
             onDelete: onDelete,

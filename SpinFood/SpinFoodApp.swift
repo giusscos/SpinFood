@@ -43,6 +43,7 @@ struct SpinFoodApp: App {
 
     init() {
         AppLanguage.registerDefault()
+        NotificationManager.shared.startHandlingTaps()
         #if DEBUG && targetEnvironment(simulator)
         ScreenshotSeed.seedIfRequested(in: sharedModelContainer.mainContext)
         #endif

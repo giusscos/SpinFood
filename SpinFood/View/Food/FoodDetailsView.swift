@@ -373,7 +373,7 @@ private struct FoodConsumeSheet: View {
         guard actual > 0 else { return }
         switch purpose {
         case .eat:
-            modelContext.insert(FoodConsumptionModel(quantity: actual, unit: food.unit, food: food))
+            modelContext.insert(FoodConsumptionModel(quantity: actual, unit: food.unit, food: food, rescued: food.needsUsingSoon))
         case .waste:
             modelContext.insert(FoodWasteModel(quantity: actual, food: food))
         }

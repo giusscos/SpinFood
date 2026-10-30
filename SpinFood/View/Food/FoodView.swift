@@ -7,12 +7,12 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 enum ActiveFoodSheet: Identifiable {
     case details(FoodModel)
     case edit(FoodModel)
     case quickAdd
-    case recipeIdeas
 
     var id: String {
         switch self {
@@ -22,8 +22,6 @@ enum ActiveFoodSheet: Identifiable {
             return "editFood-\(food.id)"
         case .quickAdd:
             return "quickAdd"
-        case .recipeIdeas:
-            return "recipeIdeas"
         }
     }
 }
@@ -72,8 +70,16 @@ private struct PendingStockUndo: Identifiable {
 
 struct FoodView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(AppNavigator.self) private var navigator
 
     @Query var food: [FoodModel]
+    @Query(filter: #Predicate<FoodConsumptionModel> { $0.rescued }) private var savedRecords: [FoodConsumptionModel]
+    @Query private var wasteRecords: [FoodWasteModel]
+
+    @AppStorage(ReminderSchedule.storageKey) private var reminderMinutes = ReminderSchedule.beforeDinner
+    @AppStorage("reminder_prompt_dismissed") private var reminderPromptDismissed = false
+    @State private var reminderStatus: UNAuthorizationStatus?
 
     @Namespace private var addFoodNamespace
     @Namespace private var foodRowNamespace
@@ -165,6 +171,14 @@ struct FoodView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             } else if showsSections {
+                if showsReminderPrompt {
+                    reminderPrompt
+                }
+
+                if savedThisMonth > 0 || wastedThisMonth > 0 {
+                    savedRow
+                }
+
                 if !useSoonFood.isEmpty {
                     Section {
                         foodRows(useSoonFood)
@@ -204,6 +218,11 @@ struct FoodView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .task(id: scenePhase) {
+            reminderStatus = await NotificationManager.shared.authorizationStatus()
+        }
+        .onAppear { openRequestedQuickAdd() }
+        .onChange(of: navigator.requestedQuickAdd) { _, _ in openRequestedQuickAdd() }
         .task(id: pendingUndo?.id) {
             guard pendingUndo != nil else { return }
             try? await Task.sleep(for: .seconds(5))
@@ -218,8 +237,6 @@ struct FoodView: View {
             case .quickAdd:
                 QuickAddFoodView()
                     .navigationTransition(.zoom(sourceID: "addFood", in: addFoodNamespace))
-            case .recipeIdeas:
-                RecipeIdeasView()
             case .details(let food):
                 FoodDetailsView(food: food)
                     .navigationTransition(.zoom(sourceID: food.id, in: foodRowNamespace))
@@ -396,8 +413,13 @@ struct FoodView: View {
     }
 
     private func markUsedUp(_ food: FoodModel) {
-        let record = FoodConsumptionModel(quantity: food.currentQuantity, unit: food.unit, food: food)
-        clearStock(of: food, loggedAs: record, message: String(localized: "\(food.name) marked as used"))
+        let rescued = food.needsUsingSoon
+        let record = FoodConsumptionModel(quantity: food.currentQuantity, unit: food.unit, food: food, rescued: rescued)
+        clearStock(
+            of: food,
+            loggedAs: record,
+            message: rescued ? String(localized: "Saved from the bin: \(food.name)") : String(localized: "\(food.name) marked as used")
+        )
     }
 
     private func markThrownAway(_ food: FoodModel) {
@@ -442,6 +464,117 @@ struct FoodView: View {
         .padding(.bottom, 8)
     }
 
+    private func openRequestedQuickAdd() {
+        guard navigator.requestedQuickAdd else { return }
+        navigator.requestedQuickAdd = false
+        activeSheet = .quickAdd
+    }
+
+    // MARK: - Saved food
+
+    private var thisMonth: DateInterval? {
+        Calendar.current.dateInterval(of: .month, for: .now)
+    }
+
+    private var savedThisMonth: Int {
+        guard let thisMonth else { return 0 }
+        return savedRecords.filter { thisMonth.contains($0.consumedAt) }.count
+    }
+
+    private var wastedThisMonth: Double {
+        thisMonth.map { wasteRecords.estimatedGrams(in: $0) } ?? 0
+    }
+
+    private var savedRow: some View {
+        Button {
+            navigator.selectedTab = .summary
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "leaf.fill")
+                    .foregroundStyle(.green)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Saved this month: \(savedThisMonth)")
+                        .font(.system(.subheadline, design: .serif).weight(.semibold))
+                        .foregroundStyle(.primary)
+                    if wastedThisMonth > 0 {
+                        Text("Thrown away: \(wastedThisMonth.wasteWeightText)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(12)
+            .background(Color.green.opacity(0.1), in: .rect(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .listRowInsets(.init(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .selectionDisabled()
+    }
+
+    // MARK: - Reminder prompt
+
+    /// For anyone who said "Not now" or arrived from an older version, once there's food worth reminding about.
+    private var showsReminderPrompt: Bool {
+        guard !reminderPromptDismissed, reminderMinutes != ReminderSchedule.off else { return false }
+        guard reminderStatus == .notDetermined || reminderStatus == .denied else { return false }
+        return food.contains { !$0.isOutOfStock && $0.expiryDate != nil }
+    }
+
+    private var reminderPrompt: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "bell.badge.fill")
+                .foregroundStyle(Color.accentColor)
+
+            Text("Get a heads-up before food expires")
+                .font(.system(.subheadline, design: .serif).weight(.medium))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 4)
+
+            Button(reminderStatus == .denied ? "Open Settings" : "Turn On") {
+                turnOnReminders()
+            }
+            .font(.subheadline.weight(.semibold))
+            .buttonStyle(.borderless)
+
+            Button {
+                withAnimation { reminderPromptDismissed = true }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Close")
+        }
+        .padding(12)
+        .background(Color.accentColor.opacity(0.1), in: .rect(cornerRadius: 12))
+        .listRowInsets(.init(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .selectionDisabled()
+    }
+
+    private func turnOnReminders() {
+        if reminderStatus == .denied {
+            if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+            return
+        }
+        Task {
+            await NotificationManager.shared.requestPermission()
+            reminderStatus = await NotificationManager.shared.authorizationStatus()
+            NotificationManager.shared.requestReschedule()
+        }
+    }
+
     private var emptyPantry: some View {
         VStack(spacing: 16) {
             EmptyStateView(
@@ -483,7 +616,7 @@ struct FoodView: View {
             Spacer()
 
             Button("Recipe ideas") {
-                activeSheet = .recipeIdeas
+                navigator.recipeIdeasRequest = RecipeIdeasRequest()
             }
             .font(.system(.subheadline, design: .serif).weight(.medium))
             .textCase(nil)
@@ -513,4 +646,5 @@ struct FoodView: View {
 
 #Preview {
     FoodView()
+        .environment(AppNavigator())
 }

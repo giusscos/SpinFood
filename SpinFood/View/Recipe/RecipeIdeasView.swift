@@ -11,6 +11,11 @@ struct RecipeIdeasView: View {
     @Query private var recipes: [RecipeModel]
 
     @State private var showQuickAdd = false
+    @State private var path: [String]
+
+    init(initialRecipeID: String? = nil) {
+        _path = State(initialValue: initialRecipeID.map { [$0] } ?? [])
+    }
 
     private var paperBackground: Color {
         Color(UIColor { trait in
@@ -51,7 +56,7 @@ struct RecipeIdeasView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24) {
                     if !hasStock {

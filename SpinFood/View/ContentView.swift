@@ -57,6 +57,8 @@ struct ContentView: View {
             appContent.onAppear { navigator.selectedTab = .inventory }
         case .book:
             appContent
+        case .spread:
+            appContent.onAppear { navigator.requestedBookPage = 2 }
         }
     }
     #endif

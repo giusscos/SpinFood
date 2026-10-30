@@ -4,7 +4,7 @@ import UIKit
 
 /// A screen to open straight away, so captures can be scripted: launch with `-ScreenshotScene ideas`.
 enum ScreenshotScene: String {
-    case ideas, quickAdd, inventory, reminders, book, waste
+    case ideas, quickAdd, inventory, reminders, book, spread, waste
 
     static var current: ScreenshotScene? {
         UserDefaults.standard.string(forKey: "ScreenshotScene").flatMap(ScreenshotScene.init(rawValue:))
@@ -75,6 +75,18 @@ enum ScreenshotSeed {
     /// Sample names in the app's language, so captures aren't half English: [en: (it, de, es, fr)].
     private static let names: [String: (String, String, String, String)] = [
         "Spaghetti": ("Spaghetti", "Spaghetti", "Espaguetis", "Spaghettis"),
+        "A slow-rise dough, bright tomato and melting mozzarella, baked as hot as your oven goes.": (
+            "Un impasto a lenta lievitazione, pomodoro vivace e mozzarella filante, cotto alla massima temperatura del forno.",
+            "Ein langsam gereifter Teig, fruchtige Tomaten und schmelzender Mozzarella, so heiß gebacken, wie dein Ofen kann.",
+            "Una masa de fermentación lenta, tomate intenso y mozzarella fundida, horneada a la máxima temperatura de tu horno.",
+            "Une pâte à levée lente, une tomate éclatante et de la mozzarella fondante, cuites aussi chaud que ton four le permet."
+        ),
+        "Crisp leaves, cucumber, avocado and tomatoes with a sharp lemon dressing.": (
+            "Foglie croccanti, cetriolo, avocado e pomodori con un vivace condimento al limone.",
+            "Knackige Blätter, Gurke, Avocado und Tomaten mit einem frischen Zitronendressing.",
+            "Hojas crujientes, pepino, aguacate y tomates con un aliño intenso de limón.",
+            "Des feuilles croquantes, du concombre, de l'avocat et des tomates avec une vinaigrette vive au citron."
+        ),
         "Sweet cherry tomatoes cooked down with garlic and olive oil, tossed with spaghetti and finished with fresh basil.": (
             "Pomodorini dolci cotti con aglio e olio d'oliva, saltati con gli spaghetti e completati con basilico fresco.",
             "Süße Kirschtomaten, mit Knoblauch und Olivenöl eingekocht, mit Spaghetti vermengt und mit frischem Basilikum vollendet.",

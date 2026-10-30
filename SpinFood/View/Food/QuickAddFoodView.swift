@@ -23,12 +23,16 @@ struct QuickAddFoodView: View {
         }
     }
 
-    @State private var picks: [GroceryPick] = []
+    @State private var picks: [GroceryPick]
     @State private var searchText = ""
     @State private var activeSheet: ActiveSheet?
     @State private var showBarcodeScanner = false
     @State private var isLookingUpBarcode = false
     @State private var barcodeLookupError: String?
+
+    init(initialPickIDs: [String] = []) {
+        _picks = State(initialValue: initialPickIDs.compactMap { GroceryCatalog.item(id: $0) }.map(GroceryPick.init(item:)))
+    }
 
     private var paperBackground: Color {
         Color(UIColor { trait in

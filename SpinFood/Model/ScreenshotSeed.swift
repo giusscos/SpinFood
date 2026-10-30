@@ -2,6 +2,22 @@
 import SwiftData
 import UIKit
 
+/// A screen to open straight away, so captures can be scripted: launch with `-ScreenshotScene ideas`.
+enum ScreenshotScene: String {
+    case ideas, quickAdd, inventory, reminders, book, waste
+
+    static var current: ScreenshotScene? {
+        UserDefaults.standard.string(forKey: "ScreenshotScene").flatMap(ScreenshotScene.init(rawValue:))
+    }
+
+    static let quickAddPicks = ["tomatoes", "carrots", "bell_peppers", "spinach", "mushrooms", "apples"]
+
+    /// Sample food shown on the reminders page.
+    static var reminderPicks: [GroceryPick] {
+        ["spinach", "milk"].compactMap { GroceryCatalog.item(id: $0) }.map(GroceryPick.init(item:))
+    }
+}
+
 /// App Store screenshot helpers. Debug simulator builds only; compiled out of every device and Release build.
 ///
 /// ```
@@ -56,6 +72,60 @@ enum ScreenshotSeed {
         return image?.jpegData(compressionQuality: 0.85)
     }
 
+    /// Sample names in the app's language, so captures aren't half English: [en: (it, de, es, fr)].
+    private static let names: [String: (String, String, String, String)] = [
+        "Spaghetti": ("Spaghetti", "Spaghetti", "Espaguetis", "Spaghettis"),
+        "Cherry Tomatoes": ("Pomodorini", "Kirschtomaten", "Tomates cherry", "Tomates cerises"),
+        "Tomato Passata": ("Passata di pomodoro", "Passierte Tomaten", "Tomate triturado", "Coulis de tomate"),
+        "Garlic": ("Aglio", "Knoblauch", "Ajo", "Ail"),
+        "Olive Oil": ("Olio d'oliva", "Olivenöl", "Aceite de oliva", "Huile d'olive"),
+        "Basil": ("Basilico", "Basilikum", "Albahaca", "Basilic"),
+        "Parmesan": ("Parmigiano", "Parmesan", "Parmesano", "Parmesan"),
+        "Flour": ("Farina", "Mehl", "Harina", "Farine"),
+        "Dry Yeast": ("Lievito secco", "Trockenhefe", "Levadura seca", "Levure sèche"),
+        "Mozzarella": ("Mozzarella", "Mozzarella", "Mozzarella", "Mozzarella"),
+        "Mixed Lettuce": ("Insalata mista", "Gemischter Salat", "Lechuga variada", "Salade mélangée"),
+        "Cucumber": ("Cetrioli", "Gurken", "Pepinos", "Concombres"),
+        "Avocado": ("Avocado", "Avocados", "Aguacates", "Avocats"),
+        "Lemon": ("Limoni", "Zitronen", "Limones", "Citrons"),
+        "Onion": ("Cipolle", "Zwiebeln", "Cebollas", "Oignons"),
+        "Cooking Cream": ("Panna", "Sahne", "Nata", "Crème"),
+        "Bread": ("Pane", "Brot", "Pan", "Pain"),
+        "Salmon Fillet": ("Filetto di salmone", "Lachsfilet", "Filete de salmón", "Filet de saumon"),
+        "Butter": ("Burro", "Butter", "Mantequilla", "Beurre"),
+        "Chicken Breast": ("Petto di pollo", "Hähnchenbrust", "Pechuga de pollo", "Blanc de poulet"),
+        "Jasmine Rice": ("Riso jasmine", "Jasminreis", "Arroz jazmín", "Riz jasmin"),
+        "Soy Sauce": ("Salsa di soia", "Sojasoße", "Salsa de soja", "Sauce soja"),
+        "Bell Pepper": ("Peperoni", "Paprika", "Pimientos", "Poivrons"),
+        "Eggs": ("Uova", "Eier", "Huevos", "Œufs"),
+        "Milk": ("Latte", "Milch", "Leche", "Lait"),
+        "Blueberries": ("Mirtilli", "Heidelbeeren", "Arándanos", "Myrtilles"),
+        "Maple Syrup": ("Sciroppo d'acero", "Ahornsirup", "Sirope de arce", "Sirop d'érable"),
+        "Greek Yogurt": ("Yogurt greco", "Griechischer Joghurt", "Yogur griego", "Yaourt grec"),
+        "Apples": ("Mele", "Äpfel", "Manzanas", "Pommes"),
+        "Coffee Beans": ("Caffè in grani", "Kaffeebohnen", "Café en grano", "Café en grains"),
+        "Ricotta": ("Ricotta", "Ricotta", "Ricotta", "Ricotta"),
+        "Spaghetti al Pomodoro": ("Spaghetti al pomodoro", "Spaghetti al Pomodoro", "Espaguetis con tomate", "Spaghettis à la tomate"),
+        "Margherita Pizza": ("Pizza Margherita", "Pizza Margherita", "Pizza Margarita", "Pizza Margherita"),
+        "Garden Salad": ("Insalata dell'orto", "Gartensalat", "Ensalada de la huerta", "Salade du jardin"),
+        "Roasted Tomato Soup": ("Vellutata di pomodori", "Tomatensuppe", "Crema de tomate", "Velouté de tomates"),
+        "Lemon Butter Salmon": ("Salmone al limone", "Zitronenlachs", "Salmón al limón", "Saumon au citron"),
+        "Chicken Stir Fry": ("Pollo saltato", "Hähnchenpfanne", "Pollo salteado", "Poulet sauté"),
+        "Fluffy Pancakes": ("Pancake soffici", "Fluffige Pancakes", "Tortitas esponjosas", "Pancakes moelleux"),
+        "Avocado Toast": ("Toast all'avocado", "Avocado-Toast", "Tostada de aguacate", "Toast à l'avocat"),
+    ]
+
+    private static func localized(_ name: String) -> String {
+        guard let translations = names[name] else { return name }
+        switch AppLanguage.system {
+        case "it": return translations.0
+        case "de": return translations.1
+        case "es": return translations.2
+        case "fr": return translations.3
+        default: return name
+        }
+    }
+
     /// Fills the book, pantry and shopping needs once, then clears the flag.
     @MainActor
     static func seedIfRequested(in context: ModelContext) {
@@ -68,7 +138,7 @@ enum ScreenshotSeed {
         let day: TimeInterval = 86_400
         func food(_ name: String, _ emoji: String, _ quantity: Decimal, _ current: Decimal,
                   _ unit: FoodUnit, _ category: FoodCategory, expiresIn days: Double? = nil) -> FoodModel {
-            let item = FoodModel(name: name, emoji: emoji, quantity: quantity, currentQuantity: current,
+            let item = FoodModel(name: localized(name), emoji: emoji, quantity: quantity, currentQuantity: current,
                                  unit: unit, category: category,
                                  expiryDate: days.map { Date.now.addingTimeInterval($0 * day) })
             context.insert(item)
@@ -92,7 +162,7 @@ enum ScreenshotSeed {
         let lemon = food("Lemon", "🍋", 6, 5, .piece, .produce, expiresIn: 12)
         let onion = food("Onion", "🧅", 6, 5, .piece, .produce, expiresIn: 30)
         let cream = food("Cooking Cream", "🥛", 200, 200, .milliliter, .dairy, expiresIn: 6)
-        let bread = food("Sourdough Bread", "🍞", 1, 1, .piece, .grains, expiresIn: 2)
+        let bread = food("Bread", "🍞", 1, 1, .piece, .grains, expiresIn: 2)
         let salmon = food("Salmon Fillet", "🐟", 400, 0, .gram, .seafood)
         let butter = food("Butter", "🧈", 250, 200, .gram, .dairy, expiresIn: 30)
         let chicken = food("Chicken Breast", "🍗", 600, 500, .gram, .meat, expiresIn: 3)
@@ -229,7 +299,7 @@ enum ScreenshotSeed {
 
         for (index, seed) in seeds.enumerated() {
             let recipe = RecipeModel(
-                name: seed.name,
+                name: localized(seed.name),
                 descriptionRecipe: seed.description,
                 image: photoData(seed.photo),
                 duration: seed.minutes * 60,

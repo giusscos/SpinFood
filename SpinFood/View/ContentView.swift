@@ -27,6 +27,42 @@ struct ContentView: View {
     @AppStorage("milestone_paywall_shown") private var milestonePaywallShown: Bool = false
 
     var body: some View {
+        #if DEBUG && targetEnvironment(simulator)
+        if let scene = ScreenshotScene.current {
+            screenshotView(for: scene)
+        } else {
+            appContent
+        }
+        #else
+        appContent
+        #endif
+    }
+
+    #if DEBUG && targetEnvironment(simulator)
+    @ViewBuilder
+    private func screenshotView(for scene: ScreenshotScene) -> some View {
+        switch scene {
+        case .ideas:
+            RecipeIdeasView().environment(navigator)
+        case .quickAdd:
+            QuickAddFoodView(initialPickIDs: ScreenshotScene.quickAddPicks)
+        case .reminders:
+            ZStack {
+                Color(.systemGroupedBackground).ignoresSafeArea()
+                OnboardingRemindersView(picks: ScreenshotScene.reminderPicks, onNext: {})
+            }
+        case .waste:
+            NavigationStack { FoodWasteStatsView() }
+        case .inventory:
+            appContent.onAppear { navigator.selectedTab = .inventory }
+        case .book:
+            appContent
+        }
+    }
+    #endif
+
+    @ViewBuilder
+    private var appContent: some View {
         if !onboardingCompleted {
             OnboardingView()
                 .environment(store)

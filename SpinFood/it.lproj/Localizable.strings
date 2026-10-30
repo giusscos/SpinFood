@@ -575,3 +575,9 @@
 "Reminders" = "Promemoria";
 "Off" = "Disattivati";
 "Allow Notifications in Settings" = "Consenti le notifiche in Impostazioni";
+
+/* Unit abbreviations */
+"pcs" = "pz";
+"tbsp" = "cucch.";
+"tsp" = "cucch.ino";
+"cup" = "tazza";

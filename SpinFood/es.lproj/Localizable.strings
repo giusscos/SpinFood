@@ -575,3 +575,9 @@
 "Reminders" = "Recordatorios";
 "Off" = "Desactivados";
 "Allow Notifications in Settings" = "Permitir notificaciones en Ajustes";
+
+/* Unit abbreviations */
+"pcs" = "ud.";
+"tbsp" = "cda.";
+"tsp" = "cdta.";
+"cup" = "taza";

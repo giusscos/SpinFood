@@ -157,7 +157,7 @@ enum ScreenshotSeed {
         let passata = food("Tomato Passata", "🥫", 700, 700, .milliliter, .pantry, expiresIn: 120)
         let garlic = food("Garlic", "🧄", 10, 9, .piece, .produce, expiresIn: 20)
         let oliveOil = food("Olive Oil", "🫒", 1000, 850, .milliliter, .pantry)
-        let basil = food("Basil", "🌿", 30, 0, .gram, .produce)
+        let basil = food("Basil", "🌿", 30, 20, .gram, .produce)
         let parmesan = food("Parmesan", "🧀", 300, 180, .gram, .dairy, expiresIn: 25)
         let flour = food("Flour", "🌾", 1000, 900, .gram, .grains)
         let yeast = food("Dry Yeast", "🫙", 50, 45, .gram, .pantry, expiresIn: 90)

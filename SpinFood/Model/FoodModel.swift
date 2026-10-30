@@ -197,10 +197,10 @@ enum FoodUnit: String, CaseIterable, Codable {
         case .kilogram:   return "kg"
         case .milliliter: return "ml"
         case .liter:      return "l"
-        case .piece:      return "pcs"
-        case .tablespoon: return "tbsp"
-        case .teaspoon:   return "tsp"
-        case .cup:        return "cup"
+        case .piece:      return String(localized: "pcs")
+        case .tablespoon: return String(localized: "tbsp")
+        case .teaspoon:   return String(localized: "tsp")
+        case .cup:        return String(localized: "cup")
         }
     }
 

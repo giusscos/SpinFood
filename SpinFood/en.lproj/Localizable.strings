@@ -425,3 +425,9 @@
 "Search ingredients" = "Search ingredients";
 "In your kitchen" = "In your kitchen";
 "More ingredients" = "More ingredients";
+
+/* Unit abbreviations */
+"pcs" = "pcs";
+"tbsp" = "tbsp";
+"tsp" = "tsp";
+"cup" = "cup";

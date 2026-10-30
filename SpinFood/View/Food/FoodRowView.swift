@@ -38,14 +38,14 @@ struct FoodRowView: View {
                         .foregroundStyle(.orange.opacity(0.8))
                 }
 
-                if food.isExpired {
+                if food.isExpired && !food.isOutOfStock {
                     Text("Expired")
                         .font(.caption2)
                         .foregroundStyle(.red)
-                } else if food.isExpiringSoon, let days = food.daysUntilExpiry {
+                } else if !food.isOutOfStock, let days = food.daysUntilExpiry {
                     Text(days == 0 ? "Expires today" : "Exp. \(days)d")
                         .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(food.isExpiringSoon ? .orange : .secondary)
                 }
             }
         }

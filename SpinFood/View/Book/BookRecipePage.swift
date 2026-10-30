@@ -65,14 +65,18 @@ struct BookRecipePage: View {
                             divider
                         }
                         cookSection
-                        Spacer().frame(height: 48)
+                        Spacer().frame(height: 16)
                     }
                 }
-
-                Text("\(pageNumber)")
-                    .font(.system(.caption, design: .serif))
-                    .foregroundStyle(.tertiary)
-                    .padding(.bottom, 12)
+                // Its own strip, so the number never sits on top of a button while the page scrolls.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    Text("\(pageNumber)")
+                        .font(.system(.caption, design: .serif))
+                        .foregroundStyle(.tertiary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(pageBackground)
+                }
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -171,7 +175,7 @@ struct BookRecipePage: View {
                     onConfirm: {
                         let maxAllowed = max(1, recipe.maxCookableServings)
                         if cookServings > maxAllowed {
-                            cookLimitAlertMessage = String(localized: "You only have enough ingredients for \(maxAllowed) serving\(maxAllowed == 1 ? "" : "s").")
+                            cookLimitAlertMessage = String(localized: "You only have enough ingredients for \(maxAllowed).")
                             cookServings = maxAllowed
                             return
                         }
@@ -383,7 +387,7 @@ struct BookRecipePage: View {
     private var cookSection: some View {
         VStack(spacing: 12) {
             if !recipe.canCook, !(recipe.ingredients?.isEmpty ?? true) {
-                Text("Missing \(recipe.missingIngredients.count) ingredient\(recipe.missingIngredients.count == 1 ? "" : "s")")
+                Text("Missing ^[\(recipe.missingIngredients.count) ingredient](inflect: true)")
                     .font(.system(.caption, design: .serif))
                     .foregroundStyle(.orange)
                     .frame(maxWidth: .infinity, alignment: .center)

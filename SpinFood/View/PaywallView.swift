@@ -129,6 +129,7 @@ struct PaywallView: View {
                 .padding(.bottom, 8)
                 .background(
                     LinearGradient(colors: [pageBackground.opacity(0), pageBackground], startPoint: .top, endPoint: .center)
+                        .allowsHitTesting(false)
                 )
         }
         .overlay(alignment: .topTrailing) { closeButton }

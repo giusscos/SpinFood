@@ -8,9 +8,15 @@ final class AppNavigator {
     var selectedTab: AppTab = .recipes
     var requestedBookPage: Int? = nil
     var requestedCookRecipeID: UUID? = nil
+    /// A recipe to show in the book. `BookContainer` turns it into a page once the recipe has loaded.
+    var requestedOpenRecipeID: UUID? = nil
     var currentBookPage: Int = 0
     var checkedShoppingItemsCount: Int = 0
     var triggerShoppingRefill: Bool = false
+}
+
+enum BookLayout {
+    static let twoPagesKey = "book_two_pages"
 }
 
 // MARK: - SwiftUI Representable
@@ -21,6 +27,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
     let store: Store
     let navigator: AppNavigator
     var onAdd: () -> Void
+    var onShowIdeas: () -> Void = {}
     var onEdit: (RecipeModel) -> Void
     var onNavigated: (Int) -> Void
     var onDeleteRecipe: (RecipeModel) -> Void = { _ in }
@@ -34,6 +41,8 @@ struct BookPageCurlView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> BookPageViewController {
         let vc = BookPageViewController(isSpread: isSpread)
+        vc.navigator = navigator
+        vc.currentPage = navigator.currentBookPage
         context.coordinator.hostVC = vc
         vc.coordinator = context.coordinator
         return vc
@@ -47,6 +56,7 @@ struct BookPageCurlView: UIViewControllerRepresentable {
                 store: store,
                 navigator: navigator,
                 onAdd: onAdd,
+                onShowIdeas: onShowIdeas,
                 onSelectRecipe: { [weak vc] recipe in
                     guard let vc,
                           let index = recipes.firstIndex(where: { $0.id == recipe.id }) else { return }
@@ -117,9 +127,13 @@ final class BookPageCoordinator: NSObject,
 
 final class BookPageViewController: UIPageViewController {
     var pages: [UIViewController] = []
-    var currentPage: Int = 0
+    /// Mirrored to the navigator so a rebuilt book can reopen where it was.
+    var currentPage: Int = 0 {
+        didSet { navigator?.currentBookPage = currentPage }
+    }
     var lastRecipeIDs: [UUID] = []
     weak var coordinator: BookPageCoordinator?
+    weak var navigator: AppNavigator?
     private var indexHostingVC: UIHostingController<BookIndexPage>?
     let isSpread: Bool
 
@@ -149,6 +163,7 @@ final class BookPageViewController: UIPageViewController {
         store: Store,
         navigator: AppNavigator,
         onAdd: @escaping () -> Void,
+        onShowIdeas: @escaping () -> Void,
         onSelectRecipe: @escaping (RecipeModel) -> Void,
         onEdit: @escaping (RecipeModel) -> Void,
         onDelete: @escaping (RecipeModel) -> Void,
@@ -166,6 +181,7 @@ final class BookPageViewController: UIPageViewController {
             recipes: recipes,
             onSelectRecipe: onSelectRecipe,
             onAdd: onAdd,
+            onShowIdeas: onShowIdeas,
             onSettings: onSettings,
             onEdit: onEdit,
             onDelete: onDelete,
@@ -196,10 +212,17 @@ final class BookPageViewController: UIPageViewController {
             ))
         }
 
+        let hasFacingRecipe = !recipes.isEmpty && recipes.count.isMultiple(of: 2)
         newPages.append(makeHostingVC(
-            BookEndPage(onBack: onBack)
+            // In a spread, a recipe on the facing page already has the "Index" button.
+            BookEndPage(onBack: onBack, showsBackButton: !isSpread || !hasFacingRecipe)
                 .environment(store)
         ))
+
+        // An empty book shouldn't open with Settings facing the index.
+        if isSpread && recipes.isEmpty {
+            newPages.insert(contentsOf: [makeHostingVC(Color.clear), makeHostingVC(Color.clear)], at: 1)
+        }
 
         // A spread always shows two pages, so pad an odd book with a blank last page.
         if isSpread && !newPages.count.isMultiple(of: 2) {

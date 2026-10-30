@@ -7,12 +7,15 @@ struct EditFoodView: View {
 
     var food: FoodModel?
     var scannedProduct: OpenFoodFactsProduct? = nil
+    var prefilledName: String = ""
+    /// Runs after a new or edited food is saved, on top of closing this sheet.
+    var onSaved: (() -> Void)? = nil
 
     @State private var name: String = ""
     @State private var emoji: String = ""
-    @State private var quantity: Decimal = 0
+    @State private var quantity: Decimal = 1
     @State private var currentQuantity: Decimal = 0
-    @State private var unit: FoodUnit = .gram
+    @State private var unit: FoodUnit = .piece
     @State private var category: FoodCategory = .other
     @State private var hasExpiryDate: Bool = false
     @State private var expiryDate: Date = Calendar.current.date(byAdding: .day, value: 7, to: .now) ?? .now
@@ -22,6 +25,8 @@ struct EditFoodView: View {
     @State private var barcodeError: String? = nil
     @State private var scannedBarcodeHint: String? = nil
     @State private var productImageURL: URL? = nil
+    /// The catalog item whose defaults were last applied, so later manual changes aren't overwritten.
+    @State private var autofilledItemID: String? = nil
 
     enum Field: Hashable {
         case name
@@ -49,44 +54,6 @@ struct EditFoodView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    // Emoji
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("Emoji", systemImage: "face.smiling")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-
-                        Button {
-                            focusedField = nil
-                            showEmojiPicker = true
-                        } label: {
-                            HStack(spacing: 14) {
-                                Text(emoji.isEmpty ? category.defaultEmoji : emoji)
-                                    .font(.system(size: 30))
-                                    .frame(width: 48, height: 48)
-                                    .background(.secondary.opacity(0.1))
-                                    .clipShape(Circle())
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Food emoji")
-                                        .font(.subheadline.weight(.medium))
-                                        .foregroundStyle(.primary)
-                                    Text(emoji.isEmpty ? "None selected" : "Custom emoji set")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer()
-
-                                Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.tertiary)
-                            }
-                        }
-                    }
-                    .padding()
-
-                    divider
-
                     // Food details
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -147,11 +114,28 @@ struct EditFoodView: View {
                                 .foregroundStyle(.red)
                         }
 
-                        TextField("Name", text: $name)
-                            .autocorrectionDisabled()
-                            .focused($focusedField, equals: .name)
-                            .submitLabel(.done)
-                            .onSubmit { focusedField = nil }
+                        HStack(spacing: 12) {
+                            Button {
+                                focusedField = nil
+                                showEmojiPicker = true
+                            } label: {
+                                Text(emoji.isEmpty ? category.defaultEmoji : emoji)
+                                    .font(.system(size: 26))
+                                    .frame(width: 44, height: 44)
+                                    .background(.secondary.opacity(0.1))
+                                    .clipShape(Circle())
+                            }
+                            .accessibilityLabel("Food emoji")
+
+                            TextField("Name", text: $name)
+                                .autocorrectionDisabled()
+                                .focused($focusedField, equals: .name)
+                                .submitLabel(.done)
+                                .onSubmit { focusedField = nil }
+                                .onChange(of: name) { _, newName in
+                                    applyCatalogDefaults(for: newName)
+                                }
+                        }
 
                         Divider()
 
@@ -302,6 +286,9 @@ struct EditFoodView: View {
                     }
                 } else if let scannedProduct {
                     apply(scannedProduct)
+                } else if !prefilledName.isEmpty {
+                    name = prefilledName
+                    applyCatalogDefaults(for: prefilledName)
                 }
             }
             .sheet(isPresented: $showEmojiPicker) {
@@ -351,7 +338,25 @@ struct EditFoodView: View {
             modelContext.insert(newFood)
         }
 
+        modelContext.saveConfirmedChanges()
         dismiss()
+        onSaved?()
+    }
+
+    /// Fills unit, amount, category, emoji and expiry when the typed name is a known grocery.
+    private func applyCatalogDefaults(for typedName: String) {
+        guard !isEditing, scannedProduct == nil,
+              let item = GroceryCatalog.item(matching: typedName),
+              item.id != autofilledItemID else { return }
+        autofilledItemID = item.id
+        emoji = item.emoji
+        category = item.category
+        unit = item.unit
+        quantity = item.packQuantity
+        if let expiry = item.suggestedExpiry {
+            hasExpiryDate = true
+            expiryDate = expiry
+        }
     }
 
     private func apply(_ product: OpenFoodFactsProduct) {

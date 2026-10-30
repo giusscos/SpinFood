@@ -4,6 +4,7 @@ import SwiftData
 
 struct BookEndPage: View {
     var onBack: () -> Void
+    var showsBackButton: Bool = true
 
     @Environment(\.openURL) private var openURL
     @Environment(\.requestReview) private var requestReview
@@ -11,6 +12,8 @@ struct BookEndPage: View {
     @Environment(Store.self) private var store
 
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
+    @AppStorage(BookLayout.twoPagesKey) private var prefersTwoPages = true
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var showPaywall = false
     @State private var isRestoring = false
@@ -69,13 +72,15 @@ struct BookEndPage: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: onBack) {
-                        HStack(spacing: 5) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 13, weight: .semibold))
-                            Text("Index")
-                                .font(.system(.subheadline, design: .serif))
+                if showsBackButton {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: onBack) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text("Index")
+                                    .font(.system(.subheadline, design: .serif))
+                            }
                         }
                     }
                 }
@@ -215,6 +220,11 @@ struct BookEndPage: View {
     private var generalSection: some View {
         VStack(spacing: 0) {
             dividerLine
+            // Only wide screens have room for two pages; the row stays so it can be turned back on.
+            if horizontalSizeClass == .regular {
+                twoPagesRow
+                dividerLine
+            }
             languageRow
             dividerLine
             actionRow(icon: "star", label: "Rate Foo") {
@@ -222,6 +232,37 @@ struct BookEndPage: View {
             }
             dividerLine
         }
+    }
+
+    // A whole-row button, because the page-curl gesture swallows taps meant for a real Toggle.
+    private var twoPagesRow: some View {
+        Button {
+            prefersTwoPages.toggle()
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "book.pages")
+                    .font(.system(size: 16))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24)
+
+                Text("Two-Page Book")
+                    .font(.system(.body, design: .serif))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Toggle("", isOn: .constant(prefersTwoPages))
+                    .labelsHidden()
+                    .allowsHitTesting(false)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityRepresentation {
+            Toggle("Two-Page Book", isOn: $prefersTwoPages)
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 32)
     }
 
     private var languageRow: some View {

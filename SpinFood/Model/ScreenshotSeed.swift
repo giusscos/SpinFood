@@ -1,6 +1,5 @@
 #if DEBUG && targetEnvironment(simulator)
 import SwiftData
-import TipKit
 import UIKit
 
 /// App Store screenshot helpers. Debug simulator builds only; compiled out of every device and Release build.
@@ -9,6 +8,10 @@ import UIKit
 /// xcrun simctl spawn booted defaults write giusscos.SpinFood SimulatorPremium -bool YES
 /// xcrun simctl spawn booted defaults write giusscos.SpinFood SeedScreenshotLibrary -bool YES
 /// ```
+/// These flags live on the simulator, so they survive uninstalling and every clean install seeds again until
+/// `xcrun simctl spawn booted defaults delete giusscos.SpinFood` clears them.
+/// The launch that seeds shows system blue instead of the accent color and can ignore taps on recipes,
+/// so relaunch the app before capturing.
 /// Recipe photos are read from the app's Documents/ScreenshotSeed folder (e.g. `salmon.jpg`, `scanner.jpg`);
 /// pasta, pizza, salad and soup fall back to the bundled onboarding illustrations.
 enum ScreenshotSeed {
@@ -61,7 +64,6 @@ enum ScreenshotSeed {
         defaults.set(false, forKey: "SeedScreenshotLibrary")
         defaults.set(true, forKey: "onboarding_completed")
         defaults.set(true, forKey: "milestone_paywall_shown")
-        Tips.hideAllTipsForTesting()
 
         let day: TimeInterval = 86_400
         func food(_ name: String, _ emoji: String, _ quantity: Decimal, _ current: Decimal,
@@ -104,6 +106,15 @@ enum ScreenshotSeed {
         _ = food("Greek Yogurt", "🥣", 500, 450, .gram, .dairy, expiresIn: 8)
         _ = food("Apples", "🍎", 6, 5, .piece, .produce, expiresIn: 15)
         _ = food("Coffee Beans", "☕️", 500, 90, .gram, .beverages)
+        let ricotta = food("Ricotta", "🧀", 250, 200, .gram, .dairy, expiresIn: -1)
+
+        let wasted: [(FoodModel, Decimal, Double)] = [
+            (lettuce, 150, 2), (bread, 1, 5), (ricotta, 50, 9), (lettuce, 120, 16), (cream, 100, 24),
+            (lettuce, 200, 34), (bread, 1, 38), (salmon, 200, 45), (cream, 150, 52),
+        ]
+        for (item, quantity, daysAgo) in wasted {
+            context.insert(FoodWasteModel(wastedAt: Date.now.addingTimeInterval(-daysAgo * day), quantity: quantity, food: item))
+        }
 
         func text(_ order: Int, _ content: String) -> StepBlock {
             StepBlock(type: .text, order: order, textContent: content)

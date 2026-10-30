@@ -355,10 +355,10 @@ struct EditRecipeView: View {
                             
                             Picker(selection: $servings) {
                                 ForEach(1...20, id: \.self) { n in
-                                    Text("\(n) \(n == 1 ? "serving" : "servings")").tag(n)
+                                    Text("^[\(n) serving](inflect: true)").tag(n)
                                 }
                             } label: {
-                                Label("\(servings) \(servings == 1 ? "serving" : "servings")", systemImage: "person.2")
+                                Label("^[\(servings) serving](inflect: true)", systemImage: "person.2")
                             }
                             .pickerStyle(.menu)
                         }
@@ -607,7 +607,7 @@ struct EditRecipeView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 if !ingredients.isEmpty {
-                    Text("\(ingredients.count) item\(ingredients.count == 1 ? "" : "s")")
+                    Text("^[\(ingredients.count) item](inflect: true)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 8)
@@ -685,7 +685,7 @@ struct EditRecipeView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 if !steps.isEmpty {
-                    Text("\(steps.count) step\(steps.count == 1 ? "" : "s")")
+                    Text("^[\(steps.count) step](inflect: true)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 8)
@@ -736,6 +736,12 @@ struct EditRecipeView: View {
     func saveRecipe() {
         if !canSaveRecipe { return }
 
+        for item in ingredients {
+            if let food = item.ingredient, food.modelContext == nil {
+                modelContext.insert(food)
+            }
+        }
+
         if let recipe {
             recipe.name = name
             recipe.descriptionRecipe = descriptionRecipe
@@ -761,6 +767,7 @@ struct EditRecipeView: View {
             modelContext.insert(newRecipe)
         }
 
+        modelContext.saveConfirmedChanges()
         dismiss()
     }
 

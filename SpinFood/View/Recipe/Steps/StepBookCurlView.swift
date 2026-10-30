@@ -280,6 +280,8 @@ final class StepBookPageViewController: UIPageViewController {
             cfg.baseForegroundColor = .label
             let backBtn = UIButton(configuration: cfg)
             backBtn.addAction(UIAction { _ in onBack?() }, for: .touchUpInside)
+            // Without a real frame the custom view draws fine but can't be tapped.
+            backBtn.sizeToFit()
             hvc.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backBtn)
 
             // Trash: circle, red - Liquid Glass prominent on iOS 26+, filled circle on older
@@ -299,6 +301,7 @@ final class StepBookPageViewController: UIPageViewController {
                 trashCfg.cornerStyle = .capsule
                 let trashBtn = UIButton(configuration: trashCfg)
                 trashBtn.addAction(UIAction { _ in onBack?(); onDelete?() }, for: .touchUpInside)
+                trashBtn.sizeToFit()
                 hvc.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: trashBtn)
             }
 
@@ -408,7 +411,7 @@ private struct StepIndexPageView: View {
                     Text("Steps")
                         .font(.title.weight(.bold))
                         .fontDesign(.serif)
-                    Text(steps.isEmpty ? "No steps" : "\(steps.count) step\(steps.count == 1 ? "" : "s")")
+                    Text(steps.isEmpty ? "No steps" : "^[\(steps.count) step](inflect: true)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -465,7 +468,7 @@ private struct StepIndexPageView: View {
                     .lineLimit(1)
                 let count = step.sortedBlocks.count
                 if count > 0 {
-                    Text("\(count) block\(count == 1 ? "" : "s")")
+                    Text("^[\(count) block](inflect: true)")
                         .font(.system(.caption, design: .serif))
                         .foregroundStyle(.secondary)
                 } else if !step.text.isEmpty {

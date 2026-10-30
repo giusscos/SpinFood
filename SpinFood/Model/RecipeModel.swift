@@ -71,6 +71,8 @@ final class RecipeModel {
     var cookedAt: [Date] = []
     var difficulty: RecipeDifficulty? = nil
     var tags: [RecipeTag] = []
+    /// The `StarterRecipe` this was added from. `nil` for recipes the person wrote or imported.
+    var catalogID: String? = nil
 
     @Relationship var ingredients: [RecipeFoodModel]? = []
     @Relationship var steps: [StepRecipe]? = []

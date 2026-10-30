@@ -1,18 +1,16 @@
 import SwiftUI
 import SwiftData
-import TipKit
 import UniformTypeIdentifiers
 
 struct BookIndexPage: View {
     let recipes: [RecipeModel]
     var onSelectRecipe: (RecipeModel) -> Void
     var onAdd: () -> Void
+    var onShowIdeas: () -> Void = {}
     var onSettings: () -> Void
     var onEdit: (RecipeModel) -> Void = { _ in }
     var onDelete: (RecipeModel) -> Void = { _ in }
     var onMove: (IndexSet, Int) -> Void = { _, _ in }
-
-    private let addFirstRecipeTip = AddFirstRecipeTip()
 
     @Environment(\.modelContext) private var modelContext
 
@@ -68,12 +66,6 @@ struct BookIndexPage: View {
             }
             .navigationTitle("Index")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                AddFirstRecipeTip.hasRecipes = !recipes.isEmpty
-            }
-            .onChange(of: recipes.isEmpty) { _, isEmpty in
-                AddFirstRecipeTip.hasRecipes = !isEmpty
-            }
             .fileImporter(
                 isPresented: $showImport,
                 allowedContentTypes: [.data],
@@ -119,7 +111,7 @@ struct BookIndexPage: View {
                         Text("Index")
                             .font(.title.weight(.bold))
                             .fontDesign(.serif)
-                        Text(recipes.isEmpty ? "No recipes yet" : "\(recipes.count) recipe\(recipes.count == 1 ? "" : "s")")
+                        Text(recipes.isEmpty ? "No recipes yet" : "^[\(recipes.count) recipe](inflect: true)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -127,13 +119,9 @@ struct BookIndexPage: View {
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if !isEditing {
-                        Button(action: {
-                            addFirstRecipeTip.invalidate(reason: .actionPerformed)
-                            onAdd()
-                        }) {
+                        Button(action: onAdd) {
                             Image(systemName: "plus")
                         }
-                        .popoverTip(addFirstRecipeTip)
 
                         Menu {
                             if !recipes.isEmpty {
@@ -181,6 +169,10 @@ struct BookIndexPage: View {
                             }
 
                             Section {
+                                Button(action: onShowIdeas) {
+                                    Label("Recipe Ideas", systemImage: "lightbulb")
+                                }
+
                                 Button {
                                     showImport = true
                                 } label: {
@@ -245,6 +237,12 @@ struct BookIndexPage: View {
                 indexSet.forEach { onDelete(displayedRecipes[$0]) }
             }
             .onMove(perform: isFiltering ? nil : onMove)
+
+            if !isEditing && !isFiltering {
+                moreIdeasRow
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -281,7 +279,7 @@ struct BookIndexPage: View {
                 .clipShape(.capsule)
             }
             Spacer()
-            Text("\(displayedRecipes.count) result\(displayedRecipes.count == 1 ? "" : "s")")
+            Text("^[\(displayedRecipes.count) result](inflect: true)")
                 .font(.system(.caption, design: .rounded))
                 .foregroundStyle(.secondary)
         }
@@ -293,20 +291,59 @@ struct BookIndexPage: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "book.closed")
-                .font(.system(size: 52))
-                .foregroundStyle(.secondary.opacity(0.4))
+            HStack(spacing: -10) {
+                ForEach(StarterRecipe.all.prefix(5)) { recipe in
+                    Text(recipe.emoji)
+                        .font(.system(size: 30))
+                        .frame(width: 58, height: 58)
+                        .background(Color.accentColor.opacity(0.14), in: Circle())
+                        .overlay { Circle().strokeBorder(pageBackground, lineWidth: 3) }
+                }
+            }
 
             Text("Your recipe book is empty")
                 .font(.system(.title3, design: .serif))
 
-            Text("Tap + to write your first recipe")
+            Text("Start with \(StarterRecipe.all.count) free recipes that use up what's in your kitchen.")
                 .font(.system(.subheadline, design: .serif))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+
+            Button(action: onShowIdeas) {
+                Label("Browse Recipe Ideas", systemImage: "lightbulb.fill")
+                    .font(.system(.body, design: .serif).weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .padding(.top, 4)
+
+            Button("Write my own", action: onAdd)
+                .font(.system(.subheadline, design: .serif))
         }
         .frame(maxWidth: .infinity)
+        .padding(.horizontal, 32)
         .padding(.top, 72)
+    }
+
+    private var moreIdeasRow: some View {
+        Button(action: onShowIdeas) {
+            HStack(spacing: 10) {
+                Image(systemName: "lightbulb.fill")
+                    .foregroundStyle(Color.accentColor)
+                Text("More recipe ideas")
+                    .font(.system(.subheadline, design: .serif).weight(.medium))
+                    .foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.light))
+                    .foregroundStyle(.quaternary)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+        }
+        .buttonStyle(.plain)
     }
 
     private var noResultsState: some View {
@@ -360,7 +397,7 @@ private struct BookIndexEntry: View {
                             .lineLimit(1)
                     }
                     if recipe.servings > 0 {
-                        Text("·  \(recipe.servings) servings")
+                        Text("·  ^[\(recipe.servings) serving](inflect: true)")
                             .font(.system(.caption, design: .serif))
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)

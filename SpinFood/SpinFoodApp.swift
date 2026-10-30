@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import TipKit
 
 @main
 struct SpinFoodApp: App {
@@ -15,6 +14,7 @@ struct SpinFoodApp: App {
             RecipeFoodModel.self,
             FoodConsumptionModel.self,
             FoodRefillModel.self,
+            FoodWasteModel.self,
             MealPlanEntry.self,
         ])
 
@@ -42,7 +42,7 @@ struct SpinFoodApp: App {
     }()
 
     init() {
-        try? Tips.configure()
+        AppLanguage.registerDefault()
         #if DEBUG && targetEnvironment(simulator)
         ScreenshotSeed.seedIfRequested(in: sharedModelContainer.mainContext)
         #endif

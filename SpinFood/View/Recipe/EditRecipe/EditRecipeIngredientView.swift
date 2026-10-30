@@ -15,69 +15,203 @@ struct EditRecipeIngredientView: View {
 
     @State private var selectedFood: FoodModel?
     @State private var quantity: Decimal = 1
+    @State private var searchText = ""
+
+    private var trimmedSearch: String {
+        searchText.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Foods this recipe already uses, including ones picked from the catalog and not saved yet.
+    private var usedFoods: [FoodModel] {
+        ingredients.compactMap(\.ingredient)
+    }
+
+    private var pantryMatches: [FoodModel] {
+        foods
+            .filter { food in
+                !usedFoods.contains { $0.id == food.id }
+                    && (trimmedSearch.isEmpty || food.name.localizedStandardContains(trimmedSearch))
+            }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    private var catalogMatches: [GroceryItem] {
+        GroceryCatalog.all
+            .filter { item in
+                item.pantryFood(in: foods) == nil
+                    && item.pantryFood(in: usedFoods) == nil
+                    && (trimmedSearch.isEmpty || item.matches(search: trimmedSearch))
+            }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    private var showsCustomRow: Bool {
+        !trimmedSearch.isEmpty
+            && GroceryCatalog.item(matching: trimmedSearch) == nil
+            && !foods.contains { $0.name.localizedCaseInsensitiveCompare(trimmedSearch) == .orderedSame }
+    }
 
     var body: some View {
-        if !foods.isEmpty {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(editingIngredient != nil ? "Edit Ingredient" : "Add Ingredient")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 16) {
+            if let food = selectedFood {
+                amountContent(food: food)
+            } else {
+                pickerContent
+            }
+        }
+        .padding()
+        .onAppear {
+            if let editing = editingIngredient {
+                selectedFood = editing.ingredient
+                quantity = editing.quantityNeeded
+            }
+        }
+    }
 
-                    if let food = selectedFood {
-                        foodCard(food: food)
+    // MARK: - Choosing a food
 
-                        QuantityTickerPicker(value: $quantity, unit: food.unit)
-                            .padding(12)
-                            .background(.regularMaterial, in: .rect(cornerRadius: 12))
-                    }
+    private var pickerContent: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+                TextField("Search ingredients", text: $searchText)
+                    .autocorrectionDisabled()
+            }
+            .padding(10)
+            .background(.regularMaterial, in: .rect(cornerRadius: 12))
 
-                    Button {
-                        guard let food = selectedFood, quantity > 0 else { return }
-                        withAnimation {
-                            if let editing = editingIngredient {
-                                editing.ingredient = food
-                                editing.quantityNeeded = quantity
-                                onEditDone?()
-                            } else {
-                                ingredients.append(RecipeFoodModel(ingredient: food, quantityNeeded: quantity))
-                            }
+            if !pantryMatches.isEmpty {
+                pickerSection("In your kitchen") {
+                    ForEach(pantryMatches) { food in
+                        pickerRow(
+                            emoji: food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji,
+                            name: food.name
+                        ) {
+                            select(food)
                         }
-                        quantity = 1
-                        selectedFood = foods.first
-                    } label: {
-                        Text(editingIngredient != nil ? "Update" : "Add")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
                     }
-                    .tint(.accent)
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .disabled(selectedFood == nil || quantity <= 0)
                 }
             }
-            .padding()
-            .onAppear {
-                if let editing = editingIngredient {
-                    selectedFood = editing.ingredient
-                    quantity = editing.quantityNeeded
-                } else if selectedFood == nil {
-                    selectedFood = foods.first
+
+            if showsCustomRow {
+                pickerRow(emoji: "➕", name: String(localized: "Add \"\(trimmedSearch)\"")) {
+                    select(FoodModel(name: trimmedSearch, quantity: 1, unit: .piece))
+                }
+            }
+
+            if !catalogMatches.isEmpty {
+                pickerSection("More ingredients") {
+                    ForEach(catalogMatches) { item in
+                        pickerRow(emoji: item.emoji, name: item.name) {
+                            select(item.makeFood(quantity: item.packQuantity, currentQuantity: 0, expiryDate: nil))
+                        }
+                    }
                 }
             }
         }
     }
 
-    private func foodCard(food: FoodModel) -> some View {
-        Menu {
-            ForEach(foods) { f in
-                Button {
-                    selectedFood = f
-                    quantity = 1
-                } label: {
-                    Text("\(f.emoji.isEmpty ? f.category.defaultEmoji : f.emoji) \(f.name)")
-                }
+    private func pickerSection<Content: View>(
+        _ title: LocalizedStringKey,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+            LazyVStack(spacing: 0) {
+                content()
             }
+        }
+    }
+
+    private func pickerRow(emoji: String, name: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(emoji)
+                    .font(.system(size: 22))
+                    .frame(width: 32)
+                Text(name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.vertical, 9)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func select(_ food: FoodModel) {
+        searchText = ""
+        quantity = food.unit == .gram || food.unit == .milliliter ? 100 : 1
+        selectedFood = food
+    }
+
+    // MARK: - Setting the amount
+
+    private func amountContent(food: FoodModel) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(editingIngredient != nil ? "Edit Ingredient" : "Add Ingredient")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+
+            foodCard(food: food)
+
+            // A food that isn't saved yet can still take any unit; saved ones keep the pantry's.
+            if food.modelContext == nil {
+                HStack {
+                    Text("Unit")
+                        .font(.subheadline)
+                    Spacer()
+                    Picker("", selection: Binding(get: { food.unit }, set: { food.unit = $0 })) {
+                        ForEach(FoodUnit.allCases, id: \.self) { unit in
+                            Text(unit.localizedName).tag(unit)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                }
+                .padding(.horizontal, 12)
+            }
+
+            QuantityTickerPicker(value: $quantity, unit: food.unit)
+                .padding(12)
+                .background(.regularMaterial, in: .rect(cornerRadius: 12))
+
+            Button {
+                guard quantity > 0 else { return }
+                withAnimation {
+                    if let editing = editingIngredient {
+                        editing.ingredient = food
+                        editing.quantityNeeded = quantity
+                        onEditDone?()
+                    } else {
+                        ingredients.append(RecipeFoodModel(ingredient: food, quantityNeeded: quantity))
+                    }
+                    selectedFood = nil
+                }
+                quantity = 1
+            } label: {
+                Text(editingIngredient != nil ? "Update" : "Add")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .tint(.accent)
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .disabled(quantity <= 0)
+        }
+    }
+
+    private func foodCard(food: FoodModel) -> some View {
+        Button {
+            withAnimation { selectedFood = nil }
         } label: {
             HStack(spacing: 14) {
                 let displayEmoji = food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji
@@ -105,6 +239,7 @@ struct EditRecipeIngredientView: View {
             .padding(12)
             .background(.regularMaterial, in: .rect(cornerRadius: 12))
         }
+        .buttonStyle(.plain)
     }
 
     private func categoryColor(_ category: FoodCategory) -> Color {
@@ -143,13 +278,60 @@ struct QuantityTickerPicker: View {
         }
     }
 
+    @State private var isTyping = false
+    @State private var typedText = ""
+    @FocusState private var isFieldFocused: Bool
+
     var body: some View {
         VStack(spacing: 10) {
             HStack(alignment: .lastTextBaseline, spacing: 3) {
-                Text(value, format: .number)
-                    .font(.system(.title, design: .rounded).weight(.black))
-                    .contentTransition(.numericText())
-                    .animation(.snappy(duration: 0.1), value: value)
+                // Tap the number to type it: the ruler is slow for amounts like 1000 g.
+                if isTyping {
+                    TextField("", text: $typedText)
+                        .keyboardType(.decimalPad)
+                        .focused($isFieldFocused)
+                        .font(.system(.title, design: .rounded).weight(.black))
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize()
+                        .frame(minWidth: 60, alignment: .trailing)
+                        .onAppear { isFieldFocused = true }
+                        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { note in
+                            guard let field = note.object as? UITextField else { return }
+                            field.clearButtonMode = .never
+                            field.selectAll(nil)
+                        }
+                        .onChange(of: typedText) { _, text in
+                            // Accepts the decimal comma from the keyboards of Foo's European languages.
+                            if let typed = Decimal(string: text.replacingOccurrences(of: ",", with: ".")) {
+                                value = min(maxValue, typed)
+                            }
+                        }
+                        .onChange(of: isFieldFocused) { _, focused in
+                            if !focused {
+                                isTyping = false
+                                value = max(minValue, min(maxValue, value))
+                            }
+                        }
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Done") { isFieldFocused = false }
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                } else {
+                    Button {
+                        typedText = NSDecimalNumber(decimal: value).stringValue
+                        isTyping = true
+                    } label: {
+                        Text(value, format: .number)
+                            .font(.system(.title, design: .rounded).weight(.black))
+                            .foregroundStyle(.primary)
+                            .contentTransition(.numericText())
+                            .animation(.snappy(duration: 0.1), value: value)
+                    }
+                    .buttonStyle(.plain)
+                }
                 Text(unit.abbreviation)
                     .font(.callout)
                     .foregroundStyle(.secondary)

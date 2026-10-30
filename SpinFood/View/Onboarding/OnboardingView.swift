@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct OnboardingView: View {
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
@@ -7,7 +8,7 @@ struct OnboardingView: View {
     @State private var step: Int = 0
 
     // Kept short so people reach their recipe book quickly. Notifications are requested
-    // when the first pantry item is added, and alarms when the first cook timer starts.
+    // once there's food to alert about, and alarms when the first cook timer starts.
     private static let paywallStep = 2
 
     var body: some View {
@@ -27,7 +28,7 @@ struct OnboardingView: View {
                         OnboardingWelcomeView(onNext: advance)
                             .transition(stepTransition)
                     case 1:
-                        OnboardingHowItWorksView(onNext: advance)
+                        OnboardingKitchenView(onNext: advance)
                             .transition(stepTransition)
                     default:
                         PaywallView(context: .onboarding, onClose: completeOnboarding)
@@ -120,10 +121,10 @@ struct OnboardingWelcomeView: View {
                 .scaleEffect(row1Appeared ? 1 : 0.94, anchor: .leading)
 
                 OnboardingFeatureRow(
-                    icon: "barcode.viewfinder",
+                    icon: "cart.fill.badge.plus",
                     color: .blue,
-                    title: String(localized: "Scan to stock up"),
-                    description: String(localized: "Add groceries in seconds with the barcode scanner")
+                    title: String(localized: "Stock up in seconds"),
+                    description: String(localized: "Tap what you bought or scan the barcode")
                 )
                 .opacity(row2Appeared ? 1 : 0)
                 .blur(radius: row2Appeared ? 0 : 8)
@@ -304,124 +305,65 @@ struct OnboardingFeatureRow: View {
     }
 }
 
-// MARK: - How It Works Step
+// MARK: - Kitchen Step
 
-struct OnboardingHowItWorksView: View {
+/// Gets real food into the pantry before the first look at the book, so recipe ideas
+/// can show what's cookable right away.
+struct OnboardingKitchenView: View {
     let onNext: () -> Void
-    @State private var appeared = false
-    @State private var row1Appeared = false
-    @State private var row2Appeared = false
-    @State private var row3Appeared = false
-    @State private var row4Appeared = false
-    @State private var buttonAppeared = false
+
+    @Environment(\.modelContext) private var modelContext
+    @Query private var foods: [FoodModel]
+
+    @State private var picks: [GroceryPick] = []
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 12)
-
-            VStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(Color.accentColor.opacity(0.12))
-                        .frame(width: 90, height: 90)
-                    Image(systemName: "book.pages.fill")
-                        .font(.system(size: 40))
-                        .foregroundStyle(Color.accentColor)
-                }
-                .scaleEffect(appeared ? 1 : 0.6)
-                .opacity(appeared ? 1 : 0)
-                .blur(radius: appeared ? 0 : 12)
-
-                Text("From pantry to plate")
+            VStack(spacing: 8) {
+                Text("What's in your kitchen?")
                     .font(.title2.bold())
                     .multilineTextAlignment(.center)
 
-                Text("Four steps, and your kitchen runs itself.")
+                Text("Tap what you have. Foo fills in amounts and expiry dates, and you can change them anytime.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                    .padding(.horizontal, 8)
             }
             .padding(.horizontal, 28)
-            .opacity(appeared ? 1 : 0)
-            .blur(radius: appeared ? 0 : 10)
-            .offset(y: appeared ? 0 : 16)
+            .padding(.top, 12)
+            .padding(.bottom, 16)
 
-            Spacer(minLength: 20)
+            ScrollView {
+                GroceryGrid(items: GroceryCatalog.essentials, picks: $picks, foods: foods)
+                    .padding(.horizontal)
+                    .padding(.bottom, 12)
+            }
 
-            VStack(spacing: 14) {
-                OnboardingFeatureRow(
-                    icon: "carrot.fill",
-                    color: .green,
-                    title: String(localized: "Add ingredients"),
-                    description: String(localized: "Stock your pantry and link foods to your recipes")
-                )
-                .opacity(row1Appeared ? 1 : 0)
-                .blur(radius: row1Appeared ? 0 : 8)
-                .offset(y: row1Appeared ? 0 : 18)
-                .scaleEffect(row1Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "list.number",
-                    color: .blue,
-                    title: String(localized: "Write the steps"),
-                    description: String(localized: "Follow clear steps, page by page")
-                )
-                .opacity(row2Appeared ? 1 : 0)
-                .blur(radius: row2Appeared ? 0 : 8)
-                .offset(y: row2Appeared ? 0 : 18)
-                .scaleEffect(row2Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "flame.fill",
-                    color: .orange,
-                    title: String(localized: "Cook"),
-                    description: String(localized: "Timers keep time, and used ingredients leave your pantry")
-                )
-                .opacity(row3Appeared ? 1 : 0)
-                .blur(radius: row3Appeared ? 0 : 8)
-                .offset(y: row3Appeared ? 0 : 18)
-                .scaleEffect(row3Appeared ? 1 : 0.94, anchor: .leading)
-
-                OnboardingFeatureRow(
-                    icon: "arrow.trianglehead.counterclockwise",
-                    color: .purple,
-                    title: String(localized: "Refill"),
-                    description: String(localized: "Shop from the list and top your pantry back up")
-                )
-                .opacity(row4Appeared ? 1 : 0)
-                .blur(radius: row4Appeared ? 0 : 8)
-                .offset(y: row4Appeared ? 0 : 18)
-                .scaleEffect(row4Appeared ? 1 : 0.94, anchor: .leading)
+            Button(action: finish) {
+                Group {
+                    if picks.isEmpty {
+                        Text("Skip for now")
+                    } else {
+                        Text("Add \(picks.count) to Inventory")
+                    }
+                }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(picks.isEmpty ? Color.secondary.opacity(0.15) : Color.accentColor)
+                .foregroundStyle(picks.isEmpty ? Color.primary : Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
             .padding(.horizontal, 24)
-
-            Spacer(minLength: 20)
-
-            Button(action: onNext) {
-                Text("Continue")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
-            .opacity(buttonAppeared ? 1 : 0)
-            .blur(radius: buttonAppeared ? 0 : 6)
-            .scaleEffect(buttonAppeared ? 1 : 0.88)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
-        .onAppear {
-            withAnimation(.spring(duration: 0.6, bounce: 0.3).delay(0.1)) { appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.32)) { row1Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.45)) { row2Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.58)) { row3Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.71)) { row4Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.35).delay(0.88)) { buttonAppeared = true }
-        }
+    }
+
+    private func finish() {
+        GroceryCatalog.stock(picks, foods: foods, in: modelContext)
+        onNext()
     }
 }
 

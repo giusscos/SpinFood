@@ -1,0 +1,771 @@
+[
+  {
+    "id": "fridge_frittata",
+    "emoji": "🍳",
+    "minutes": 20,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Vegetarian", "Quick", "Gluten Free"],
+    "name": {
+      "en": "Clear-the-Fridge Frittata",
+      "it": "Frittata svuotafrigo",
+      "de": "Kühlschrank-Frittata",
+      "es": "Frittata de aprovechamiento",
+      "fr": "Frittata vide-frigo"
+    },
+    "summary": {
+      "en": "Eggs turn any vegetables on their last legs into a proper dinner.",
+      "it": "Le uova trasformano le verdure a fine corsa in una vera cena.",
+      "de": "Eier machen aus Gemüse, das weg muss, ein richtiges Abendessen.",
+      "es": "Los huevos convierten las verduras a punto de estropearse en una buena cena.",
+      "fr": "Les œufs transforment les légumes en fin de vie en un vrai dîner."
+    },
+    "ingredients": [
+      { "id": "eggs", "quantity": 4 },
+      { "id": "onions", "quantity": 1 },
+      { "id": "bell_peppers", "quantity": 1 },
+      { "id": "spinach", "quantity": 100 },
+      { "id": "cheese", "quantity": 60 },
+      { "id": "olive_oil", "quantity": 15 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Whisk the eggs with a pinch of salt and pepper, then stir in the grated cheese.",
+          "it": "Sbatti le uova con un pizzico di sale e pepe, poi unisci il formaggio grattugiato.",
+          "de": "Verquirle die Eier mit einer Prise Salz und Pfeffer und rühre den geriebenen Käse unter.",
+          "es": "Bate los huevos con una pizca de sal y pimienta y añade el queso rallado.",
+          "fr": "Bats les œufs avec une pincée de sel et de poivre, puis ajoute le fromage râpé."
+        }
+      },
+      {
+        "text": {
+          "en": "Soften the sliced onion and pepper in the oil in an ovenproof pan over medium heat. Swap in any vegetables that need using up.",
+          "it": "Fai appassire cipolla e peperone a fette nell'olio, a fuoco medio, in una padella adatta al forno. Puoi usare qualsiasi verdura da finire.",
+          "de": "Dünste Zwiebel und Paprika in Scheiben im Öl bei mittlerer Hitze in einer ofenfesten Pfanne an. Nimm gern jedes Gemüse, das weg muss.",
+          "es": "Sofríe la cebolla y el pimiento en tiras con el aceite, a fuego medio, en una sartén apta para horno. Vale cualquier verdura que quieras aprovechar.",
+          "fr": "Fais revenir l'oignon et le poivron émincés dans l'huile, à feu moyen, dans une poêle allant au four. Utilise tous les légumes à finir."
+        },
+        "timerMinutes": 5
+      },
+      {
+        "text": {
+          "en": "Add the spinach and let it wilt, then pour in the eggs and cook gently until the edges set.",
+          "it": "Aggiungi gli spinaci e lasciali appassire, poi versa le uova e cuoci dolcemente finché i bordi si rassodano.",
+          "de": "Gib den Spinat dazu und lass ihn zusammenfallen. Gieße die Eier darüber und lass sie sanft stocken, bis die Ränder fest sind.",
+          "es": "Añade las espinacas y deja que se ablanden. Vierte los huevos y cocina a fuego suave hasta que cuajen los bordes.",
+          "fr": "Ajoute les épinards et laisse-les tomber, puis verse les œufs et fais cuire doucement jusqu'à ce que les bords prennent."
+        },
+        "timerMinutes": 5
+      },
+      {
+        "text": {
+          "en": "Finish under a hot grill until golden and puffed. Slice and serve.",
+          "it": "Termina sotto il grill ben caldo finché è dorata e gonfia. Taglia a spicchi e servi.",
+          "de": "Unter dem heißen Grill goldbraun und luftig fertig backen. In Stücke schneiden und servieren.",
+          "es": "Termina bajo el grill bien caliente hasta que se dore y se hinche. Corta en porciones y sirve.",
+          "fr": "Termine sous le gril bien chaud jusqu'à ce qu'elle soit dorée et gonflée. Coupe en parts et sers."
+        },
+        "timerMinutes": 3
+      }
+    ]
+  },
+  {
+    "id": "leftover_fried_rice",
+    "emoji": "🍚",
+    "minutes": 15,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Quick", "Dairy Free"],
+    "name": {
+      "en": "Leftover Fried Rice",
+      "it": "Riso saltato di recupero",
+      "de": "Gebratener Reis vom Vortag",
+      "es": "Arroz frito de aprovechamiento",
+      "fr": "Riz sauté aux restes"
+    },
+    "summary": {
+      "en": "Yesterday's rice and a few odds and ends, ready in 15 minutes.",
+      "it": "Il riso di ieri e qualche avanzo, pronto in 15 minuti.",
+      "de": "Reis von gestern und ein paar Reste, fertig in 15 Minuten.",
+      "es": "El arroz de ayer y algunas sobras, listo en 15 minutos.",
+      "fr": "Le riz d'hier et quelques restes, prêt en 15 minutes."
+    },
+    "ingredients": [
+      { "id": "rice", "quantity": 150 },
+      { "id": "eggs", "quantity": 2 },
+      { "id": "carrots", "quantity": 1 },
+      { "id": "frozen_peas", "quantity": 80 },
+      { "id": "onions", "quantity": 1 },
+      { "id": "garlic", "quantity": 2 },
+      { "id": "soy_sauce", "quantity": 30 },
+      { "id": "olive_oil", "quantity": 15 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Cook the rice if you have no leftovers, then spread it out to cool. Day-old rice fries best.",
+          "it": "Cuoci il riso se non ne hai di avanzato, poi allargalo per farlo raffreddare. Quello del giorno prima viene meglio.",
+          "de": "Koche den Reis, falls du keinen übrig hast, und lass ihn ausgebreitet abkühlen. Reis vom Vortag brät am besten.",
+          "es": "Cuece el arroz si no te ha sobrado y extiéndelo para que se enfríe. El del día anterior queda mejor.",
+          "fr": "Fais cuire le riz si tu n'as pas de restes, puis étale-le pour qu'il refroidisse. Le riz de la veille est idéal."
+        }
+      },
+      {
+        "text": {
+          "en": "Fry the chopped onion, carrot and garlic in the oil over high heat.",
+          "it": "Salta cipolla, carota e aglio tritati nell'olio a fuoco vivo.",
+          "de": "Brate gehackte Zwiebel, Karotte und Knoblauch im Öl bei starker Hitze an.",
+          "es": "Saltea la cebolla, la zanahoria y el ajo picados con el aceite a fuego fuerte.",
+          "fr": "Fais sauter l'oignon, la carotte et l'ail hachés dans l'huile à feu vif."
+        },
+        "timerMinutes": 3
+      },
+      {
+        "text": {
+          "en": "Push everything to one side, scramble the eggs in the empty space, then add the peas.",
+          "it": "Sposta tutto da un lato, strapazza le uova nello spazio libero e aggiungi i piselli.",
+          "de": "Schiebe alles zur Seite, brate die Eier im freien Bereich als Rührei und gib die Erbsen dazu.",
+          "es": "Aparta todo a un lado, revuelve los huevos en el hueco libre y añade los guisantes.",
+          "fr": "Pousse le tout sur le côté, brouille les œufs dans l'espace libre, puis ajoute les petits pois."
+        }
+      },
+      {
+        "text": {
+          "en": "Add the rice and soy sauce and stir-fry until hot and lightly crisp.",
+          "it": "Aggiungi il riso e la salsa di soia e salta finché è caldo e leggermente croccante.",
+          "de": "Gib Reis und Sojasoße dazu und brate alles, bis es heiß und leicht knusprig ist.",
+          "es": "Añade el arroz y la salsa de soja y saltea hasta que esté caliente y algo crujiente.",
+          "fr": "Ajoute le riz et la sauce soja et fais sauter jusqu'à ce que ce soit chaud et légèrement croustillant."
+        },
+        "timerMinutes": 3
+      }
+    ]
+  },
+  {
+    "id": "any_vegetable_soup",
+    "emoji": "🍲",
+    "minutes": 40,
+    "servings": 4,
+    "difficulty": "Easy",
+    "tags": ["Vegan", "Healthy", "Gluten Free", "Dairy Free"],
+    "name": {
+      "en": "Any-Vegetable Soup",
+      "it": "Minestrone con quello che c'è",
+      "de": "Resteküche-Gemüsesuppe",
+      "es": "Sopa de todas las verduras",
+      "fr": "Soupe à tous les légumes"
+    },
+    "summary": {
+      "en": "A forgiving soup that happily takes whatever is left in the drawer.",
+      "it": "Una minestra generosa che accoglie tutto ciò che resta nel cassetto.",
+      "de": "Eine unkomplizierte Suppe für alles, was noch im Gemüsefach liegt.",
+      "es": "Una sopa agradecida que admite todo lo que quede en el cajón.",
+      "fr": "Une soupe facile qui accueille tout ce qui reste dans le bac à légumes."
+    },
+    "ingredients": [
+      { "id": "onions", "quantity": 1 },
+      { "id": "carrots", "quantity": 2 },
+      { "id": "celery", "quantity": 100 },
+      { "id": "potatoes", "quantity": 300 },
+      { "id": "zucchini", "quantity": 1 },
+      { "id": "canned_tomatoes", "quantity": 400 },
+      { "id": "stock_cubes", "quantity": 1 },
+      { "id": "olive_oil", "quantity": 30 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Chop all the vegetables into small pieces. Anything tired in the fridge can go in too.",
+          "it": "Taglia tutte le verdure a pezzetti. Puoi aggiungere anche quelle un po' stanche in frigo.",
+          "de": "Schneide das ganze Gemüse klein. Auch alles Schlappe aus dem Kühlschrank darf mit hinein.",
+          "es": "Corta todas las verduras en trozos pequeños. También puedes añadir las que estén algo pochas.",
+          "fr": "Coupe tous les légumes en petits morceaux. Ceux un peu fatigués du frigo y ont aussi leur place."
+        }
+      },
+      {
+        "text": {
+          "en": "Soften the onion, carrot and celery in the oil over medium heat.",
+          "it": "Fai appassire cipolla, carota e sedano nell'olio a fuoco medio.",
+          "de": "Dünste Zwiebel, Karotte und Sellerie im Öl bei mittlerer Hitze an.",
+          "es": "Sofríe la cebolla, la zanahoria y el apio con el aceite a fuego medio.",
+          "fr": "Fais revenir l'oignon, la carotte et le céleri dans l'huile à feu moyen."
+        },
+        "timerMinutes": 8
+      },
+      {
+        "text": {
+          "en": "Add the potatoes, zucchini, tomatoes, the stock cube and 1 litre of water. Simmer until tender.",
+          "it": "Aggiungi patate, zucchine, pomodori, il dado e 1 litro d'acqua. Cuoci a fuoco basso finché è tutto tenero.",
+          "de": "Gib Kartoffeln, Zucchini, Tomaten, den Brühwürfel und 1 Liter Wasser dazu. Köcheln lassen, bis alles weich ist.",
+          "es": "Añade las patatas, el calabacín, el tomate, la pastilla de caldo y 1 litro de agua. Cuece a fuego lento hasta que esté tierno.",
+          "fr": "Ajoute les pommes de terre, les courgettes, les tomates, le cube de bouillon et 1 litre d'eau. Laisse mijoter jusqu'à ce que ce soit tendre."
+        },
+        "timerMinutes": 25
+      },
+      {
+        "text": {
+          "en": "Season to taste. Blend half for a creamier soup, or serve as it is.",
+          "it": "Regola di sale e pepe. Frullane metà per una consistenza più cremosa, oppure servi così.",
+          "de": "Abschmecken. Für eine cremigere Suppe die Hälfte pürieren oder einfach so servieren.",
+          "es": "Sazona al gusto. Tritura la mitad para que quede más cremosa o sírvela tal cual.",
+          "fr": "Assaisonne à ton goût. Mixe-en la moitié pour une soupe plus onctueuse, ou sers telle quelle."
+        }
+      }
+    ]
+  },
+  {
+    "id": "overripe_banana_bread",
+    "emoji": "🍌",
+    "minutes": 65,
+    "servings": 8,
+    "difficulty": "Easy",
+    "tags": ["Vegetarian"],
+    "name": {
+      "en": "Overripe Banana Bread",
+      "it": "Banana bread con banane mature",
+      "de": "Bananenbrot aus reifen Bananen",
+      "es": "Pan de plátano maduro",
+      "fr": "Banana bread aux bananes bien mûres"
+    },
+    "summary": {
+      "en": "The browner the bananas, the better this loaf tastes.",
+      "it": "Più le banane sono scure, più questo dolce è buono.",
+      "de": "Je brauner die Bananen, desto besser schmeckt dieses Brot.",
+      "es": "Cuanto más negros los plátanos, más rico sale este bizcocho.",
+      "fr": "Plus les bananes sont noires, meilleur est ce cake."
+    },
+    "ingredients": [
+      { "id": "bananas", "quantity": 3 },
+      { "id": "flour", "quantity": 250 },
+      { "id": "sugar", "quantity": 120 },
+      { "id": "eggs", "quantity": 2 },
+      { "id": "butter", "quantity": 100 },
+      { "id": "baking_powder", "quantity": 10 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Heat the oven to 180 °C and line a loaf tin with baking paper.",
+          "it": "Scalda il forno a 180 °C e fodera uno stampo da plumcake con carta da forno.",
+          "de": "Heize den Ofen auf 180 °C vor und lege eine Kastenform mit Backpapier aus.",
+          "es": "Precalienta el horno a 180 °C y forra un molde alargado con papel de horno.",
+          "fr": "Préchauffe le four à 180 °C et chemise un moule à cake de papier cuisson."
+        }
+      },
+      {
+        "text": {
+          "en": "Mash the bananas, then beat in the melted butter, sugar and eggs.",
+          "it": "Schiaccia le banane, poi incorpora il burro fuso, lo zucchero e le uova.",
+          "de": "Zerdrücke die Bananen und rühre geschmolzene Butter, Zucker und Eier unter.",
+          "es": "Aplasta los plátanos y mezcla con la mantequilla derretida, el azúcar y los huevos.",
+          "fr": "Écrase les bananes, puis incorpore le beurre fondu, le sucre et les œufs."
+        }
+      },
+      {
+        "text": {
+          "en": "Fold in the flour and baking powder until just combined.",
+          "it": "Unisci farina e lievito mescolando solo quanto basta.",
+          "de": "Hebe Mehl und Backpulver unter, bis alles gerade so vermischt ist.",
+          "es": "Incorpora la harina y la levadura, removiendo solo hasta integrarlas.",
+          "fr": "Ajoute la farine et la levure en mélangeant juste ce qu'il faut."
+        }
+      },
+      {
+        "text": {
+          "en": "Pour into the tin and bake until a skewer comes out clean. Cool before slicing.",
+          "it": "Versa nello stampo e cuoci finché uno stecchino esce asciutto. Fai raffreddare prima di tagliare.",
+          "de": "In die Form füllen und backen, bis ein Holzstäbchen sauber herauskommt. Vor dem Anschneiden abkühlen lassen.",
+          "es": "Vierte en el molde y hornea hasta que un palillo salga limpio. Deja enfriar antes de cortar.",
+          "fr": "Verse dans le moule et fais cuire jusqu'à ce qu'une pique ressorte propre. Laisse refroidir avant de couper."
+        },
+        "timerMinutes": 50
+      }
+    ]
+  },
+  {
+    "id": "pasta_pomodoro",
+    "emoji": "🍝",
+    "minutes": 20,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Vegan", "Quick", "Dairy Free"],
+    "name": {
+      "en": "Pasta with Tomato Sauce",
+      "it": "Spaghetti al pomodoro",
+      "de": "Spaghetti mit Tomatensoße",
+      "es": "Espaguetis con tomate",
+      "fr": "Spaghettis à la tomate"
+    },
+    "summary": {
+      "en": "A store-cupboard classic for evenings when the fridge looks empty.",
+      "it": "Un classico da dispensa per le sere in cui il frigo sembra vuoto.",
+      "de": "Ein Vorratsklassiker für Abende, an denen der Kühlschrank leer aussieht.",
+      "es": "Un clásico de despensa para las noches en que la nevera parece vacía.",
+      "fr": "Un classique du placard pour les soirs où le frigo semble vide."
+    },
+    "ingredients": [
+      { "id": "spaghetti", "quantity": 200 },
+      { "id": "canned_tomatoes", "quantity": 400 },
+      { "id": "garlic", "quantity": 2 },
+      { "id": "olive_oil", "quantity": 30 },
+      { "id": "basil", "quantity": 10 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Bring a large pot of salted water to the boil and cook the spaghetti until al dente.",
+          "it": "Porta a ebollizione una pentola di acqua salata e cuoci gli spaghetti al dente.",
+          "de": "Bringe einen großen Topf Salzwasser zum Kochen und gare die Spaghetti al dente.",
+          "es": "Lleva a ebullición una olla grande de agua con sal y cuece los espaguetis al dente.",
+          "fr": "Porte à ébullition une grande casserole d'eau salée et fais cuire les spaghettis al dente."
+        },
+        "timerMinutes": 10
+      },
+      {
+        "text": {
+          "en": "Meanwhile, gently fry the sliced garlic in the oil for a minute, then add the tomatoes and simmer.",
+          "it": "Intanto fai dorare piano l'aglio a fette nell'olio per un minuto, poi aggiungi i pomodori e fai sobbollire.",
+          "de": "Brate inzwischen den Knoblauch in Scheiben eine Minute sanft im Öl an, gib die Tomaten dazu und lass alles köcheln.",
+          "es": "Mientras, dora suavemente el ajo laminado en el aceite durante un minuto, añade el tomate y deja cocer a fuego lento.",
+          "fr": "Pendant ce temps, fais revenir doucement l'ail émincé dans l'huile une minute, puis ajoute les tomates et laisse mijoter."
+        },
+        "timerMinutes": 10
+      },
+      {
+        "text": {
+          "en": "Toss the drained pasta in the sauce with a splash of its water. Top with torn basil.",
+          "it": "Salta la pasta scolata nel sugo con un po' della sua acqua. Completa con basilico spezzettato.",
+          "de": "Schwenke die abgetropften Nudeln mit einem Schuss Kochwasser in der Soße. Mit gezupftem Basilikum servieren.",
+          "es": "Mezcla la pasta escurrida con la salsa y un chorrito de su agua. Termina con albahaca troceada.",
+          "fr": "Mélange les pâtes égouttées à la sauce avec un peu d'eau de cuisson. Termine avec du basilic ciselé."
+        }
+      }
+    ]
+  },
+  {
+    "id": "stale_bread_panzanella",
+    "emoji": "🥗",
+    "minutes": 15,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Vegan", "Quick", "Dairy Free"],
+    "name": {
+      "en": "Stale Bread Panzanella",
+      "it": "Panzanella con pane raffermo",
+      "de": "Panzanella mit altem Brot",
+      "es": "Panzanella de pan duro",
+      "fr": "Panzanella au pain rassis"
+    },
+    "summary": {
+      "en": "Bread too hard to eat becomes the best part of this summer salad.",
+      "it": "Il pane troppo duro diventa la parte migliore di questa insalata estiva.",
+      "de": "Zu hartes Brot wird zum besten Teil dieses Sommersalats.",
+      "es": "El pan demasiado duro se convierte en lo mejor de esta ensalada de verano.",
+      "fr": "Le pain trop dur devient le meilleur de cette salade d'été."
+    },
+    "ingredients": [
+      { "id": "bread", "quantity": 200 },
+      { "id": "tomatoes", "quantity": 3 },
+      { "id": "cucumber", "quantity": 1 },
+      { "id": "onions", "quantity": 1 },
+      { "id": "basil", "quantity": 10 },
+      { "id": "olive_oil", "quantity": 45 },
+      { "id": "vinegar", "quantity": 15 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Tear the stale bread into chunks, soak it briefly in cold water, then squeeze it dry.",
+          "it": "Spezza il pane raffermo, ammollalo brevemente in acqua fredda e strizzalo bene.",
+          "de": "Zupfe das alte Brot in Stücke, weiche es kurz in kaltem Wasser ein und drücke es gut aus.",
+          "es": "Trocea el pan duro, remójalo un momento en agua fría y escúrrelo bien.",
+          "fr": "Déchire le pain rassis en morceaux, fais-le tremper brièvement dans l'eau froide, puis essore-le bien."
+        }
+      },
+      {
+        "text": {
+          "en": "Chop the tomatoes and cucumber, and slice the onion thinly.",
+          "it": "Taglia pomodori e cetriolo a pezzi e la cipolla a fettine sottili.",
+          "de": "Schneide Tomaten und Gurke in Stücke und die Zwiebel in feine Scheiben.",
+          "es": "Trocea los tomates y el pepino, y corta la cebolla en láminas finas.",
+          "fr": "Coupe les tomates et le concombre en morceaux, et émince finement l'oignon."
+        }
+      },
+      {
+        "text": {
+          "en": "Toss everything with the oil, vinegar, basil and a pinch of salt. Rest it so the bread soaks up the juices.",
+          "it": "Condisci tutto con olio, aceto, basilico e un pizzico di sale. Lascia riposare perché il pane assorba i succhi.",
+          "de": "Vermische alles mit Öl, Essig, Basilikum und einer Prise Salz. Kurz ziehen lassen, damit das Brot die Säfte aufnimmt.",
+          "es": "Mezcla todo con el aceite, el vinagre, la albahaca y una pizca de sal. Deja reposar para que el pan absorba los jugos.",
+          "fr": "Mélange le tout avec l'huile, le vinaigre, le basilic et une pincée de sel. Laisse reposer pour que le pain s'imprègne des jus."
+        },
+        "timerMinutes": 10
+      }
+    ]
+  },
+  {
+    "id": "stale_bread_french_toast",
+    "emoji": "🍞",
+    "minutes": 15,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Vegetarian", "Quick"],
+    "name": {
+      "en": "Stale Bread French Toast",
+      "it": "French toast con pane raffermo",
+      "de": "Arme Ritter aus altem Brot",
+      "es": "Torrijas de pan duro",
+      "fr": "Pain perdu"
+    },
+    "summary": {
+      "en": "Rescues old bread and milk that's close to its date.",
+      "it": "Salva il pane vecchio e il latte vicino alla scadenza.",
+      "de": "Rettet altes Brot und Milch, die bald abläuft.",
+      "es": "Salva el pan viejo y la leche a punto de caducar.",
+      "fr": "Sauve le vieux pain et le lait qui arrive à sa date."
+    },
+    "ingredients": [
+      { "id": "bread", "quantity": 200 },
+      { "id": "eggs", "quantity": 2 },
+      { "id": "milk", "quantity": 150 },
+      { "id": "sugar", "quantity": 20 },
+      { "id": "butter", "quantity": 20 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Whisk the eggs, milk and sugar in a shallow dish.",
+          "it": "Sbatti uova, latte e zucchero in un piatto fondo.",
+          "de": "Verquirle Eier, Milch und Zucker in einer flachen Schale.",
+          "es": "Bate los huevos, la leche y el azúcar en un plato hondo.",
+          "fr": "Bats les œufs, le lait et le sucre dans un plat creux."
+        }
+      },
+      {
+        "text": {
+          "en": "Soak the bread slices for a minute on each side.",
+          "it": "Lascia in ammollo le fette di pane per un minuto per lato.",
+          "de": "Lass die Brotscheiben pro Seite eine Minute einweichen.",
+          "es": "Empapa las rebanadas de pan un minuto por cada lado.",
+          "fr": "Fais tremper les tranches de pain une minute de chaque côté."
+        }
+      },
+      {
+        "text": {
+          "en": "Fry in butter over medium heat until golden on both sides. Serve with any fruit that needs eating.",
+          "it": "Cuoci nel burro a fuoco medio finché sono dorate su entrambi i lati. Servi con la frutta da finire.",
+          "de": "In Butter bei mittlerer Hitze von beiden Seiten goldbraun braten. Mit Obst servieren, das weg muss.",
+          "es": "Fríe en mantequilla a fuego medio hasta que se doren por ambos lados. Sirve con la fruta que quieras aprovechar.",
+          "fr": "Fais dorer dans le beurre à feu moyen des deux côtés. Sers avec les fruits à finir."
+        },
+        "timerMinutes": 6
+      }
+    ]
+  },
+  {
+    "id": "chickpea_curry",
+    "emoji": "🍛",
+    "minutes": 35,
+    "servings": 4,
+    "difficulty": "Easy",
+    "tags": ["Vegan", "Healthy", "Gluten Free", "Dairy Free"],
+    "name": {
+      "en": "Clear-Out Chickpea Curry",
+      "it": "Curry di ceci svuotadispensa",
+      "de": "Kichererbsen-Curry aus dem Vorrat",
+      "es": "Curry de garbanzos de despensa",
+      "fr": "Curry de pois chiches du placard"
+    },
+    "summary": {
+      "en": "Cans from the cupboard plus the spinach and potatoes that need using.",
+      "it": "Scatolette dalla dispensa più spinaci e patate da finire.",
+      "de": "Dosen aus dem Vorrat plus Spinat und Kartoffeln, die weg müssen.",
+      "es": "Latas de la despensa más las espinacas y patatas que hay que gastar.",
+      "fr": "Des conserves du placard, plus les épinards et pommes de terre à finir."
+    },
+    "ingredients": [
+      { "id": "onions", "quantity": 1 },
+      { "id": "garlic", "quantity": 3 },
+      { "id": "ginger", "quantity": 20 },
+      { "id": "curry_powder", "quantity": 15 },
+      { "id": "chickpeas", "quantity": 400 },
+      { "id": "coconut_milk", "quantity": 400 },
+      { "id": "spinach", "quantity": 150 },
+      { "id": "potatoes", "quantity": 300 },
+      { "id": "olive_oil", "quantity": 15 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Soften the chopped onion, garlic and ginger in the oil.",
+          "it": "Fai appassire cipolla, aglio e zenzero tritati nell'olio.",
+          "de": "Dünste gehackte Zwiebel, Knoblauch und Ingwer im Öl an.",
+          "es": "Sofríe la cebolla, el ajo y el jengibre picados con el aceite.",
+          "fr": "Fais revenir l'oignon, l'ail et le gingembre hachés dans l'huile."
+        },
+        "timerMinutes": 5
+      },
+      {
+        "text": {
+          "en": "Stir in the curry powder for a minute, then add the diced potatoes, chickpeas and coconut milk.",
+          "it": "Tosta il curry per un minuto, poi aggiungi patate a cubetti, ceci e latte di cocco.",
+          "de": "Röste das Currypulver eine Minute mit und gib dann Kartoffelwürfel, Kichererbsen und Kokosmilch dazu.",
+          "es": "Tuesta el curry un minuto y añade las patatas en dados, los garbanzos y la leche de coco.",
+          "fr": "Fais revenir le curry une minute, puis ajoute les pommes de terre en dés, les pois chiches et le lait de coco."
+        }
+      },
+      {
+        "text": {
+          "en": "Simmer until the potatoes are tender.",
+          "it": "Cuoci a fuoco basso finché le patate sono tenere.",
+          "de": "Köcheln lassen, bis die Kartoffeln weich sind.",
+          "es": "Cuece a fuego lento hasta que las patatas estén tiernas.",
+          "fr": "Laisse mijoter jusqu'à ce que les pommes de terre soient tendres."
+        },
+        "timerMinutes": 20
+      },
+      {
+        "text": {
+          "en": "Stir in the spinach until wilted. Serve with rice or bread.",
+          "it": "Unisci gli spinaci finché appassiscono. Servi con riso o pane.",
+          "de": "Rühre den Spinat unter, bis er zusammenfällt. Mit Reis oder Brot servieren.",
+          "es": "Añade las espinacas hasta que se ablanden. Sirve con arroz o pan.",
+          "fr": "Ajoute les épinards jusqu'à ce qu'ils tombent. Sers avec du riz ou du pain."
+        }
+      }
+    ]
+  },
+  {
+    "id": "chicken_traybake",
+    "emoji": "🍗",
+    "minutes": 50,
+    "servings": 4,
+    "difficulty": "Easy",
+    "tags": ["Gluten Free", "Dairy Free", "Healthy"],
+    "name": {
+      "en": "Chicken and Veg Traybake",
+      "it": "Pollo e verdure in teglia",
+      "de": "Hähnchen mit Gemüse vom Blech",
+      "es": "Pollo con verduras al horno",
+      "fr": "Poulet et légumes au four"
+    },
+    "summary": {
+      "en": "One tin, no fuss, and the chicken gets eaten before its date.",
+      "it": "Una sola teglia, zero sbatti, e il pollo non arriva alla scadenza.",
+      "de": "Ein Blech, wenig Aufwand, und das Hähnchen wird rechtzeitig gegessen.",
+      "es": "Una sola bandeja, sin complicaciones, y el pollo no llega a caducar.",
+      "fr": "Une seule plaque, aucun souci, et le poulet est mangé avant sa date."
+    },
+    "ingredients": [
+      { "id": "chicken_breast", "quantity": 500 },
+      { "id": "potatoes", "quantity": 600 },
+      { "id": "bell_peppers", "quantity": 2 },
+      { "id": "onions", "quantity": 2 },
+      { "id": "garlic", "quantity": 4 },
+      { "id": "olive_oil", "quantity": 45 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Heat the oven to 200 °C. Cut the potatoes, peppers and onions into chunks.",
+          "it": "Scalda il forno a 200 °C. Taglia patate, peperoni e cipolle a pezzi.",
+          "de": "Heize den Ofen auf 200 °C vor. Schneide Kartoffeln, Paprika und Zwiebeln in Stücke.",
+          "es": "Precalienta el horno a 200 °C. Corta las patatas, los pimientos y las cebollas en trozos.",
+          "fr": "Préchauffe le four à 200 °C. Coupe les pommes de terre, les poivrons et les oignons en morceaux."
+        }
+      },
+      {
+        "text": {
+          "en": "Toss the vegetables and garlic with the oil, salt and pepper in a large tin, then roast.",
+          "it": "Condisci verdure e aglio con olio, sale e pepe in una teglia grande, poi inforna.",
+          "de": "Vermische Gemüse und Knoblauch mit Öl, Salz und Pfeffer auf einem großen Blech und backe alles.",
+          "es": "Mezcla las verduras y el ajo con el aceite, sal y pimienta en una bandeja grande y hornea.",
+          "fr": "Mélange les légumes et l'ail avec l'huile, du sel et du poivre sur une grande plaque, puis enfourne."
+        },
+        "timerMinutes": 20
+      },
+      {
+        "text": {
+          "en": "Add the chicken in pieces, turn everything over, and roast until the chicken is cooked through.",
+          "it": "Aggiungi il pollo a pezzi, gira tutto e cuoci finché il pollo è ben cotto.",
+          "de": "Gib das Hähnchen in Stücken dazu, wende alles und backe weiter, bis das Hähnchen durchgegart ist.",
+          "es": "Añade el pollo en trozos, da la vuelta a todo y hornea hasta que el pollo esté bien hecho.",
+          "fr": "Ajoute le poulet en morceaux, retourne le tout et fais cuire jusqu'à ce que le poulet soit bien cuit."
+        },
+        "timerMinutes": 25
+      }
+    ]
+  },
+  {
+    "id": "fruit_smoothie",
+    "emoji": "🥤",
+    "minutes": 5,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Vegetarian", "Quick", "Healthy", "Gluten Free"],
+    "name": {
+      "en": "Use-It-Up Fruit Smoothie",
+      "it": "Frullato salvafrutta",
+      "de": "Resteverwertungs-Smoothie",
+      "es": "Batido de aprovechamiento",
+      "fr": "Smoothie anti-gaspi"
+    },
+    "summary": {
+      "en": "Soft bananas and spare yogurt become breakfast in five minutes.",
+      "it": "Banane molli e yogurt avanzato diventano colazione in cinque minuti.",
+      "de": "Weiche Bananen und übriger Joghurt werden in fünf Minuten zum Frühstück.",
+      "es": "Plátanos blandos y yogur sobrante se convierten en desayuno en cinco minutos.",
+      "fr": "Bananes molles et reste de yaourt deviennent un petit-déjeuner en cinq minutes."
+    },
+    "ingredients": [
+      { "id": "bananas", "quantity": 2 },
+      { "id": "frozen_berries", "quantity": 150 },
+      { "id": "yogurt", "quantity": 150 },
+      { "id": "milk", "quantity": 200 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Put everything in a blender. Any soft fruit from the bowl can go in too.",
+          "it": "Metti tutto nel frullatore. Puoi aggiungere anche la frutta troppo matura.",
+          "de": "Gib alles in den Mixer. Auch weiches Obst aus der Schale darf mit hinein.",
+          "es": "Pon todo en la batidora. También puedes añadir la fruta demasiado madura.",
+          "fr": "Mets tout dans le blender. Les fruits trop mûrs peuvent y aller aussi."
+        }
+      },
+      {
+        "text": {
+          "en": "Blend until smooth, adding a splash of milk if it's too thick. Serve right away.",
+          "it": "Frulla fino a ottenere un composto liscio, aggiungendo un goccio di latte se è troppo denso. Servi subito.",
+          "de": "Glatt mixen und bei Bedarf einen Schuss Milch zugeben. Sofort servieren.",
+          "es": "Bate hasta que quede fino y añade un chorrito de leche si está muy espeso. Sirve al momento.",
+          "fr": "Mixe jusqu'à obtenir une texture lisse, en ajoutant un peu de lait si c'est trop épais. Sers aussitôt."
+        }
+      }
+    ]
+  },
+  {
+    "id": "simple_pancakes",
+    "emoji": "🥞",
+    "minutes": 20,
+    "servings": 4,
+    "difficulty": "Easy",
+    "tags": ["Vegetarian", "Quick"],
+    "name": {
+      "en": "Simple Pancakes",
+      "it": "Pancake semplici",
+      "de": "Einfache Pfannkuchen",
+      "es": "Tortitas sencillas",
+      "fr": "Pancakes tout simples"
+    },
+    "summary": {
+      "en": "The easiest way to finish the milk and eggs before they turn.",
+      "it": "Il modo più facile per finire latte e uova prima che vadano a male.",
+      "de": "Der einfachste Weg, Milch und Eier aufzubrauchen, bevor sie schlecht werden.",
+      "es": "La forma más fácil de acabar la leche y los huevos antes de que se estropeen.",
+      "fr": "Le moyen le plus simple de finir le lait et les œufs avant qu'ils ne tournent."
+    },
+    "ingredients": [
+      { "id": "flour", "quantity": 200 },
+      { "id": "milk", "quantity": 300 },
+      { "id": "eggs", "quantity": 2 },
+      { "id": "butter", "quantity": 30 },
+      { "id": "sugar", "quantity": 20 },
+      { "id": "baking_powder", "quantity": 10 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Mix the flour, sugar and baking powder, then whisk in the milk and eggs until smooth.",
+          "it": "Mescola farina, zucchero e lievito, poi incorpora latte e uova fino a ottenere una pastella liscia.",
+          "de": "Mische Mehl, Zucker und Backpulver und verquirle Milch und Eier zu einem glatten Teig.",
+          "es": "Mezcla la harina, el azúcar y la levadura y añade la leche y los huevos batiendo hasta que quede fino.",
+          "fr": "Mélange la farine, le sucre et la levure, puis fouette avec le lait et les œufs jusqu'à obtenir une pâte lisse."
+        }
+      },
+      {
+        "text": {
+          "en": "Let the batter rest while you melt a little butter in a non-stick pan over medium heat.",
+          "it": "Lascia riposare la pastella mentre sciogli un po' di burro in una padella antiaderente a fuoco medio.",
+          "de": "Lass den Teig ruhen und schmilz inzwischen etwas Butter in einer beschichteten Pfanne bei mittlerer Hitze.",
+          "es": "Deja reposar la masa mientras derrites un poco de mantequilla en una sartén antiadherente a fuego medio.",
+          "fr": "Laisse reposer la pâte pendant que tu fais fondre un peu de beurre dans une poêle antiadhésive à feu moyen."
+        },
+        "timerMinutes": 5
+      },
+      {
+        "text": {
+          "en": "Cook small ladlefuls until bubbles form, then flip and cook until golden. Repeat with the rest.",
+          "it": "Cuoci piccoli mestoli di pastella finché si formano le bolle, poi gira e fai dorare. Continua così fino a finirla.",
+          "de": "Backe kleine Kellen Teig, bis sich Blasen bilden, wende sie und backe sie goldbraun. Mit dem restlichen Teig wiederholen.",
+          "es": "Cocina pequeños cazos de masa hasta que salgan burbujas, dales la vuelta y dóralos. Repite con el resto.",
+          "fr": "Fais cuire de petites louches de pâte jusqu'à ce que des bulles se forment, retourne et fais dorer. Recommence avec le reste."
+        }
+      }
+    ]
+  },
+  {
+    "id": "shakshuka",
+    "emoji": "🍅",
+    "minutes": 25,
+    "servings": 2,
+    "difficulty": "Easy",
+    "tags": ["Vegetarian", "Gluten Free", "Spicy"],
+    "name": {
+      "en": "Shakshuka",
+      "it": "Shakshuka",
+      "de": "Shakshuka",
+      "es": "Shakshuka",
+      "fr": "Chakchouka"
+    },
+    "summary": {
+      "en": "Eggs poached in spiced tomatoes, perfect for peppers past their best.",
+      "it": "Uova in camicia nel pomodoro speziato, perfette per i peperoni un po' passati.",
+      "de": "Eier in würzigen Tomaten, ideal für Paprika, die nicht mehr ganz frisch ist.",
+      "es": "Huevos escalfados en tomate especiado, perfectos para pimientos algo pasados.",
+      "fr": "Des œufs pochés dans une sauce tomate relevée, parfaits pour les poivrons fatigués."
+    },
+    "ingredients": [
+      { "id": "eggs", "quantity": 4 },
+      { "id": "canned_tomatoes", "quantity": 400 },
+      { "id": "bell_peppers", "quantity": 1 },
+      { "id": "onions", "quantity": 1 },
+      { "id": "garlic", "quantity": 2 },
+      { "id": "chili", "quantity": 1 },
+      { "id": "olive_oil", "quantity": 30 }
+    ],
+    "steps": [
+      {
+        "text": {
+          "en": "Soften the sliced onion and pepper in the oil over medium heat.",
+          "it": "Fai appassire cipolla e peperone a fette nell'olio a fuoco medio.",
+          "de": "Dünste Zwiebel und Paprika in Scheiben im Öl bei mittlerer Hitze an.",
+          "es": "Sofríe la cebolla y el pimiento en tiras con el aceite a fuego medio.",
+          "fr": "Fais revenir l'oignon et le poivron émincés dans l'huile à feu moyen."
+        },
+        "timerMinutes": 8
+      },
+      {
+        "text": {
+          "en": "Add the garlic and chili, then the tomatoes. Simmer until thick.",
+          "it": "Aggiungi aglio e peperoncino, poi i pomodori. Fai cuocere finché il sugo si addensa.",
+          "de": "Gib Knoblauch und Chili dazu, dann die Tomaten. Köcheln lassen, bis die Soße eindickt.",
+          "es": "Añade el ajo y la guindilla, y después el tomate. Cuece a fuego lento hasta que espese.",
+          "fr": "Ajoute l'ail et le piment, puis les tomates. Laisse mijoter jusqu'à ce que la sauce épaississe."
+        },
+        "timerMinutes": 10
+      },
+      {
+        "text": {
+          "en": "Make four wells, crack in the eggs, cover and cook until the whites are set. Serve with bread.",
+          "it": "Forma quattro incavi, rompici le uova, copri e cuoci finché gli albumi si rapprendono. Servi con il pane.",
+          "de": "Forme vier Mulden, schlage die Eier hinein, decke die Pfanne zu und gare, bis das Eiweiß fest ist. Mit Brot servieren.",
+          "es": "Haz cuatro huecos, casca los huevos, tapa y cocina hasta que cuajen las claras. Sirve con pan.",
+          "fr": "Forme quatre creux, casse-y les œufs, couvre et fais cuire jusqu'à ce que les blancs soient pris. Sers avec du pain."
+        },
+        "timerMinutes": 5
+      }
+    ]
+  }
+]

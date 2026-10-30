@@ -16,6 +16,7 @@ struct SummaryView: View {
     @Query var foods: [FoodModel]
     @Query var consumptions: [FoodConsumptionModel]
     @Query var refills: [FoodRefillModel]
+    @Query var wasteRecords: [FoodWasteModel]
 
     private var paperBackground: Color {
         Color(UIColor { trait in
@@ -65,7 +66,7 @@ struct SummaryView: View {
 
     private var subscriberContent: some View {
         List {
-            if totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 {
+            if totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 && wasteRecords.isEmpty {
                 emptyDataState
             } else {
                 TotalRecipeCookedWidgetView(totalRecipeCooked: totalRecipeCooked, cookedRecipes: cookedRecipes)
@@ -79,6 +80,11 @@ struct SummaryView: View {
                     .listRowSeparator(.hidden)
 
                 TotalFoodRefilledWidgetView(totalFoodRefilled: totalFoodRefilled)
+                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+
+                TotalFoodWastedWidgetView(records: wasteRecords)
                     .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)

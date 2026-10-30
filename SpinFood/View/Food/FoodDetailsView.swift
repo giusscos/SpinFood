@@ -9,6 +9,7 @@ struct FoodDetailsView: View {
 
     @State private var showEdit = false
     @State private var showConsume = false
+    @State private var showWaste = false
     @State private var appeared = false
 
     @Namespace private var editNamespace
@@ -92,6 +93,7 @@ struct FoodDetailsView: View {
                             dismiss()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                                 modelContext.delete(food)
+                                modelContext.saveConfirmedChanges()
                             }
                         } label: {
                             Label("Delete", systemImage: "trash")
@@ -102,6 +104,7 @@ struct FoodDetailsView: View {
                             dismiss()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                                 modelContext.delete(food)
+                                modelContext.saveConfirmedChanges()
                             }
                         } label: {
                             Label("Delete", systemImage: "trash")
@@ -119,6 +122,9 @@ struct FoodDetailsView: View {
             }
             .sheet(isPresented: $showConsume) {
                 FoodConsumeSheet(food: food)
+            }
+            .sheet(isPresented: $showWaste) {
+                FoodConsumeSheet(food: food, purpose: .waste)
             }
             .onAppear {
                 withAnimation(.spring(duration: 0.45, bounce: 0.25).delay(0.06)) {
@@ -215,30 +221,40 @@ struct FoodDetailsView: View {
     }
 
     private var actionBar: some View {
-        HStack(spacing: 12) {
-            Button {
-                showConsume = true
-            } label: {
-                Label("Eat", systemImage: "fork.knife")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-            }
-            .tint(.accent)
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .disabled(food.isOutOfStock)
+        VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                Button {
+                    showConsume = true
+                } label: {
+                    Label("Eat", systemImage: "fork.knife")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .tint(.accent)
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .disabled(food.isOutOfStock)
 
-            Button {
-                refill()
-            } label: {
-                Label("Refill", systemImage: "arrow.trianglehead.counterclockwise")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
+                Button {
+                    refill()
+                } label: {
+                    Label("Refill", systemImage: "arrow.trianglehead.counterclockwise")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .tint(.blue)
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+                .disabled(food.currentQuantity >= food.quantity)
             }
-            .tint(.blue)
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.capsule)
-            .disabled(food.currentQuantity >= food.quantity)
+
+            if !food.isOutOfStock {
+                Button("Threw some away") {
+                    showWaste = true
+                }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+            }
         }
         .padding()
         .background(.thinMaterial)
@@ -251,6 +267,7 @@ struct FoodDetailsView: View {
         guard needed > 0 else { return }
         let record = FoodRefillModel(quantity: needed, unit: food.unit, food: food)
         modelContext.insert(record)
+        food.prepareExpiryForRestock()
         food.currentQuantity = food.quantity
     }
 }
@@ -258,10 +275,15 @@ struct FoodDetailsView: View {
 // MARK: - Consume Sheet
 
 private struct FoodConsumeSheet: View {
+    enum Purpose {
+        case eat, waste
+    }
+
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
 
     var food: FoodModel
+    var purpose: Purpose = .eat
 
     @State private var amount: Decimal = 1
 
@@ -301,7 +323,11 @@ private struct FoodConsumeSheet: View {
                     .padding(.horizontal)
             }
             .padding(.bottom, 16)
-            .navigationTitle("How much did you eat?")
+            .navigationTitle(purpose == .eat ? "How much did you eat?" : "How much did you throw away?")
+            .onAppear {
+                // Most food gets thrown away all at once.
+                if purpose == .waste { amount = food.currentQuantity }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             .toolbar {
@@ -345,8 +371,13 @@ private struct FoodConsumeSheet: View {
     private func logConsumption() {
         let actual = min(amount, food.currentQuantity)
         guard actual > 0 else { return }
-        let record = FoodConsumptionModel(quantity: actual, unit: food.unit, food: food)
-        modelContext.insert(record)
+        switch purpose {
+        case .eat:
+            modelContext.insert(FoodConsumptionModel(quantity: actual, unit: food.unit, food: food))
+        case .waste:
+            modelContext.insert(FoodWasteModel(quantity: actual, food: food))
+        }
         food.currentQuantity = max(0, food.currentQuantity - actual)
+        modelContext.saveConfirmedChanges()
     }
 }

@@ -79,6 +79,7 @@ struct FoodRefillView: View {
 
                 modelContext.insert(refill)
 
+                value.prepareExpiryForRestock()
                 value.currentQuantity = value.quantity
             }
         }

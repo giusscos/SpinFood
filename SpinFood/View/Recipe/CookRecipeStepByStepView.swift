@@ -47,6 +47,11 @@ struct CookRecipeStepByStepView: View {
         }
         .onAppear {
             handlePageChange(recipe.lastStepIndex)
+            // Hands are busy and the device is often propped up, so don't let the screen sleep mid-recipe.
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
         }
         .sheet(isPresented: $showEatConfirmation) {
             RecipeConfirmEatView(

@@ -90,6 +90,8 @@ final class FoodModel {
     @Relationship(inverse: \RecipeFoodModel.ingredient) var recipes: [RecipeFoodModel]? = []
     @Relationship(deleteRule: .cascade, inverse: \FoodConsumptionModel.food) var consumptions: [FoodConsumptionModel]? = []
     @Relationship(deleteRule: .cascade, inverse: \FoodRefillModel.food) var refills: [FoodRefillModel]? = []
+    // The waste log is a record of what happened, so it stays when the food is deleted.
+    @Relationship(deleteRule: .nullify, inverse: \FoodWasteModel.food) var wasteRecords: [FoodWasteModel]? = []
 
     var stockPercentage: Double {
         guard quantity > 0 else { return 0 }
@@ -101,7 +103,12 @@ final class FoodModel {
 
     var daysUntilExpiry: Int? {
         guard let expiry = expiryDate else { return nil }
-        return Calendar.current.dateComponents([.day], from: .now, to: expiry).day
+        let calendar = Calendar.current
+        return calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: .now),
+            to: calendar.startOfDay(for: expiry)
+        ).day
     }
 
     var isExpiringSoon: Bool {
@@ -112,6 +119,13 @@ final class FoodModel {
     var isExpired: Bool {
         guard let days = daysUntilExpiry else { return false }
         return days < 0
+    }
+
+    /// Call before adding stock. A date from a batch that's gone or past saving doesn't describe the new
+    /// one, so it gets a fresh estimate, or no date when the food isn't a known grocery.
+    func prepareExpiryForRestock() {
+        guard isOutOfStock || isExpired else { return }
+        expiryDate = GroceryCatalog.item(matching: name)?.suggestedExpiry
     }
 
     var totalConsumedQuantity: Decimal {

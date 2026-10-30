@@ -29,7 +29,7 @@ struct StepPreviewCard: View {
                 .foregroundStyle(previewText.isEmpty ? .tertiary : .primary)
             let count = step.sortedBlocks.count
             if count > 0 {
-                Label("\(count) block\(count == 1 ? "" : "s")", systemImage: "square.stack")
+                Label("^[\(count) block](inflect: true)", systemImage: "square.stack")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .labelStyle(.titleAndIcon)

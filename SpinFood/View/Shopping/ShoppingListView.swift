@@ -247,7 +247,7 @@ struct ShoppingListView: View {
                         showRecipePicker = true
                     } label: {
                         Label(
-                            selectedRecipes.isEmpty ? "Filter by Recipe" : "\(selectedRecipes.count) Recipe\(selectedRecipes.count == 1 ? "" : "s") Selected",
+                            selectedRecipes.isEmpty ? "Filter by Recipe" : "^[\(selectedRecipes.count) Recipe](inflect: true) Selected",
                             systemImage: "fork.knife"
                         )
                     }
@@ -427,7 +427,7 @@ struct ShoppingListView: View {
                     HStack {
                         if !selectedRecipes.isEmpty {
                             Label(
-                                "\(selectedRecipes.count) recipe\(selectedRecipes.count == 1 ? "" : "s") selected",
+                                "^[\(selectedRecipes.count) recipe](inflect: true) selected",
                                 systemImage: "fork.knife"
                             )
                             .font(.system(.caption, design: .rounded))

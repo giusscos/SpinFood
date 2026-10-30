@@ -27,7 +27,7 @@ final class NotificationManager {
     }
 
     private func scheduleExpiryNotifications(for food: FoodModel) {
-        guard let expiry = food.expiryDate else { return }
+        guard let expiry = food.expiryDate, !food.isOutOfStock else { return }
         let calendar = Calendar.current
         let prefix = food.emoji.isEmpty ? "" : "\(food.emoji) "
 
@@ -37,7 +37,7 @@ final class NotificationManager {
             schedule(
                 id: "expiry3-\(food.id)",
                 title: String(localized: "Food Expiring Soon"),
-                body: "\(prefix)\(food.name) expires in 3 days. Use it before it's gone!",
+                body: String(localized: "\(prefix)\(food.name) expires in 3 days. Use it before it's gone!"),
                 comps: comps
             )
         }
@@ -48,7 +48,7 @@ final class NotificationManager {
             schedule(
                 id: "expiry1-\(food.id)",
                 title: String(localized: "Last Chance!"),
-                body: "\(prefix)\(food.name) expires tomorrow. Don't let it go to waste!",
+                body: String(localized: "\(prefix)\(food.name) expires tomorrow. Don't let it go to waste!"),
                 comps: comps
             )
         }
@@ -62,7 +62,7 @@ final class NotificationManager {
         schedule(
             id: "stock-\(food.id)",
             title: String(localized: "Low Stock"),
-            body: "\(prefix)\(food.name) is running low. Time to restock!",
+            body: String(localized: "\(prefix)\(food.name) is running low. Time to restock!"),
             comps: comps
         )
     }

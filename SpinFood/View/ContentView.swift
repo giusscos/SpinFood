@@ -7,7 +7,6 @@ enum AppTab: Hashable {
 }
 
 struct ContentView: View {
-    @Environment(\.requestReview) var requestReview
     @Environment(\.scenePhase) private var scenePhase
 
     @Query var recipes: [RecipeModel]
@@ -118,6 +117,13 @@ struct ContentView: View {
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             consumePendingWidgetCook()
             if !store.isLoading { handleLaunchPrompts() }
+            // Food may already be stocked from onboarding; once asked, this no longer prompts.
+            if !foods.isEmpty {
+                Task {
+                    await NotificationManager.shared.requestPermission()
+                    NotificationManager.shared.scheduleAll(foods: foods)
+                }
+            }
         }
         .onChange(of: store.isLoading) { _, isLoading in
             if !isLoading { handleLaunchPrompts() }
@@ -165,13 +171,10 @@ struct ContentView: View {
 
     private func handleLaunchPrompts() {
         // Once per install, after the free book fills up.
-        if recipes.count >= Store.freeRecipeLimit && !store.hasActiveSubscription && !milestonePaywallShown {
+        if recipes.countTowardFreeLimit >= Store.freeRecipeLimit && !store.hasActiveSubscription && !milestonePaywallShown {
             milestonePaywallShown = true
             paywallContext = .milestone
             isPresentingPaywall = true
-        }
-        if recipes.count >= 5 && store.hasActiveSubscription {
-            requestReview()
         }
     }
 

@@ -1,11 +1,16 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct RecipeConfirmEatView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
+    @Environment(\.requestReview) private var requestReview
+
+    @AppStorage("review_requested_at_cook_count") private var reviewRequestedAtCookCount: Int = 0
 
     @Query var foods: [FoodModel]
+    @Query private var recipes: [RecipeModel]
 
     var recipe: RecipeModel
     var initialServings: Int? = nil
@@ -44,7 +49,8 @@ struct RecipeConfirmEatView: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(maxWidth: .infinity)
+                            // A phone-sized photo: stretching it across an iPad crops it badly.
+                            .frame(maxWidth: 420)
                             .frame(height: 200)
                             .clipped()
                             .padding(12)
@@ -154,6 +160,7 @@ struct RecipeConfirmEatView: View {
                     Button {
                         consumeFood()
                         onConfirmed?()
+                        requestReviewAfterMealIfNeeded()
                         dismiss()
                     } label: {
                         Label("Confirm", systemImage: "fork.knife")
@@ -163,6 +170,18 @@ struct RecipeConfirmEatView: View {
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.capsule)
                 }
+            }
+        }
+    }
+
+    /// A meal that just worked out is the best moment to ask: after the first one and again after the fifth.
+    private func requestReviewAfterMealIfNeeded() {
+        let cookCount = recipes.reduce(0) { $0 + $1.cookedAt.count }
+        if (cookCount >= 1 && reviewRequestedAtCookCount < 1) || (cookCount >= 5 && reviewRequestedAtCookCount < 5) {
+            reviewRequestedAtCookCount = cookCount
+            // A prompt requested while this screen is closing never appears, so wait until it's gone.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                requestReview()
             }
         }
     }

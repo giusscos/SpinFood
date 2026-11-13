@@ -159,9 +159,9 @@ struct RecipeConfirmEatView: View {
             .toolbar {
                 ToolbarItem(placement: .bottomBar) {
                     Button {
-                        consumeFood()
+                        let savedFood = consumeFood()
                         onConfirmed?()
-                        requestReviewAfterMealIfNeeded()
+                        requestReviewAfterMealIfNeeded(savedFood: savedFood)
                         dismiss()
                     } label: {
                         Label("Confirm", systemImage: "fork.knife")
@@ -175,22 +175,30 @@ struct RecipeConfirmEatView: View {
         }
     }
 
-    /// A meal that just worked out is the best moment to ask: after the first one and again after the fifth.
-    private func requestReviewAfterMealIfNeeded() {
+    /// A meal that just worked out is a good moment to ask: after the first one, the fifth,
+    /// and the first time it used up food that was about to expire.
+    private func requestReviewAfterMealIfNeeded(savedFood: Bool) {
+        // Versions up to 1.1.9 remembered the cook count they last asked at.
+        if reviewRequestedAtCookCount >= 1 { ReviewMoment.firstMeal.markAsked() }
+        if reviewRequestedAtCookCount >= 5 { ReviewMoment.fifthMeal.markAsked() }
+
         let cookCount = recipes.reduce(0) { $0 + $1.cookedAt.count }
-        if (cookCount >= 1 && reviewRequestedAtCookCount < 1) || (cookCount >= 5 && reviewRequestedAtCookCount < 5) {
-            reviewRequestedAtCookCount = cookCount
-            // A prompt requested while this screen is closing never appears, so wait until it's gone.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                requestReview()
-            }
+        if savedFood {
+            ReviewMoment.firstSavedFood.askIfDue(requestReview)
+        }
+        if cookCount >= 5 {
+            ReviewMoment.fifthMeal.askIfDue(requestReview)
+        } else if cookCount >= 1 {
+            ReviewMoment.firstMeal.askIfDue(requestReview)
         }
     }
 
-    private func consumeFood() {
+    /// Returns whether it used up food that was about to expire.
+    @discardableResult
+    private func consumeFood() -> Bool {
         guard let ingredients = recipe.ingredients, !ingredients.isEmpty else {
             recipe.finishCookingSession()
-            return
+            return false
         }
         let savedFoods = ingredients
             .compactMap(\.ingredient)
@@ -207,6 +215,7 @@ struct RecipeConfirmEatView: View {
         if !savedFoods.isEmpty {
             navigator.savedFoodNames = savedFoods.formatted(.list(type: .and))
         }
+        return !savedFoods.isEmpty
     }
 
     private func updateIngredientQuantity(_ ingredient: RecipeFoodModel) {

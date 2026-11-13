@@ -245,6 +245,8 @@ struct EditRecipeView: View {
     @Environment(\.modelContext) var modelContext
 
     @Query var foods: [FoodModel]
+    @Query private var allRecipes: [RecipeModel]
+    @Environment(\.requestReview) private var requestReview
 
     var recipe: RecipeModel?
     var onDelete: () -> Void = {}
@@ -779,6 +781,9 @@ struct EditRecipeView: View {
         }
 
         modelContext.saveConfirmedChanges()
+        if recipe == nil && allRecipes.countTowardFreeLimit + 1 >= 3 {
+            ReviewMoment.thirdRecipe.askIfDue(requestReview)
+        }
         dismiss()
     }
 

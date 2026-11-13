@@ -72,6 +72,7 @@ struct FoodView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(AppNavigator.self) private var navigator
+    @Environment(\.requestReview) private var requestReview
 
     @Query var food: [FoodModel]
     @Query(filter: #Predicate<FoodConsumptionModel> { $0.rescued }) private var savedRecords: [FoodConsumptionModel]
@@ -420,6 +421,9 @@ struct FoodView: View {
             loggedAs: record,
             message: rescued ? String(localized: "Saved from the bin: \(food.name)") : String(localized: "\(food.name) marked as used")
         )
+        if rescued {
+            ReviewMoment.firstSavedFood.askIfDue(requestReview)
+        }
     }
 
     private func markThrownAway(_ food: FoodModel) {

@@ -108,6 +108,7 @@ struct MealPlannerView: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 14, weight: .semibold))
             }
+            .accessibilityLabel("Previous Week")
 
             Text(weekLabel)
                 .font(.system(.callout, design: .serif).weight(.medium))
@@ -120,6 +121,7 @@ struct MealPlannerView: View {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
             }
+            .accessibilityLabel("Next Week")
         }
         .foregroundStyle(.primary)
     }
@@ -159,7 +161,7 @@ private struct DayPlanCard: View {
 
                 if isToday {
                     Text("Today")
-                        .font(.system(size: 10, design: .rounded).weight(.semibold))
+                        .scaledFont(size: 10, weight: .semibold, design: .rounded, relativeTo: .caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color.accentColor.opacity(0.15))
@@ -211,6 +213,7 @@ private struct DayPlanCard: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityLabel("Add Meal")
             }
             .padding(.horizontal, 14)
             .padding(.top, 10)
@@ -269,6 +272,7 @@ private struct DayPlanCard: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
             }
+            .accessibilityLabel("Remove")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 5)

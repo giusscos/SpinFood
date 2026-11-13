@@ -581,3 +581,48 @@
 "tbsp" = "cucch.";
 "tsp" = "cucch.ino";
 "cup" = "tazza";
+
+/* Page turn style and the steps book (1.1.8) */
+"Book" = "Libro";
+"Slide" = "Scorrimento";
+"Page Turn" = "Cambio pagina";
+"Pages fold over like a real cookbook." = "Le pagine si girano come in un vero ricettario.";
+"Pages slide across, with less motion." = "Le pagine scorrono di lato, con meno movimento.";
+"How should pages turn?" = "Come vuoi sfogliare le pagine?";
+"You can change this anytime in Settings, on the last page of your book." = "Puoi cambiarlo quando vuoi nelle Impostazioni, all'ultima pagina del tuo libro.";
+"Swipe the page to try it." = "Scorri la pagina per provare.";
+"Suggested while Reduce Motion is on." = "Consigliato finché Riduci movimento è attivo.";
+"Delete Step %lld" = "Elimina passaggio %lld";
+"Add Step %lld" = "Aggiungi passaggio %lld";
+
+/* VoiceOver labels (1.1.9) */
+"Add Recipe" = "Aggiungi ricetta";
+"Previous Week" = "Settimana precedente";
+"Next Week" = "Settimana successiva";
+"Add Meal" = "Aggiungi pasto";
+"Stop Timer" = "Ferma timer";
+"%lld of 5 stars" = "%lld su 5 stelle";
+"Expires in ^[%lld day](inflect: true)" = "Scade tra ^[%lld giorno](inflect: true)";
+"Step %lld of %lld" = "Passaggio %lld di %lld";
+"Not enough in your pantry" = "Non basta quello in dispensa";
+
+/* One at a Time pages and the Kitchen Diary (1.1.9) */
+"One at a Time" = "Una alla volta";
+"Open each page from the index, without swiping between pages." = "Apri ogni pagina dall'indice, senza scorrere tra le pagine.";
+"Tap a dish to open it." = "Tocca un piatto per aprirlo.";
+"Most cooked: %@, %lld×" = "Il più cucinato: %@, %lld×";
+"Nothing written this month yet." = "Ancora niente scritto questo mese.";
+"Previous Month" = "Mese precedente";
+"Next Month" = "Mese successivo";
+"Kitchen Diary" = "Diario di cucina";
+"Foods eaten" = "Alimenti mangiati";
+"Saved from the bin" = "Salvati dalla pattumiera";
+"Restocks" = "Rifornimenti";
+"In Detail" = "Nel dettaglio";
+"Cooked %@" = "Hai cucinato %@";
+"With %@" = "Con %@";
+"Saved %@ from the bin" = "Hai salvato %@ dalla pattumiera";
+"Ate %@" = "Hai mangiato %@";
+"Restocked %@" = "Hai ricomprato %@";
+"Threw away %@" = "Hai buttato %@";
+"%@ and %lld more" = "%@ e altri %lld";

@@ -27,6 +27,8 @@ struct BookRecipePage: View {
     var showsBackButton: Bool = true
 
     @Environment(AppNavigator.self) private var navigator
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var activeSheet: ActiveRecipeDetailSheet?
     @State private var showDeleteConfirmation = false
@@ -106,6 +108,7 @@ struct BookRecipePage: View {
                         Image(systemName: "square.and.pencil")
                             .font(.system(size: 16, weight: .medium))
                     }
+                    .accessibilityLabel("Edit Recipe")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if #available(iOS 26, *) {
@@ -117,6 +120,7 @@ struct BookRecipePage: View {
                         }
                         .tint(.red)
                         .buttonStyle(.glassProminent)
+                        .accessibilityLabel("Delete Recipe")
                     } else {
                         Button(role: .destructive) {
                             showDeleteConfirmation = true
@@ -125,6 +129,7 @@ struct BookRecipePage: View {
                                 .font(.system(size: 16, weight: .medium))
                         }
                         .tint(.red)
+                        .accessibilityLabel("Delete Recipe")
                     }
                 }
             }
@@ -283,6 +288,7 @@ struct BookRecipePage: View {
         }
         .padding(.top, 32)
         .padding(.bottom, 24)
+        .accessibilityHidden(true)
     }
 
     // MARK: - Title
@@ -290,8 +296,9 @@ struct BookRecipePage: View {
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(recipe.name)
-                .font(.system(size: 30, weight: .bold, design: .serif))
+                .scaledFont(size: 30, weight: .bold, design: .serif, relativeTo: .title)
                 .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
 
             if !recipe.descriptionRecipe.isEmpty {
                 Text(recipe.descriptionRecipe)
@@ -301,15 +308,19 @@ struct BookRecipePage: View {
             }
 
             if recipe.duration > 0 || recipe.servings > 0 || recipe.rating > 0 {
-                HStack(spacing: 20) {
+                // Four columns don't fit at the largest text sizes, so they stack.
+                (dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                    : AnyLayout(HStackLayout(spacing: 20))) {
                     if recipe.duration > 0 {
-                        metaBadge(label: "TIME", value: recipe.duration.formatted)
+                        metaBadge(label: "TIME", value: recipe.duration.formatted, spoken: recipe.duration.spokenDuration)
                     }
                     if recipe.servings > 0 {
                         metaBadge(label: "SERVES", value: "\(recipe.servings)")
                     }
                     if recipe.rating > 0 {
-                        metaBadge(label: "RATING", value: String(repeating: "★", count: recipe.rating))
+                        metaBadge(label: "RATING", value: String(repeating: "★", count: recipe.rating),
+                                  spoken: SpokenText.rating(recipe.rating))
                     }
                     if let difficulty = recipe.difficulty {
                         metaBadge(label: "LEVEL", value: difficulty.localizedName)
@@ -323,15 +334,17 @@ struct BookRecipePage: View {
                     HStack(spacing: 6) {
                         ForEach(recipe.tags, id: \.self) { tag in
                             Label(tag.localizedName, systemImage: tag.icon)
-                                .font(.system(size: 11, design: .rounded).weight(.medium))
+                                .scaledFont(size: 11, weight: .medium, design: .rounded, relativeTo: .caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                                 .background(Color.accentColor.opacity(0.1))
                                 .foregroundStyle(Color.accentColor)
                                 .clipShape(.capsule)
+                                .contrastOutlineCapsule()
                         }
                     }
                 }
+                .blocksPageAndSheetDrags()
                 .padding(.top, 2)
             }
         }
@@ -354,6 +367,7 @@ struct BookRecipePage: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Ingredients")
                 .font(.system(.title3, design: .serif).weight(.semibold))
+                .accessibilityAddTraits(.isHeader)
 
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(ingredients) { item in
@@ -361,9 +375,16 @@ struct BookRecipePage: View {
                         let perServing = item.quantityNeeded / Decimal(max(1, recipe.servings))
                         let insufficient = food.currentQuantity < perServing
                         HStack(spacing: 10) {
-                            Circle()
-                                .fill(insufficient ? Color.orange.opacity(0.7) : Color.secondary.opacity(0.3))
-                                .frame(width: 5, height: 5)
+                            // Orange alone marks what's short; with Differentiate Without Color it also gets a symbol.
+                            if insufficient && differentiateWithoutColor {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            } else {
+                                Circle()
+                                    .fill(insufficient ? Color.orange.opacity(0.7) : Color.secondary.opacity(0.3))
+                                    .frame(width: 5, height: 5)
+                            }
 
                             Text("\(food.emoji.isEmpty ? "" : food.emoji + " ")\(food.name)")
                                 .font(.system(.body, design: .serif))
@@ -375,6 +396,13 @@ struct BookRecipePage: View {
                                 .font(.system(.callout, design: .serif))
                                 .foregroundStyle(insufficient ? .orange : .secondary)
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text(verbatim: food.name))
+                        .accessibilityValue(
+                            insufficient
+                                ? Text("\(item.quantityNeeded.formatted()) \(food.unit.abbreviation)") + Text(verbatim: ", ") + Text("Not enough in your pantry")
+                                : Text("\(item.quantityNeeded.formatted()) \(food.unit.abbreviation)")
+                        )
                     }
                 }
             }
@@ -427,6 +455,7 @@ struct BookRecipePage: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                                 .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                                .contrastOutline(cornerRadius: 10)
                                 .foregroundStyle(.primary)
                         }
                         .transition(.asymmetric(
@@ -441,6 +470,7 @@ struct BookRecipePage: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                             .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                            .contrastOutline(cornerRadius: 10)
                             .foregroundStyle(.primary)
                     }
                 }
@@ -451,6 +481,7 @@ struct BookRecipePage: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+                        .contrastOutline(cornerRadius: 10)
                         .foregroundStyle(.primary)
                 }
             }
@@ -474,15 +505,18 @@ struct BookRecipePage: View {
         showCookServingPicker = true
     }
 
-    private func metaBadge(label: LocalizedStringKey, value: String) -> some View {
+    private func metaBadge(label: LocalizedStringKey, value: String, spoken: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
-                .font(.system(size: 9, weight: .semibold, design: .serif))
+                .scaledFont(size: 9, weight: .semibold, design: .serif, relativeTo: .caption2)
                 .foregroundStyle(.secondary)
                 .tracking(1.2)
             Text(value)
                 .font(.system(.callout, design: .serif))
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(label))
+        .accessibilityValue(Text(verbatim: spoken ?? value))
     }
 }
 
@@ -546,6 +580,17 @@ private struct CookServingPickerSheet: View {
                     .disabled(selectedServings >= cappedMax)
                 }
                 .buttonStyle(.borderless)
+                // VoiceOver: one control, swipe up or down to change it.
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Serves")
+                .accessibilityValue(Text(verbatim: SpokenText.servings(selectedServings)))
+                .accessibilityAdjustableAction { direction in
+                    switch direction {
+                    case .increment: if selectedServings < cappedMax { selectedServings += 1 }
+                    case .decrement: if selectedServings > 1 { selectedServings -= 1 }
+                    @unknown default: break
+                    }
+                }
 
                 VStack(spacing: 4) {
                     if selectedServings != recipe.servings {

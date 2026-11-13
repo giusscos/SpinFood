@@ -52,5 +52,24 @@ struct FoodRowView: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 14)
         .contentShape(Rectangle())
+        // One element per food: name, then amount, stock and expiry in words ("Exp. 3d" isn't speakable).
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: food.name))
+        .accessibilityValue(Text(verbatim: spokenStatus))
+    }
+
+    private var spokenStatus: String {
+        var parts = [String(localized: "\(food.currentQuantity.formatted()) \(food.unit.abbreviation)")]
+        if food.isOutOfStock {
+            parts.append(String(localized: "Out of stock"))
+        } else if food.isLowStock {
+            parts.append(String(localized: "Low stock"))
+        }
+        if food.isExpired && !food.isOutOfStock {
+            parts.append(String(localized: "Expired"))
+        } else if !food.isOutOfStock, let days = food.daysUntilExpiry {
+            parts.append(SpokenText.expiry(daysLeft: days))
+        }
+        return parts.joined(separator: ", ")
     }
 }

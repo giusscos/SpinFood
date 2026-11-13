@@ -64,35 +64,24 @@ struct SummaryView: View {
 
     // MARK: - Subscriber content
 
+    @ViewBuilder
     private var subscriberContent: some View {
-        List {
-            if totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 && wasteRecords.isEmpty {
+        if totalRecipeCooked == 0 && totalFoodEaten == 0 && totalFoodRefilled == 0 && wasteRecords.isEmpty {
+            List {
                 emptyDataState
-            } else {
-                TotalRecipeCookedWidgetView(totalRecipeCooked: totalRecipeCooked, cookedRecipes: cookedRecipes)
-                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-
-                TotalFoodEatenWidgetView(totalFoodEaten: totalFoodEaten)
-                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-
-                TotalFoodRefilledWidgetView(totalFoodRefilled: totalFoodRefilled)
-                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-
-                TotalFoodWastedWidgetView(records: wasteRecords)
-                    .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(paperBackground.ignoresSafeArea())
+        } else {
+            KitchenDiaryView(
+                recipes: recipes,
+                consumptions: consumptions,
+                refills: refills,
+                wasteRecords: wasteRecords
+            )
+            .background(paperBackground.ignoresSafeArea())
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
-        .background(paperBackground.ignoresSafeArea())
     }
 
     @ViewBuilder
@@ -131,11 +120,12 @@ struct SummaryView: View {
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
                     Text("Kitchen Stats")
-                        .font(.system(size: 28, weight: .bold, design: .serif))
+                        .scaledFont(size: 28, weight: .bold, design: .serif, relativeTo: .title)
                         .tracking(3)
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("Premium Feature")
-                        .font(.system(size: 11, weight: .regular, design: .serif))
+                        .scaledFont(size: 11, design: .serif, relativeTo: .caption)
                         .foregroundStyle(.secondary)
                         .tracking(3)
                         .textCase(.uppercase)
@@ -145,6 +135,7 @@ struct SummaryView: View {
                 Image(systemName: "chart.bar.xaxis.ascending")
                     .font(.system(size: 20))
                     .foregroundStyle(.orange.opacity(0.85))
+                    .accessibilityHidden(true)
 
                 VStack(spacing: 24) {
                     tocEntry(roman: "I",   title: "Recipes Cooked",      note: "Track every meal over time")
@@ -185,9 +176,11 @@ struct SummaryView: View {
     private func tocEntry(roman: String, title: LocalizedStringKey, note: LocalizedStringKey) -> some View {
         HStack(alignment: .center, spacing: 0) {
             Text(roman)
-                .font(.system(size: 11, weight: .light, design: .serif))
+                .scaledFont(size: 11, weight: .light, design: .serif, relativeTo: .caption)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .foregroundStyle(.secondary)
                 .frame(width: 28, alignment: .center)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
@@ -205,8 +198,10 @@ struct SummaryView: View {
                 .foregroundStyle(.tertiary)
                 .lineLimit(1)
                 .layoutPriority(-1)
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 11)
+        .accessibilityElement(children: .combine)
     }
 
     private var tocDivider: some View {

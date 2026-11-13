@@ -315,11 +315,12 @@ struct ShoppingListView: View {
             VStack(spacing: 30) {
                 VStack(spacing: 8) {
                     Text("Shopping Lists")
-                        .font(.system(size: 28, weight: .bold, design: .serif))
+                        .scaledFont(size: 28, weight: .bold, design: .serif, relativeTo: .title)
                         .tracking(3)
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("Premium Feature")
-                        .font(.system(size: 11, weight: .regular, design: .serif))
+                        .scaledFont(size: 11, design: .serif, relativeTo: .caption)
                         .foregroundStyle(.secondary)
                         .tracking(3)
                         .textCase(.uppercase)
@@ -329,6 +330,7 @@ struct ShoppingListView: View {
                 Image(systemName: "cart.fill")
                     .font(.system(size: 20))
                     .foregroundStyle(.orange.opacity(0.85))
+                    .accessibilityHidden(true)
 
                 VStack(spacing: 24) {
                     tocEntry(roman: "I",   title: "Auto-Generated List",  note: "From your recipe ingredients")
@@ -368,9 +370,11 @@ struct ShoppingListView: View {
     private func tocEntry(roman: String, title: LocalizedStringKey, note: LocalizedStringKey) -> some View {
         HStack(alignment: .center, spacing: 0) {
             Text(roman)
-                .font(.system(size: 11, weight: .light, design: .serif))
+                .scaledFont(size: 11, weight: .light, design: .serif, relativeTo: .caption)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .foregroundStyle(.secondary)
                 .frame(width: 28, alignment: .center)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
@@ -388,8 +392,10 @@ struct ShoppingListView: View {
                 .foregroundStyle(.tertiary)
                 .lineLimit(1)
                 .layoutPriority(-1)
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 11)
+        .accessibilityElement(children: .combine)
     }
 
     private var tocDivider: some View {
@@ -586,6 +592,12 @@ struct ShoppingItemRow: View {
         .padding(.vertical, 2)
         .contentShape(Rectangle())
         .onTapGesture(perform: onToggle)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: item.foodName))
+        .accessibilityValue(Text("\(item.neededQuantity.formatted()) \(item.unit.abbreviation)")
+            + Text(verbatim: item.recipes.isEmpty ? "" : ", " + item.recipes.prefix(2).joined(separator: ", ")))
+        .accessibilityAddTraits(isChecked ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { onToggle() }
     }
 }
 
@@ -620,6 +632,7 @@ struct SuggestedFoodRow: View {
             .buttonStyle(.plain)
         }
         .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
     }
 }
 

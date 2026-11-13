@@ -18,6 +18,8 @@ struct StepNotePageView: View {
     var servingScale: Double = 1
     var onBack: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
+    /// Set on the last step while editing, to write the next step without going back to the index.
+    var onAddStep: (() -> Void)? = nil
     var onClose: (() -> Void)? = nil
 
     @Environment(\.cookTimer) private var cookTimer
@@ -62,12 +64,28 @@ struct StepNotePageView: View {
                             .padding(.horizontal, 24)
                     }
 
+                    if isEditing, let onAddStep {
+                        Button(action: onAddStep) {
+                            Label("Add Step \(stepNumber + 1)", systemImage: "plus")
+                                .font(.system(.callout, design: .serif).weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .tint(.orange)
+                        .padding(.top, 24)
+                        .padding(.horizontal, 24)
+                    }
+
                     Spacer(minLength: 80)
                 }
             }
         }
         .sheet(item: $editingBlock) { block in
             StepBlockEditorSheet(block: block, ingredients: ingredients, allSteps: allSteps)
+                // Timer wheels and lists are edited here; closing needs Cancel or Done.
+                .interactiveDismissDisabled()
         }
         .photosPicker(
             isPresented: $showImagePicker,
@@ -92,12 +110,15 @@ struct StepNotePageView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("STEP")
-                    .font(.system(size: 10, weight: .semibold, design: .serif))
+                    .scaledFont(size: 10, weight: .semibold, design: .serif, relativeTo: .caption2)
                     .foregroundStyle(.secondary)
                     .tracking(2)
                     .padding(.bottom, 2)
+                    .accessibilityHidden(true)
                 Text("\(stepNumber)")
-                    .font(.system(size: 38, weight: .bold, design: .serif))
+                    .scaledFont(size: 38, weight: .bold, design: .serif, relativeTo: .largeTitle)
+                    .accessibilityLabel(Text("Step \(stepNumber)"))
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
 
                 if step.hasSuggestedTimer && isCooking {
@@ -353,6 +374,7 @@ struct StepNotePageView: View {
                             HStack(spacing: 10) {
                                 Text(food.emoji.isEmpty ? food.category.defaultEmoji : food.emoji)
                                     .font(.title3)
+                                    .accessibilityHidden(true)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(food.name)
                                         .font(.system(.callout, design: .serif).weight(.medium))
@@ -379,7 +401,8 @@ struct StepNotePageView: View {
                 .fill(Color.secondary.opacity(0.12))
                 .frame(height: 1)
             Text("ADD CONTENT")
-                .font(.system(size: 9, weight: .semibold, design: .serif))
+                .scaledFont(size: 9, weight: .semibold, design: .serif, relativeTo: .caption2)
+                .accessibilityAddTraits(.isHeader)
                 .foregroundStyle(.secondary)
                 .tracking(2)
             LazyVGrid(
@@ -468,6 +491,7 @@ private struct CheckListBlockView: View {
                             .foregroundStyle(checked.contains(i) ? Color.accentColor : Color.secondary)
                             .frame(width: 16)
                             .padding(.top, 2)
+                            .accessibilityHidden(true)
                         Text(items[i])
                             .font(.system(.body, design: .serif))
                             .strikethrough(checked.contains(i), color: .secondary)
@@ -476,6 +500,7 @@ private struct CheckListBlockView: View {
                     }
                 }
                 .buttonStyle(.borderless)
+                .accessibilityAddTraits(checked.contains(i) ? .isSelected : [])
             }
         }
     }
@@ -520,11 +545,13 @@ struct StepAddBlockButton: View {
         Button(action: action) {
             VStack(spacing: 5) {
                 Image(systemName: icon).font(.title3)
-                Text(label).font(.system(size: 10, design: .serif))
+                    .accessibilityHidden(true)
+                Text(label).scaledFont(size: 10, design: .serif, relativeTo: .caption2)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(Color.secondary.opacity(0.07), in: .rect(cornerRadius: 10))
+            .contrastOutline(cornerRadius: 10)
         }
         .buttonStyle(.borderless)
         .foregroundStyle(.primary)

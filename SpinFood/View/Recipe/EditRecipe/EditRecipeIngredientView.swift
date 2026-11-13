@@ -439,6 +439,7 @@ private final class TickRulerUIView: UIView {
         isOpaque = false
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
         pan.maximumNumberOfTouches = 1
+        pan.delegate = self
         addGestureRecognizer(pan)
         feedback.prepare()
     }
@@ -545,6 +546,15 @@ private final class TickRulerUIView: UIView {
         }
     }
 
+    /// Sideways drags move the ruler; up-and-down drags are left to the sheet so it still scrolls.
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard let pan = gestureRecognizer as? UIPanGestureRecognizer, pan.view === self else {
+            return super.gestureRecognizerShouldBegin(gestureRecognizer)
+        }
+        let velocity = pan.velocity(in: self)
+        return abs(velocity.x) >= abs(velocity.y)
+    }
+
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
         switch gesture.state {
         case .began:
@@ -604,6 +614,17 @@ private final class TickRulerUIView: UIView {
         default:
             break
         }
+    }
+}
+
+extension TickRulerUIView: UIGestureRecognizerDelegate {
+    /// While the ruler is being dragged, the sheet's swipe-to-close and scrolling above it wait.
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        guard let theirs = otherGestureRecognizer.view, theirs !== self else { return false }
+        return isDescendant(of: theirs)
     }
 }
 

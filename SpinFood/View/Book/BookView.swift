@@ -25,6 +25,8 @@ struct BookContainer: View {
     @Environment(AppNavigator.self) var navigator
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(BookLayout.twoPagesKey) private var prefersTwoPages = true
+    @AppStorage(PageTurnStyle.storageKey) private var storedTurnStyle = ""
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @Query var recipes: [RecipeModel]
 
@@ -35,6 +37,16 @@ struct BookContainer: View {
 
     private var showsTwoPages: Bool {
         horizontalSizeClass == .regular && prefersTwoPages
+    }
+
+    private var turnStyle: PageTurnStyle {
+        PageTurnStyle.resolved(stored: storedTurnStyle, reduceMotion: reduceMotion)
+    }
+
+    /// What the page controller is created with, so a change rebuilds it.
+    private struct BookShape: Hashable {
+        var isSpread: Bool
+        var turnStyle: PageTurnStyle
     }
 
     private var sortedRecipes: [RecipeModel] {
@@ -60,11 +72,12 @@ struct BookContainer: View {
             },
             onDeleteRecipe: handleDeleteRecipe,
             onMoveRecipes: handleMoveRecipes,
-            isSpread: showsTwoPages
+            isSpread: showsTwoPages,
+            turnStyle: turnStyle
         )
-        // The spine position is fixed when the page controller is created, so rebuild it when the
-        // layout changes (folding iPhone Duo, resizing an iPad window, the setting). It reopens on the same page.
-        .id(showsTwoPages)
+        // The spine position and the page turn are fixed when the page controller is created, so rebuild it
+        // when they change (folding iPhone Duo, resizing an iPad window, the settings). It reopens on the same page.
+        .id(BookShape(isSpread: showsTwoPages, turnStyle: turnStyle))
         // The switch is on the Settings page, so stay there instead of landing on a recipe from its old spread.
         .onChange(of: prefersTwoPages) { _, _ in
             navigator.requestedBookPage = sortedRecipes.count + 1

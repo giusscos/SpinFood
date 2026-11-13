@@ -176,6 +176,7 @@ private struct RecipeIdeaRow: View {
                 .font(.system(size: 30))
                 .frame(width: 56, height: 56)
                 .background(Color.accentColor.opacity(0.12), in: .rect(cornerRadius: 12))
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(idea.recipe.localizedName)
@@ -213,6 +214,7 @@ private struct RecipeIdeaRow: View {
         }
         .padding(10)
         .background(.secondary.opacity(0.07), in: .rect(cornerRadius: 16))
+        .contrastOutline(cornerRadius: 16)
         .contentShape(.rect(cornerRadius: 16))
     }
 
@@ -254,8 +256,10 @@ private struct RecipeIdeaDetailView: View {
                 VStack(spacing: 10) {
                     Text(idea.recipe.emoji)
                         .font(.system(size: 64))
+                        .accessibilityHidden(true)
                     Text(idea.recipe.localizedName)
                         .font(.system(.title2, design: .serif).weight(.bold))
+                        .accessibilityAddTraits(.isHeader)
                         .multilineTextAlignment(.center)
                     Text(idea.recipe.localizedSummary)
                         .font(.subheadline)

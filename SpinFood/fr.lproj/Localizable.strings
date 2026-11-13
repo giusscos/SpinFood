@@ -581,3 +581,48 @@
 "tbsp" = "c. à s.";
 "tsp" = "c. à c.";
 "cup" = "tasse";
+
+/* Page turn style and the steps book (1.1.8) */
+"Book" = "Livre";
+"Slide" = "Glisser";
+"Page Turn" = "Tourner les pages";
+"Pages fold over like a real cookbook." = "Les pages se tournent comme dans un vrai livre de cuisine.";
+"Pages slide across, with less motion." = "Les pages glissent sur le côté, avec moins de mouvement.";
+"How should pages turn?" = "Comment veux-tu tourner les pages ?";
+"You can change this anytime in Settings, on the last page of your book." = "Tu peux le changer à tout moment dans les Réglages, à la dernière page de ton livre.";
+"Swipe the page to try it." = "Fais glisser la page pour essayer.";
+"Suggested while Reduce Motion is on." = "Recommandé tant que Réduire les animations est activé.";
+"Delete Step %lld" = "Supprimer l'étape %lld";
+"Add Step %lld" = "Ajouter l'étape %lld";
+
+/* VoiceOver labels (1.1.9) */
+"Add Recipe" = "Ajouter une recette";
+"Previous Week" = "Semaine précédente";
+"Next Week" = "Semaine suivante";
+"Add Meal" = "Ajouter un repas";
+"Stop Timer" = "Arrêter le minuteur";
+"%lld of 5 stars" = "%lld sur 5 étoiles";
+"Expires in ^[%lld day](inflect: true)" = "Expire dans ^[%lld jour](inflect: true)";
+"Step %lld of %lld" = "Étape %lld sur %lld";
+"Not enough in your pantry" = "Pas assez dans ton garde-manger";
+
+/* One at a Time pages and the Kitchen Diary (1.1.9) */
+"One at a Time" = "Une à la fois";
+"Open each page from the index, without swiping between pages." = "Ouvre chaque page depuis l'index, sans glisser d'une page à l'autre.";
+"Tap a dish to open it." = "Touche un plat pour l'ouvrir.";
+"Most cooked: %@, %lld×" = "Le plus cuisiné : %@, %lld×";
+"Nothing written this month yet." = "Rien d'écrit ce mois-ci pour l'instant.";
+"Previous Month" = "Mois précédent";
+"Next Month" = "Mois suivant";
+"Kitchen Diary" = "Journal de cuisine";
+"Foods eaten" = "Aliments mangés";
+"Saved from the bin" = "Sauvés de la poubelle";
+"Restocks" = "Réapprovisionnements";
+"In Detail" = "En détail";
+"Cooked %@" = "Tu as cuisiné %@";
+"With %@" = "Avec %@";
+"Saved %@ from the bin" = "Tu as sauvé %@ de la poubelle";
+"Ate %@" = "Tu as mangé %@";
+"Restocked %@" = "Tu as racheté %@";
+"Threw away %@" = "Tu as jeté %@";
+"%@ and %lld more" = "%@ et %lld autres";

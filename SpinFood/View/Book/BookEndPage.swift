@@ -14,6 +14,8 @@ struct BookEndPage: View {
 
     @AppStorage("selectedLanguage") private var selectedLanguage: String = "en"
     @AppStorage(BookLayout.twoPagesKey) private var prefersTwoPages = true
+    @AppStorage(PageTurnStyle.storageKey) private var storedTurnStyle = ""
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage(ReminderSchedule.storageKey) private var reminderMinutes = ReminderSchedule.beforeDinner
     @Environment(\.scenePhase) private var scenePhase
     @State private var reminderStatus: UNAuthorizationStatus?
@@ -72,6 +74,7 @@ struct BookEndPage: View {
                     .font(.system(.caption, design: .serif))
                     .foregroundStyle(.tertiary)
                     .padding(.bottom, 12)
+                    .accessibilityHidden(true)
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -125,10 +128,12 @@ struct BookEndPage: View {
                 .font(.system(size: 56))
                 .foregroundStyle(.orange)
                 .padding(.top, 48)
+                .accessibilityHidden(true)
             
             VStack(spacing: 6) {
                 Text("Foo")
-                    .font(.system(size: 30, weight: .bold, design: .serif))
+                    .scaledFont(size: 30, weight: .bold, design: .serif, relativeTo: .title)
+                    .accessibilityAddTraits(.isHeader)
                 
                 Text("Your personal recipe book")
                     .font(.system(.subheadline, design: .serif))
@@ -145,9 +150,10 @@ struct BookEndPage: View {
     
     private func sectionHeader(_ title: LocalizedStringKey) -> some View {
         Text(title)
-            .font(.system(size: 10, weight: .semibold, design: .serif))
+            .scaledFont(size: 10, weight: .semibold, design: .serif, relativeTo: .caption2)
             .foregroundStyle(.secondary)
             .tracking(1.5)
+            .accessibilityAddTraits(.isHeader)
             .padding(.horizontal, 32)
             .padding(.top, 20)
             .padding(.bottom, 6)
@@ -229,6 +235,8 @@ struct BookEndPage: View {
                 twoPagesRow
                 dividerLine
             }
+            pageTurnRow
+            dividerLine
             remindersRow
             dividerLine
             if reminderMinutes != ReminderSchedule.off, reminderStatus == .denied {
@@ -285,6 +293,37 @@ struct BookEndPage: View {
             Toggle("Two-Page Book", isOn: $prefersTwoPages)
         }
         .padding(.vertical, 10)
+        .padding(.horizontal, 32)
+    }
+
+    /// Book (pages fold) or Slide (less motion). Changing it rebuilds the book, which reopens on this page.
+    private var pageTurnRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "rectangle.portrait.on.rectangle.portrait")
+                .font(.system(size: 16))
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+
+            Text("Page Turn")
+                .font(.system(.body, design: .serif))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Picker("Page Turn", selection: Binding(
+                get: { PageTurnStyle.resolved(stored: storedTurnStyle, reduceMotion: reduceMotion) },
+                set: { storedTurnStyle = $0.rawValue }
+            )) {
+                ForEach(PageTurnStyle.allCases) { style in
+                    Text(style.title).tag(style)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .tint(.secondary)
+            .fixedSize()
+        }
+        .padding(.vertical, 14)
         .padding(.horizontal, 32)
     }
 

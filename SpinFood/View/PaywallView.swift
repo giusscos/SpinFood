@@ -197,7 +197,8 @@ struct PaywallView: View {
             .padding(.bottom, 4)
 
             Text(verbatim: headerTitle)
-                .font(.system(size: 30, weight: .bold, design: .serif))
+                .scaledFont(size: 30, weight: .bold, design: .serif, relativeTo: .title)
+                .accessibilityAddTraits(.isHeader)
                 .multilineTextAlignment(.center)
 
             Text(verbatim: headerSubtitle)
@@ -340,12 +341,14 @@ struct PaywallView: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .contrastOutline(cornerRadius: 14)
         .sensoryFeedback(.selection, trigger: selectedProductID)
     }
 
     private func badge(_ text: String, color: Color) -> some View {
         Text(verbatim: text)
-            .font(.system(size: 9, weight: .bold).width(.expanded))
+            .scaledFont(size: 9, weight: .bold, width: .expanded, relativeTo: .caption2)
             .foregroundStyle(.white)
             .padding(.horizontal, 7)
             .padding(.vertical, 3)

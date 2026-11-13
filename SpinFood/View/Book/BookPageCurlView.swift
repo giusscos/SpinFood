@@ -45,13 +45,15 @@ struct BookPageCurlView: UIViewControllerRepresentable {
     var onMoveRecipes: (IndexSet, Int) -> Void = { _, _ in }
     /// Two facing pages with the spine in the middle (iPhone Duo inner display, iPad).
     var isSpread: Bool = false
+    /// Fixed for the life of the controller; `BookContainer` recreates it when the setting changes.
+    var turnStyle: PageTurnStyle = .curl
 
     func makeCoordinator() -> BookPageCoordinator {
         BookPageCoordinator()
     }
 
     func makeUIViewController(context: Context) -> BookPageViewController {
-        let vc = BookPageViewController(isSpread: isSpread)
+        let vc = BookPageViewController(isSpread: isSpread, turnStyle: turnStyle)
         vc.navigator = navigator
         vc.currentPage = navigator.currentBookPage
         context.coordinator.hostVC = vc
@@ -106,20 +108,14 @@ final class BookPageCoordinator: NSObject,
         _ pageViewController: UIPageViewController,
         viewControllerBefore viewController: UIViewController
     ) -> UIViewController? {
-        guard let pages = hostVC?.pages,
-              let index = pages.firstIndex(of: viewController),
-              index > 0 else { return nil }
-        return pages[index - 1]
+        hostVC?.neighbour(of: viewController, by: -1)
     }
 
     func pageViewController(
         _ pageViewController: UIPageViewController,
         viewControllerAfter viewController: UIViewController
     ) -> UIViewController? {
-        guard let pages = hostVC?.pages,
-              let index = pages.firstIndex(of: viewController),
-              index < pages.count - 1 else { return nil }
-        return pages[index + 1]
+        hostVC?.neighbour(of: viewController, by: 1)
     }
 
     func pageViewController(
@@ -130,15 +126,19 @@ final class BookPageCoordinator: NSObject,
     ) {
         guard completed,
               let current = pageViewController.viewControllers?.first,
-              let index = hostVC?.pages.firstIndex(of: current) else { return }
+              let index = hostVC?.page(of: current) else { return }
         hostVC?.currentPage = index
+        UIAccessibility.announcePageChange()
     }
 }
 
 // MARK: - UIPageViewController
 
-final class BookPageViewController: UIPageViewController {
+final class BookPageViewController: BookPagesController {
+    /// One controller per page: the index, each recipe, Settings, and blank pages that pad a spread.
     var pages: [UIViewController] = []
+    /// What the page controller turns through: the pages, or for a sliding spread, pairs of them.
+    private var units: [UIViewController] = []
     /// Mirrored to the navigator so a rebuilt book can reopen where it was.
     var currentPage: Int = 0 {
         didSet { navigator?.currentBookPage = currentPage }
@@ -155,18 +155,17 @@ final class BookPageViewController: UIPageViewController {
             : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
     }
 
-    init(isSpread: Bool = false) {
+    init(isSpread: Bool = false, turnStyle: PageTurnStyle = .curl) {
         self.isSpread = isSpread
-        let spine: UIPageViewController.SpineLocation = isSpread ? .mid : .min
-        super.init(
-            transitionStyle: .pageCurl,
-            navigationOrientation: .horizontal,
-            options: [.spineLocation: spine.rawValue]
-        )
+        super.init(turnStyle: turnStyle, spineLocation: isSpread ? .mid : .min)
         // Facing pages turn together, like a real book.
-        isDoubleSided = isSpread
+        if turnStyle == .curl { isDoubleSided = isSpread }
         view.backgroundColor = Self.pageBackgroundColor
+        onEdgeBack = { [weak self] in self?.navigateTo(page: 0) }
     }
+
+    /// A sliding page controller shows one controller at a time, so a spread slides as a pair.
+    private var slidesInPairs: Bool { isSpread && turnStyle != .curl }
 
     required init?(coder: NSCoder) { fatalError() }
 
@@ -244,6 +243,13 @@ final class BookPageViewController: UIPageViewController {
         }
 
         pages = newPages
+        if slidesInPairs {
+            units = stride(from: 0, to: newPages.count - 1, by: 2).map {
+                SpreadPairController(left: newPages[$0], right: newPages[$0 + 1], background: Self.pageBackgroundColor)
+            }
+        } else {
+            units = newPages
+        }
         dataSource = coordinator
         delegate = coordinator
 
@@ -258,17 +264,33 @@ final class BookPageViewController: UIPageViewController {
         target = spreadStart(for: target)
         if let shown = viewControllers(showing: target) {
             currentPage = target
-            setViewControllers(shown, direction: .forward, animated: false)
+            display(shown)
         }
     }
 
     func navigateTo(page: Int) {
         guard page >= 0, page < pages.count else { return }
         let target = spreadStart(for: page)
-        guard target != currentPage, let shown = viewControllers(showing: target) else { return }
-        let direction: NavigationDirection = target > currentPage ? .forward : .reverse
+        // Compare with the page on screen, not only the one remembered, so "Index" always works.
+        let from = isJumping ? currentPage : (viewControllers?.first.flatMap(self.page(of:)) ?? currentPage)
+        guard target != from, let shown = viewControllers(showing: target) else {
+            currentPage = target
+            return
+        }
         currentPage = target
-        setViewControllers(shown, direction: direction, animated: true)
+        jump(to: shown, direction: target > from ? .forward : .reverse)
+    }
+
+    /// The page before or after `controller`, for swiping.
+    func neighbour(of controller: UIViewController, by offset: Int) -> UIViewController? {
+        guard allowsSwiping, let index = units.firstIndex(of: controller) else { return nil }
+        return units[safeIndex: index + offset]
+    }
+
+    /// The page number `controller` shows (the left page, for a pair).
+    func page(of controller: UIViewController) -> Int? {
+        guard let index = units.firstIndex(of: controller) else { return nil }
+        return slidesInPairs ? index * 2 : index
     }
 
     /// In a spread, pages pair up as (0, 1), (2, 3)…; the left page identifies the spread.
@@ -277,6 +299,7 @@ final class BookPageViewController: UIPageViewController {
     }
 
     private func viewControllers(showing page: Int) -> [UIViewController]? {
+        if slidesInPairs { return units[safeIndex: page / 2].map { [$0] } }
         guard let first = pages[safeIndex: page] else { return nil }
         guard isSpread else { return [first] }
         guard let second = pages[safeIndex: page + 1] else { return nil }

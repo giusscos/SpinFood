@@ -15,6 +15,8 @@ enum StepBookMode: Equatable {
 struct StepBookCurlView: UIViewControllerRepresentable {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.cookTimer) private var cookTimer
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage(PageTurnStyle.storageKey) private var storedTurnStyle = ""
 
     var steps: [StepRecipe]
     var ingredients: [RecipeFoodModel]
@@ -31,7 +33,11 @@ struct StepBookCurlView: UIViewControllerRepresentable {
     func makeCoordinator() -> StepBookCoordinator { StepBookCoordinator() }
 
     func makeUIViewController(context: Context) -> StepBookPageViewController {
-        let vc = StepBookPageViewController(modelContext: modelContext, startPage: startPage)
+        let vc = StepBookPageViewController(
+            modelContext: modelContext,
+            startPage: startPage,
+            turnStyle: PageTurnStyle.resolved(stored: storedTurnStyle, reduceMotion: reduceMotion)
+        )
         context.coordinator.hostVC = vc
         vc.coordinator = context.coordinator
         return vc
@@ -45,6 +51,7 @@ struct StepBookCurlView: UIViewControllerRepresentable {
         guard newIDs != vc.lastStepIDs || vc.currentMode != mode || vc.pages.isEmpty
                 || vc.currentServingScale != servingScale else { return }
 
+        let isFirstBuild = vc.pages.isEmpty
         let oldCount = vc.lastStepIDs.count
         let newCount = newIDs.count
         vc.currentMode = mode
@@ -61,8 +68,8 @@ struct StepBookCurlView: UIViewControllerRepresentable {
             onFinishCooking: onFinishCooking
         )
 
-        // Auto-navigate to a newly added step
-        if mode == .edit && newCount > oldCount && newCount > 0 {
+        // Auto-navigate to a newly added step. Opening the book lands on the index, so every step is in view.
+        if mode == .edit && !isFirstBuild && newCount > oldCount {
             vc.navigateTo(page: newCount)
         }
     }
@@ -81,18 +88,18 @@ final class StepBookCoordinator: NSObject,
         _ pvc: UIPageViewController,
         viewControllerBefore vc: UIViewController
     ) -> UIViewController? {
-        guard let pages = hostVC?.pages,
-              let i = pages.firstIndex(of: vc), i > 0 else { return nil }
-        return pages[i - 1]
+        guard let host = hostVC, host.allowsSwiping,
+              let i = host.pages.firstIndex(of: vc) else { return nil }
+        return host.pages[safeIndex: i - 1]
     }
 
     func pageViewController(
         _ pvc: UIPageViewController,
         viewControllerAfter vc: UIViewController
     ) -> UIViewController? {
-        guard let pages = hostVC?.pages,
-              let i = pages.firstIndex(of: vc), i < pages.count - 1 else { return nil }
-        return pages[i + 1]
+        guard let host = hostVC, host.allowsSwiping,
+              let i = host.pages.firstIndex(of: vc) else { return nil }
+        return host.pages[safeIndex: i + 1]
     }
 
     func pageViewController(
@@ -106,12 +113,13 @@ final class StepBookCoordinator: NSObject,
               let i = hostVC?.pages.firstIndex(of: current) else { return }
         hostVC?.currentPage = i
         onPageChange?(i)
+        UIAccessibility.announcePageChange()
     }
 }
 
 // MARK: - UIPageViewController
 
-final class StepBookPageViewController: UIPageViewController {
+final class StepBookPageViewController: BookPagesController {
     var pages: [UIViewController] = []
     var currentPage: Int = 0
     var lastStepIDs: [UUID] = []
@@ -129,15 +137,18 @@ final class StepBookPageViewController: UIPageViewController {
             : UIColor(red: 0.97, green: 0.95, blue: 0.90, alpha: 1)
     }
 
-    init(modelContext: ModelContext, startPage: Int = 0) {
+    init(modelContext: ModelContext, startPage: Int = 0, turnStyle: PageTurnStyle = .curl) {
         self.modelContext = modelContext
         self.currentPage = startPage
-        super.init(
-            transitionStyle: .pageCurl,
-            navigationOrientation: .horizontal,
-            options: [.spineLocation: UIPageViewController.SpineLocation.min.rawValue]
-        )
+        super.init(turnStyle: turnStyle)
         view.backgroundColor = Self.pageBackground
+        onEdgeBack = { [weak self] in self?.navigateTo(page: 0) }
+    }
+
+    /// Cooking goes step after step, so it keeps swiping even in "One at a Time";
+    /// writing steps opens each one from the index.
+    override var allowsSwiping: Bool {
+        turnStyle != .single || currentMode != .edit
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -200,31 +211,47 @@ final class StepBookPageViewController: UIPageViewController {
                     self?.navigateTo(page: 0)
                     onDeleteStep?(step)
                 } : nil,
-                onClose: (mode == .cook || mode == .view) ? { onDismiss?() } : nil
+                // Writing a recipe means adding steps one after another, so the last page offers the next one.
+                onAddStep: mode == .edit && i == total - 1 ? { onAddStep?() } : nil,
+                onClose: (mode == .cook || mode == .view) ? { onDismiss?() } : nil,
+                onDone: mode == .edit ? { onDismiss?() } : nil
             ))
         }
 
         if mode == .cook {
-            newPages.append(makeHostingVC(
-                StepCookDonePage(onFinish: { onFinishCooking?() })
-            ))
+            let done = makeHostingVC(StepCookDonePage(onFinish: { onFinishCooking?() }))
+            // The last page needs a way out too, for someone who isn't ready to finish.
+            (done as? UINavigationController)?.viewControllers.first?.navigationItem.leftBarButtonItem =
+                makeCloseItem { onDismiss?() }
+            newPages.append(done)
         }
 
         pages = newPages
         dataSource = coordinator
         delegate = coordinator
+        updateScrolling()
 
         let target = max(0, min(currentPage, pages.count - 1))
+        currentPage = target
         if let vc = pages[safeIndex: target] {
-            setViewControllers([vc], direction: .forward, animated: false)
+            display([vc])
         }
     }
 
     func navigateTo(page: Int) {
-        guard page >= 0, page < pages.count, page != currentPage else { return }
-        let dir: NavigationDirection = page > currentPage ? .forward : .reverse
+        guard page >= 0, page < pages.count else { return }
+        // Compare with the page on screen, not only the one remembered, so "Steps" always works.
+        let from = isJumping ? currentPage : (viewControllers?.first.flatMap { pages.firstIndex(of: $0) } ?? currentPage)
         currentPage = page
-        setViewControllers([pages[page]], direction: dir, animated: true)
+        guard page != from else { return }
+        jump(to: [pages[page]], direction: page > from ? .forward : .reverse)
+    }
+
+    private func makeCloseItem(_ action: @escaping () -> Void) -> UIBarButtonItem {
+        let item = UIBarButtonItem(image: UIImage(systemName: "xmark"), primaryAction: UIAction { _ in action() })
+        item.tintColor = .label
+        item.accessibilityLabel = String(localized: "Close")
+        return item
     }
 
     private func makeHostingVC<V: View>(_ rootView: V) -> UIViewController {
@@ -246,7 +273,9 @@ final class StepBookPageViewController: UIPageViewController {
         servingScale: Double = 1,
         onBack: (() -> Void)?,
         onDelete: (() -> Void)?,
-        onClose: (() -> Void)?
+        onAddStep: (() -> Void)? = nil,
+        onClose: (() -> Void)?,
+        onDone: (() -> Void)? = nil
     ) -> UIViewController {
         let isEditing = mode == .edit
         let isCooking = mode == .cook || mode == .view
@@ -263,6 +292,7 @@ final class StepBookPageViewController: UIPageViewController {
                 servingScale: servingScale,
                 onBack: onBack,
                 onDelete: onDelete,
+                onAddStep: onAddStep,
                 onClose: onClose
             )
             .environment(\.modelContext, modelContext)
@@ -275,7 +305,7 @@ final class StepBookPageViewController: UIPageViewController {
             var cfg = UIButton.Configuration.plain()
             cfg.image = UIImage(systemName: "chevron.left",
                                 withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
-            cfg.title = "Steps"
+            cfg.title = String(localized: "Steps")
             cfg.imagePadding = 4
             cfg.baseForegroundColor = .label
             let backBtn = UIButton(configuration: cfg)
@@ -284,42 +314,33 @@ final class StepBookPageViewController: UIPageViewController {
             backBtn.sizeToFit()
             hvc.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backBtn)
 
-            // Trash: circle, red - Liquid Glass prominent on iOS 26+, filled circle on older
-            if #available(iOS 26, *) {
-                let trashItem = UIBarButtonItem(
-                    image: UIImage(systemName: "trash"),
-                    primaryAction: UIAction { _ in onBack?(); onDelete?() }
-                )
-                trashItem.tintColor = .systemRed
-                trashItem.style = .prominent
-                hvc.navigationItem.rightBarButtonItem = trashItem
-            } else {
-                var trashCfg = UIButton.Configuration.borderedProminent()
-                trashCfg.image = UIImage(systemName: "trash")
-                trashCfg.baseBackgroundColor = .systemRed
-                trashCfg.baseForegroundColor = .white
-                trashCfg.cornerStyle = .capsule
-                let trashBtn = UIButton(configuration: trashCfg)
-                trashBtn.addAction(UIAction { _ in onBack?(); onDelete?() }, for: .touchUpInside)
-                trashBtn.sizeToFit()
-                hvc.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: trashBtn)
-            }
+            // Done: back to the recipe from any step, not only from the index.
+            let doneItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { _ in onDone?() })
+
+            // Trash: now that it sits next to Done, it asks before deleting the step.
+            let deleteAction = UIAction(
+                title: String(localized: "Delete Step \(stepNumber)"),
+                image: UIImage(systemName: "trash"),
+                attributes: .destructive
+            ) { _ in onDelete?() }
+            let trashItem = UIBarButtonItem(image: UIImage(systemName: "trash"), menu: UIMenu(children: [deleteAction]))
+            trashItem.tintColor = .systemRed
+            trashItem.accessibilityLabel = String(localized: "Delete Step \(stepNumber)")
+
+            hvc.navigationItem.rightBarButtonItems = [doneItem, trashItem]
 
         } else if isCooking {
             // Close: "×"
-            let closeItem = UIBarButtonItem(
-                image: UIImage(systemName: "xmark"),
-                primaryAction: UIAction { _ in onClose?() }
-            )
-            closeItem.tintColor = .label
-            hvc.navigationItem.leftBarButtonItem = closeItem
+            hvc.navigationItem.leftBarButtonItem = makeCloseItem { onClose?() }
 
             // Step counter as title
             let label = UILabel()
             label.text = "\(stepNumber) / \(totalSteps)"
+            label.accessibilityLabel = String(localized: "Step \(stepNumber) of \(totalSteps)")
+            label.adjustsFontForContentSizeCategory = true
             label.textColor = .secondaryLabel
             if let serif = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .caption1).withDesign(.serif) {
-                label.font = UIFont(descriptor: serif, size: 0)
+                label.font = UIFontMetrics(forTextStyle: .caption1).scaledFont(for: UIFont(descriptor: serif, size: 0))
             }
             hvc.navigationItem.titleView = label
         }
@@ -401,6 +422,7 @@ private struct StepIndexPageView: View {
                     .font(.system(.caption, design: .serif))
                     .foregroundStyle(.tertiary)
                     .padding(.bottom, 12)
+                    .accessibilityHidden(true)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -444,6 +466,11 @@ private struct StepIndexPageView: View {
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .onTapGesture { if !isReordering { onSelectStep(step) } }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("Step \(index + 1)"))
+                    .accessibilityValue(Text(verbatim: stepPreview(step)))
+                    .accessibilityAddTraits(isReordering ? [] : .isButton)
+                    .accessibilityAction { if !isReordering { onSelectStep(step) } }
             }
             .onDelete { set in set.forEach { onDelete(steps[$0]) } }
             .onMove(perform: onMove)
@@ -457,7 +484,8 @@ private struct StepIndexPageView: View {
     private func stepRow(index: Int, step: StepRecipe) -> some View {
         HStack(spacing: 0) {
             Text("\(index)")
-                .font(.system(size: 15, weight: .light, design: .serif))
+                .scaledFont(size: 15, weight: .light, design: .serif, relativeTo: .subheadline)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .foregroundStyle(.secondary)
                 .frame(width: 48, alignment: .center)
 
@@ -501,6 +529,7 @@ private struct StepIndexPageView: View {
             Image(systemName: "list.number")
                 .font(.system(size: 52))
                 .foregroundStyle(.secondary.opacity(0.4))
+                .accessibilityHidden(true)
             Text("No steps yet")
                 .font(.system(.title3, design: .serif))
             Text("Tap + to add your first step")
@@ -523,6 +552,7 @@ private struct StepCookDonePage: View {
             VStack(spacing: 28) {
                 Text("🍽️")
                     .font(.system(size: 72))
+                    .accessibilityHidden(true)
                 VStack(spacing: 8) {
                     Text("All done!")
                         .font(.system(.largeTitle, design: .serif).weight(.bold))

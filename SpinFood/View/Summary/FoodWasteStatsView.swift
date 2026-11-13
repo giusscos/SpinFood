@@ -130,7 +130,7 @@ struct FoodWasteStatsView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(wastedGrams.wasteWeightText)
-                            .font(.system(size: 44, weight: .bold, design: .serif))
+                            .scaledFont(size: 44, weight: .bold, design: .serif, relativeTo: .largeTitle)
                             .contentTransition(.numericText())
 
                         Text("thrown away")

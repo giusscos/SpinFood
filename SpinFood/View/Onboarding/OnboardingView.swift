@@ -5,6 +5,7 @@ import UserNotifications
 struct OnboardingView: View {
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
     @Environment(Store.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var step: Int = 0
     @State private var stockedPicks: [GroceryPick] = []
@@ -58,7 +59,7 @@ struct OnboardingView: View {
     }
 
     private var stepTransition: AnyTransition {
-        .opacity.combined(with: .scale(scale: 0.96))
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.96))
     }
 
     private var stepIndicator: some View {
@@ -70,6 +71,8 @@ struct OnboardingView: View {
                     .animation(.spring(duration: 0.4), value: step)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Step \(step + 1) of \(Self.paywallStep)"))
     }
 
     private func advance() { step = min(step + 1, Self.paywallStep) }
@@ -114,11 +117,12 @@ struct OnboardingWelcomeView: View {
         }
         .onAppear {
             dishesAppeared = true
-            withAnimation(.spring(duration: 0.6, bounce: 0.3).delay(0.35)) { appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.55)) { row1Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.68)) { row2Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.2).delay(0.81)) { row3Appeared = true }
-            withAnimation(.spring(duration: 0.5, bounce: 0.35).delay(0.98)) { buttonAppeared = true }
+            // With Reduce Motion on, everything is simply there: no springs, blurs or flying dishes.
+            withMotion(.spring(duration: 0.6, bounce: 0.3).delay(0.35)) { appeared = true }
+            withMotion(.spring(duration: 0.5, bounce: 0.2).delay(0.55)) { row1Appeared = true }
+            withMotion(.spring(duration: 0.5, bounce: 0.2).delay(0.68)) { row2Appeared = true }
+            withMotion(.spring(duration: 0.5, bounce: 0.2).delay(0.81)) { row3Appeared = true }
+            withMotion(.spring(duration: 0.5, bounce: 0.35).delay(0.98)) { buttonAppeared = true }
         }
     }
 
@@ -133,6 +137,7 @@ struct OnboardingWelcomeView: View {
                     Text("Cook what you have")
                         .font(.largeTitle.bold())
                         .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("Your recipes and pantry in one book,\nso you always know what's for dinner.")
                         .font(.body)
@@ -215,6 +220,7 @@ private struct OnboardingDishItem: Identifiable {
 
 private struct OnboardingDishCluster: View {
     let appeared: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let dishes: [OnboardingDishItem] = [
         .init(
@@ -295,12 +301,14 @@ private struct OnboardingDishCluster: View {
                     .scaleEffect(appeared ? 1 : 0.4)
                     .opacity(appeared ? 1 : 0)
                     .animation(
-                        .spring(duration: 0.95, bounce: 0.58).delay(dish.delay),
+                        reduceMotion ? nil : .spring(duration: 0.95, bounce: 0.58).delay(dish.delay),
                         value: appeared
                     )
             }
         }
         .frame(width: clusterSize.width, height: clusterSize.height)
+        // Photos of dishes are decoration; the headline below says what Foo is.
+        .accessibilityHidden(true)
     }
 }
 
@@ -463,7 +471,7 @@ struct OnboardingRemindersView: View {
             .frame(maxWidth: 480)
         }
         .onAppear {
-            withAnimation(.spring(duration: 0.6, bounce: 0.25).delay(0.1)) { appeared = true }
+            withMotion(.spring(duration: 0.6, bounce: 0.25).delay(0.1)) { appeared = true }
         }
     }
 

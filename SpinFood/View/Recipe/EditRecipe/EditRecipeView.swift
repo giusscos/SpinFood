@@ -440,6 +440,8 @@ struct EditRecipeView: View {
                                         )
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityAddTraits(recipeTags.contains(tag) ? .isSelected : [])
+                                .contrastOutline(cornerRadius: 8)
                             }
                         }
                     }
@@ -494,6 +496,8 @@ struct EditRecipeView: View {
                     }
                     .background(paperBackground.ignoresSafeArea())
                     .navigationTitle(editingIngredientIndex != nil ? "Edit Ingredient" : "Ingredients")
+                    // The amount ruler is dragged sideways; a slightly diagonal drag shouldn't close the sheet.
+                    .interactiveDismissDisabled()
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
@@ -605,6 +609,7 @@ struct EditRecipeView: View {
                 Label("Ingredients", systemImage: "fork.knife")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
                 if !ingredients.isEmpty {
                     Text("^[\(ingredients.count) item](inflect: true)")
@@ -622,6 +627,7 @@ struct EditRecipeView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.title3)
                 }
+                .accessibilityLabel("Add Ingredient")
                 .padding(.leading, 6)
             }
             .padding(.horizontal)
@@ -638,6 +644,7 @@ struct EditRecipeView: View {
                                     .frame(width: 40, height: 40)
                                     .background(categoryColor(food.category).opacity(0.15))
                                     .clipShape(Circle())
+                                    .accessibilityHidden(true)
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(food.name)
@@ -683,6 +690,7 @@ struct EditRecipeView: View {
                 Label("Steps", systemImage: "checklist")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
                 if !steps.isEmpty {
                     Text("^[\(steps.count) step](inflect: true)")
@@ -699,6 +707,7 @@ struct EditRecipeView: View {
                     Image(systemName: steps.isEmpty ? "plus.circle.fill" : "book.pages")
                         .font(.title3)
                 }
+                .accessibilityLabel("Edit Steps")
                 .padding(.leading, 6)
             }
             .padding(.horizontal)
@@ -706,11 +715,13 @@ struct EditRecipeView: View {
 
             if !steps.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
                             StepPreviewCard(step: step, index: index + 1)
                         }
                     }
+                    // As tall as the tallest card; the others stretch to match.
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal)
                     .padding(.bottom, 4)
                 }

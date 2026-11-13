@@ -25,7 +25,8 @@ struct StepPreviewCard: View {
                 .foregroundStyle(.secondary)
             Text(previewText.isEmpty ? "Empty" : previewText)
                 .font(.caption)
-                .lineLimit(2)
+                // Always two lines tall, so a one-line step is the same size as the others.
+                .lineLimit(2, reservesSpace: true)
                 .foregroundStyle(previewText.isEmpty ? .tertiary : .primary)
             let count = step.sortedBlocks.count
             if count > 0 {
@@ -35,8 +36,12 @@ struct StepPreviewCard: View {
                     .labelStyle(.titleAndIcon)
             }
         }
-        .frame(width: 110, alignment: .leading)
+        // Fills the row's height and starts at the top, so every card lines up.
+        .frame(width: 110, alignment: .topLeading)
+        .frame(maxHeight: .infinity, alignment: .topLeading)
         .padding(10)
         .background(Color.secondary.opacity(0.07), in: .rect(cornerRadius: 10))
+        .contrastOutline(cornerRadius: 10)
+        .accessibilityElement(children: .combine)
     }
 }

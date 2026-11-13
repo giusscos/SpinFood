@@ -152,6 +152,7 @@ enum ScreenshotSeed {
         defaults.set(false, forKey: "SeedScreenshotLibrary")
         defaults.set(true, forKey: "onboarding_completed")
         defaults.set(true, forKey: "milestone_paywall_shown")
+        defaults.set(PageTurnStyle.curl.rawValue, forKey: PageTurnStyle.storageKey)
 
         let day: TimeInterval = 86_400
         func food(_ name: String, _ emoji: String, _ quantity: Decimal, _ current: Decimal,

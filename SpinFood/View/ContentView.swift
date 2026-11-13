@@ -25,6 +25,10 @@ struct ContentView: View {
 
     @AppStorage("onboarding_completed") private var onboardingCompleted: Bool = false
     @AppStorage("milestone_paywall_shown") private var milestonePaywallShown: Bool = false
+    @AppStorage(PageTurnStyle.storageKey) private var storedTurnStyle = ""
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isAskingPageTurn = false
+    @State private var chosenTurnStyle: PageTurnStyle?
 
     var body: some View {
         #if DEBUG && targetEnvironment(simulator)
@@ -84,10 +88,11 @@ struct ContentView: View {
     @ViewBuilder
     private var mainTabView: some View {
         if #available(iOS 26.1, *) {
+            // Only the refill button: the locked Stats and Shopping pages already have their own
+            // "Upgrade to Pro" button, so a second one above the tab bar was a duplicate.
             let showRefill = navigator.checkedShoppingItemsCount > 0 && navigator.selectedTab == .shopping
-            let showUpgrade = !store.hasActiveSubscription && (navigator.selectedTab == .shopping || navigator.selectedTab == .summary)
             coreTabView
-                .tabViewBottomAccessory(isEnabled: showRefill || showUpgrade) {
+                .tabViewBottomAccessory(isEnabled: showRefill) {
                     if showRefill {
                         Button {
                             navigator.triggerShoppingRefill = true
@@ -99,18 +104,6 @@ struct ContentView: View {
                             .font(.system(.body, design: .rounded).weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .buttonBorderShape(.capsule)
-                    } else {
-                        Button {
-                            paywallContext = navigator.selectedTab == .shopping ? .shopping : .stats
-                            isPresentingPaywall = true
-                        } label: {
-                            Text("Upgrade to Pro")
-                                .font(.system(.body, design: .serif).weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
                         }
                         .buttonStyle(.borderedProminent)
                         .buttonBorderShape(.capsule)
@@ -159,13 +152,15 @@ struct ContentView: View {
             .overlay(alignment: .bottom) {
                 if let names = navigator.savedFoodNames {
                     savedFoodBanner(names: names)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .animation(.snappy, value: navigator.savedFoodNames)
             .sensoryFeedback(.success, trigger: navigator.savedFoodNames) { _, new in new != nil }
             .task(id: navigator.savedFoodNames) {
-                guard navigator.savedFoodNames != nil else { return }
+                guard let names = navigator.savedFoodNames else { return }
+                // The banner comes and goes on its own, so VoiceOver reads it out.
+                AccessibilityNotification.Announcement(String(localized: "Saved from the bin: \(names)")).post()
                 try? await Task.sleep(for: .seconds(4))
                 guard !Task.isCancelled else { return }
                 navigator.savedFoodNames = nil
@@ -187,7 +182,7 @@ struct ContentView: View {
             WidgetSnapshotStore.refresh(foods: foods, meals: mealPlan, recipes: recipes)
             consumePendingWidgetCook()
             openPendingReminder()
-            if !store.isLoading { handleLaunchPrompts() }
+            handleLaunchPrompts()
         }
         .onChange(of: NotificationManager.shared.pendingRoute) { _, _ in
             openPendingReminder()
@@ -233,6 +228,19 @@ struct ContentView: View {
                 Task { await store.updateCustomerProductStatus() }
             }
         }
+        .sheet(isPresented: $isAskingPageTurn, onDismiss: {
+            let style = chosenTurnStyle
+                ?? PageTurnStyle.resolved(stored: storedTurnStyle, reduceMotion: UIAccessibility.isReduceMotionEnabled)
+            storedTurnStyle = style.rawValue
+            chosenTurnStyle = nil
+            handleLaunchPrompts()
+        }) {
+            PageTurnChoiceView { style in
+                chosenTurnStyle = style
+                isAskingPageTurn = false
+            }
+            .environment(\.locale, Locale(identifier: selectedLanguage))
+        }
     }
 
     private func rescheduleReminders() {
@@ -269,6 +277,7 @@ struct ContentView: View {
         HStack(spacing: 12) {
             Image(systemName: "leaf.fill")
                 .foregroundStyle(.green)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Saved from the bin: \(names)")
                     .font(.system(.subheadline, design: .serif).weight(.semibold))
@@ -282,12 +291,25 @@ struct ContentView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(.regularMaterial, in: .rect(cornerRadius: 18))
+        .accessibilityElement(children: .combine)
         .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
         .padding(.horizontal)
         .padding(.bottom, 92)
     }
 
     private func handleLaunchPrompts() {
+        // Once, at the first start after onboarding or after updating: fold the pages, or slide them.
+        // The paywall below waits until it's answered, so the two never open at once.
+        if storedTurnStyle.isEmpty {
+            if !isAskingPageTurn && !isPresentingPaywall && navigator.recipeIdeasRequest == nil {
+                isAskingPageTurn = true
+            }
+            return
+        }
+
+        // The rest depends on what the person owns, so it waits for StoreKit.
+        guard !store.isLoading else { return }
+
         // Once per install, after the free book fills up.
         if recipes.countTowardFreeLimit >= Store.freeRecipeLimit && !store.hasActiveSubscription && !milestonePaywallShown {
             milestonePaywallShown = true

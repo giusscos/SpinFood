@@ -41,6 +41,7 @@ struct FloatingCookTimerBanner: View {
                         .font(.body.weight(.bold))
                         .frame(width: 28, height: 28)
                 }
+                .accessibilityLabel("Stop Timer")
                 .buttonStyle(.borderedProminent)
                 .tint(.secondary)
             }

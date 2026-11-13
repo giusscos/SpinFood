@@ -431,3 +431,48 @@
 "tbsp" = "tbsp";
 "tsp" = "tsp";
 "cup" = "cup";
+
+/* Page turn style and the steps book (1.1.8) */
+"Book" = "Book";
+"Slide" = "Slide";
+"Page Turn" = "Page Turn";
+"Pages fold over like a real cookbook." = "Pages fold over like a real cookbook.";
+"Pages slide across, with less motion." = "Pages slide across, with less motion.";
+"How should pages turn?" = "How should pages turn?";
+"You can change this anytime in Settings, on the last page of your book." = "You can change this anytime in Settings, on the last page of your book.";
+"Swipe the page to try it." = "Swipe the page to try it.";
+"Suggested while Reduce Motion is on." = "Suggested while Reduce Motion is on.";
+"Delete Step %lld" = "Delete Step %lld";
+"Add Step %lld" = "Add Step %lld";
+
+/* VoiceOver labels (1.1.9) */
+"Add Recipe" = "Add Recipe";
+"Previous Week" = "Previous Week";
+"Next Week" = "Next Week";
+"Add Meal" = "Add Meal";
+"Stop Timer" = "Stop Timer";
+"%lld of 5 stars" = "%lld of 5 stars";
+"Expires in ^[%lld day](inflect: true)" = "Expires in ^[%lld day](inflect: true)";
+"Step %lld of %lld" = "Step %lld of %lld";
+"Not enough in your pantry" = "Not enough in your pantry";
+
+/* One at a Time pages and the Kitchen Diary (1.1.9) */
+"One at a Time" = "One at a Time";
+"Open each page from the index, without swiping between pages." = "Open each page from the index, without swiping between pages.";
+"Tap a dish to open it." = "Tap a dish to open it.";
+"Most cooked: %@, %lld×" = "Most cooked: %@, %lld×";
+"Nothing written this month yet." = "Nothing written this month yet.";
+"Previous Month" = "Previous Month";
+"Next Month" = "Next Month";
+"Kitchen Diary" = "Kitchen Diary";
+"Foods eaten" = "Foods eaten";
+"Saved from the bin" = "Saved from the bin";
+"Restocks" = "Restocks";
+"In Detail" = "In Detail";
+"Cooked %@" = "Cooked %@";
+"With %@" = "With %@";
+"Saved %@ from the bin" = "Saved %@ from the bin";
+"Ate %@" = "Ate %@";
+"Restocked %@" = "Restocked %@";
+"Threw away %@" = "Threw away %@";
+"%@ and %lld more" = "%@ and %lld more";

@@ -353,6 +353,7 @@ private struct GroceryTile: View {
             Text(item.emoji)
                 .font(.system(size: 30))
                 .frame(height: 36)
+                .accessibilityHidden(true)
 
             Text(item.name)
                 .font(.system(.footnote, design: .serif).weight(.semibold))
@@ -383,9 +384,13 @@ private struct GroceryTile: View {
                     .foregroundStyle(.white, Color.accentColor)
                     .padding(5)
                     .transition(.scale.combined(with: .opacity))
+                    .accessibilityHidden(true)
             }
         }
+        .contrastOutline(cornerRadius: 14)
         .contentShape(.rect(cornerRadius: 14))
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder

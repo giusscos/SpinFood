@@ -108,6 +108,7 @@ final class Store {
         case .success(let verification):
             let transaction = try checkVerified(verification)
             await updateCustomerProductStatus()
+            await grant(transaction)
             await transaction.finish()
             return transaction
         case .userCancelled, .pending:
@@ -193,8 +194,32 @@ final class Store {
             }
         }
 
+        // The subscription group's status is Apple's recommended source for subscriptions.
+        // `currentEntitlements` has been seen to come back empty while the group is subscribed
+        // (Xcode's StoreKit environment right after a trial started), which left Pro locked.
+        if let statuses = try? await Product.SubscriptionInfo.status(for: groupId) {
+            for status in statuses where status.state == .subscribed || status.state == .inGracePeriod {
+                if case .verified(let transaction) = status.transaction, transaction.revocationDate == nil {
+                    subscriptionIDs.insert(transaction.productID)
+                }
+            }
+        }
+
         purchasedSubscriptionIDs = subscriptionIDs
         purchasedLifetimeIDs = lifetimeIDs
+    }
+
+    /// Unlocks straight from a verified purchase, so a lagging StoreKit can't hide what was just bought.
+    @MainActor
+    private func grant(_ transaction: Transaction) {
+        switch transaction.productType {
+        case .autoRenewable:
+            purchasedSubscriptionIDs.insert(transaction.productID)
+        case .nonConsumable where productLifetimeIds.contains(transaction.productID):
+            purchasedLifetimeIDs.insert(transaction.productID)
+        default:
+            break
+        }
     }
 }
 

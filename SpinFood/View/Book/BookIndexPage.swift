@@ -125,6 +125,7 @@ struct BookIndexPage: View {
                         Button(action: onAdd) {
                             Image(systemName: "plus")
                         }
+                        .accessibilityLabel("Add Recipe")
 
                         Menu {
                             if !recipes.isEmpty {
@@ -231,6 +232,14 @@ struct BookIndexPage: View {
                 .onTapGesture {
                     if !isEditing { onSelectRecipe(recipe) }
                 }
+                // One element per recipe: its name, then time, servings, level and tags.
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(verbatim: recipe.name))
+                .accessibilityValue(Text(verbatim: BookIndexEntry.spokenDetails(for: recipe)))
+                .accessibilityAddTraits(isEditing ? [] : .isButton)
+                .accessibilityAction { if !isEditing { onSelectRecipe(recipe) } }
+                .accessibilityAction(named: Text("Edit Recipe")) { onEdit(recipe) }
+                .accessibilityAction(named: Text("Delete Recipe")) { withAnimation { onDelete(recipe) } }
                 .contextMenu {
                     Button {
                         onEdit(recipe)
@@ -312,6 +321,7 @@ struct BookIndexPage: View {
                 ForEach(StarterRecipe.all.prefix(5)) { recipe in
                     Text(recipe.emoji)
                         .font(.system(size: 30))
+                        .accessibilityHidden(true)
                         .frame(width: 58, height: 58)
                         .background(Color.accentColor.opacity(0.14), in: Circle())
                         .overlay { Circle().strokeBorder(pageBackground, lineWidth: 3) }
@@ -365,12 +375,13 @@ struct BookIndexPage: View {
                             .foregroundStyle(Color.accentColor)
                     }
                 }
+                .accessibilityHidden(true)
                 .frame(width: 46, height: 46)
                 .background(Color.accentColor.opacity(0.14), in: .rect(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Tonight")
-                        .font(.system(size: 10, weight: .semibold, design: .serif))
+                        .scaledFont(size: 10, weight: .semibold, design: .serif, relativeTo: .caption2)
                         .tracking(1.2)
                         .textCase(.uppercase)
                         .foregroundStyle(Color.accentColor)
@@ -395,6 +406,7 @@ struct BookIndexPage: View {
             }
             .padding(10)
             .background(Color.accentColor.opacity(0.07), in: .rect(cornerRadius: 14))
+            .contrastOutline(cornerRadius: 14)
             .contentShape(.rect(cornerRadius: 14))
         }
         .buttonStyle(.plain)
@@ -450,6 +462,7 @@ struct BookIndexPage: View {
             Image(systemName: "line.3.horizontal.decrease.circle")
                 .font(.system(size: 52))
                 .foregroundStyle(.secondary.opacity(0.4))
+                .accessibilityHidden(true)
 
             Text("No matching recipes")
                 .font(.system(.title3, design: .serif))
@@ -472,10 +485,20 @@ private struct BookIndexEntry: View {
     let index: Int
     let recipe: RecipeModel
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// At the largest text sizes the details stack instead of being cut off ("2 ser…").
+    private var detailsLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(spacing: 6))
+    }
+
     var body: some View {
         HStack(alignment: .center, spacing: 0) {
             Text("\(index)")
-                .font(.system(size: 15, weight: .light, design: .serif))
+                .scaledFont(size: 15, weight: .light, design: .serif, relativeTo: .subheadline)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .foregroundStyle(.secondary)
                 .frame(width: 48, alignment: .center)
 
@@ -486,9 +509,9 @@ private struct BookIndexEntry: View {
                 Text(recipe.name)
                     .font(.system(.body, design: .serif))
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
 
-                HStack(spacing: 6) {
+                detailsLayout {
                     if recipe.duration > 0 {
                         Text(recipe.duration.formatted)
                             .font(.system(.caption, design: .serif))
@@ -496,10 +519,16 @@ private struct BookIndexEntry: View {
                             .lineLimit(1)
                     }
                     if recipe.servings > 0 {
-                        Text("·  ^[\(recipe.servings) serving](inflect: true)")
-                            .font(.system(.caption, design: .serif))
-                            .foregroundStyle(.tertiary)
-                            .lineLimit(1)
+                        Group {
+                            if dynamicTypeSize.isAccessibilitySize {
+                                Text("^[\(recipe.servings) serving](inflect: true)")
+                            } else {
+                                Text("·  ^[\(recipe.servings) serving](inflect: true)")
+                            }
+                        }
+                        .font(.system(.caption, design: .serif))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
                     }
                     if let d = recipe.difficulty {
                         // Keep the level on one line on narrow screens (e.g. iPhone Duo's outer display).
@@ -519,12 +548,13 @@ private struct BookIndexEntry: View {
                     HStack(spacing: 4) {
                         ForEach(recipe.tags.prefix(3), id: \.self) { tag in
                             Text(tag.localizedName)
-                                .font(.system(size: 9, design: .rounded).weight(.medium))
+                                .scaledFont(size: 9, weight: .medium, design: .rounded, relativeTo: .caption2)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 2)
                                 .background(Color.accentColor.opacity(0.1))
                                 .foregroundStyle(Color.accentColor)
                                 .clipShape(.capsule)
+                                .contrastOutlineCapsule()
                         }
                     }
                 }
@@ -539,6 +569,16 @@ private struct BookIndexEntry: View {
         }
         .padding(.vertical, 13)
         .contentShape(Rectangle())
+    }
+
+    /// What VoiceOver reads after the name: "10 minutes, 2 servings, Easy, Vegan, Healthy".
+    static func spokenDetails(for recipe: RecipeModel) -> String {
+        var parts: [String] = []
+        if recipe.duration > 0 { parts.append(recipe.duration.spokenDuration) }
+        if recipe.servings > 0 { parts.append(SpokenText.servings(recipe.servings)) }
+        if let difficulty = recipe.difficulty { parts.append(difficulty.localizedName) }
+        parts += recipe.tags.map(\.localizedName)
+        return parts.joined(separator: ", ")
     }
 
     @ViewBuilder
